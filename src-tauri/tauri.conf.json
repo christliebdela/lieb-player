@@ -20,6 +20,7 @@
         "minHeight": 620,
         "center": true,
         "transparent": true,
+        "backgroundColor": "#000000",
         "decorations": false,
         "resizable": false
       }
