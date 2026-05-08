@@ -4,10 +4,26 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Play, Film, Library, Trash2, ListMusic, ChevronRight } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { command, setProperty } from 'tauri-plugin-mpv-api';
+import { listen } from '@tauri-apps/api/event';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 
 export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone }) => {
-  const { isLibraryOpen, setLibraryOpen, playlist, removeFromPlaylist, clearPlaylist } = usePlayerStore();
+  const { isLibraryOpen, setLibraryOpen, playlist, addToPlaylist, removeFromPlaylist, clearPlaylist } = usePlayerStore();
+
+  React.useEffect(() => {
+    if (!standalone) return;
+
+    const unlisten = listen('tauri://drag-drop', (event: any) => {
+      const paths = event.payload.paths || event.payload;
+      if (paths && paths.length > 0) {
+        paths.forEach((path: string) => addToPlaylist(path));
+      }
+    });
+
+    return () => {
+      unlisten.then(u => u());
+    };
+  }, [standalone, addToPlaylist]);
 
   const handleClose = () => {
     if (standalone) {

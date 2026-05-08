@@ -465,27 +465,54 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                     )}
 
                     {activeTab === 'about' && (
-                      <div className="h-full flex flex-col items-center justify-center text-center gap-5">
-                        <div className="w-20 h-20 bg-accent/[0.08] rounded-2xl flex items-center justify-center border border-white/10 overflow-hidden p-2">
-                          <img src="/lieb-player-icon.png" alt="Lieb Player" className="w-full h-full object-contain" />
+                      <div className="h-full flex flex-col justify-center max-w-sm mx-auto">
+                        <div className="flex flex-col items-center text-center gap-4 mb-8">
+                          <div className="relative">
+                            <div className="absolute inset-0 bg-accent/20 blur-2xl rounded-full" />
+                            <div className="w-24 h-24 bg-[#050505] rounded-3xl flex items-center justify-center border border-white/10 shadow-2xl overflow-hidden p-2 relative z-10">
+                              <img src="/lieb-player-icon.png" alt="Lieb Player" className="w-full h-full object-contain drop-shadow-xl" />
+                            </div>
+                          </div>
+                          <div>
+                            <h2 className="text-xl font-bold text-white tracking-tight flex items-center justify-center gap-2">
+                              Lieb Player
+                              <span className="px-2 py-0.5 rounded-full bg-accent/10 text-accent text-[9px] font-black tracking-widest border border-accent/20">ALPHA</span>
+                            </h2>
+                            <p className="text-[11px] text-white/40 mt-1.5 font-medium tracking-wide">Version 0.1.0 · Modern Media Experience</p>
+                          </div>
                         </div>
-                        <div>
-                          <h2 className="text-lg font-bold text-white tracking-tight">Lieb Player</h2>
-                          <p className="text-[11px] text-white/30 mt-1 font-medium">v0.1.0-alpha · Modern Media Experience</p>
+
+                        <div className="text-center mb-8 px-2">
+                          <p className="text-[12px] text-white/50 leading-relaxed font-medium">
+                            I built Lieb Player because I wanted more control and deep customization 
+                            options that most other players simply don't provide. It's a project born 
+                            from the need for a truly personal media experience that looks as good 
+                            as it performs.
+                          </p>
                         </div>
-                        <p className="text-[11px] text-white/25 leading-relaxed max-w-xs">
-                          Built for speed and elegance. Powered by mpv and Tauri.
-                        </p>
-                        <div className="pt-5 border-t border-white/5 w-48 flex flex-col items-center gap-2">
-                          <p className="text-[10px] text-white/20 font-medium uppercase tracking-widest">Created by</p>
-                          <p className="text-[13px] font-semibold text-white">Christlieb Dela</p>
-                          <a 
-                            href="https://github.com/christliebdela" 
-                            target="_blank" 
-                            className="flex items-center gap-1.5 text-[11px] text-accent hover:underline cursor-pointer mt-1"
-                          >
-                            <ExternalLink size={12} /> GitHub
-                          </a>
+
+                        <div className="flex items-center justify-between pt-5 border-t border-white/5">
+                          <div>
+                            <p className="text-[10px] text-white/30 font-medium uppercase tracking-widest mb-1">Created by</p>
+                            <p className="text-[13px] font-bold text-white/90">Christlieb Dela</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <a 
+                              href="https://github.com/christliebdela/lieb-player" 
+                              target="_blank" 
+                              className="w-8 h-8 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/5 flex items-center justify-center text-white/50 hover:text-white transition-all cursor-pointer"
+                              title="Source Code"
+                            >
+                              <ExternalLink size={14} />
+                            </a>
+                            <a 
+                              href="https://github.com/christliebdela/lieb-player/issues" 
+                              target="_blank" 
+                              className="px-3 py-1.5 rounded-lg bg-accent/10 hover:bg-accent/20 border border-accent/20 flex items-center gap-1.5 text-accent text-[11px] font-bold transition-all cursor-pointer"
+                            >
+                              Report Bug
+                            </a>
+                          </div>
                         </div>
                       </div>
                     )}

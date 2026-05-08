@@ -9,7 +9,7 @@ const OBSERVED_PROPERTIES = [
 ] as const;
 
 export const VideoCanvas: React.FC = () => {
-    const { setDuration, setCurrentTime, setPlaying, setMetadata, setVolume, setMuted, setAspectRatio, aspectRatio } = usePlayerStore();
+    const { setDuration, setCurrentTime, setPlaying, setMetadata, setVolume, setMuted, setAspectRatio } = usePlayerStore();
 
   useEffect(() => {
     // Crucial: Set background to transparent for MPV to show through

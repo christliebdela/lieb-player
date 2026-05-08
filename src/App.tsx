@@ -10,6 +10,7 @@ import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { listen } from '@tauri-apps/api/event';
 import { command, setProperty } from 'tauri-plugin-mpv-api';
 import { getCurrentWindow } from '@tauri-apps/api/window';
+import { getAllWebviewWindows } from '@tauri-apps/api/webviewWindow';
 import { Volume2, VolumeX, Volume1 } from 'lucide-react';
 
 // ── Lightweight shell for secondary windows (no MPV, no player hooks) ──
@@ -159,8 +160,21 @@ function MainPlayer() {
   useEffect(() => {
     setProperty('load-scripts', 'yes');
     
+    // Initial window center
+    getCurrentWindow().center();
+
     const handleContextMenu = (e: MouseEvent) => e.preventDefault();
     document.addEventListener('contextmenu', handleContextMenu);
+
+    // Cascading close: when main closes, close everything
+    const unlistenClose = getCurrentWindow().onCloseRequested(async () => {
+      if (getCurrentWindow().label === 'main') {
+        const windows = await getAllWebviewWindows();
+        for (const win of windows) {
+          if (win.label !== 'main') await win.close();
+        }
+      }
+    });
 
     console.log(' Lieb Player: App Mounted and Listening...');
     
@@ -201,6 +215,7 @@ function MainPlayer() {
 
     return () => {
       document.removeEventListener('contextmenu', handleContextMenu);
+      unlistenClose.then(u => u());
       unlisten.then(u => u());
       unlistenOpenFile.then(u => u());
     };

@@ -108,12 +108,23 @@ export const MainControls: React.FC = () => {
         await existing.setFocus();
         return;
       }
+
+      const mainWin = getCurrentWindow();
+      const outerSize = await mainWin.outerSize();
+      const outerPos = await mainWin.outerPosition();
+      const scaleFactor = await mainWin.scaleFactor();
+
+      // Calculate center position in logical pixels
+      const centerX = (outerPos.x + (outerSize.width / 2)) / scaleFactor - (width / 2);
+      const centerY = (outerPos.y + (outerSize.height / 2)) / scaleFactor - (height / 2);
+
       new WebviewWindow(label, {
         url: '/',
         title,
         width,
         height,
-        center: true,
+        x: centerX,
+        y: centerY,
         decorations: false,
         transparent: true,
         alwaysOnTop: true,
