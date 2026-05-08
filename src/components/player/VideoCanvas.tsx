@@ -1,0 +1,207 @@
+import React, { useEffect } from 'react';
+import { usePlayerStore } from '../../store/usePlayerStore';
+import { command, init, observeProperties } from 'tauri-plugin-mpv-api';
+import { getCurrentWindow, PhysicalSize, currentMonitor } from '@tauri-apps/api/window';
+
+const OBSERVED_PROPERTIES = [
+  'pause', 'time-pos', 'duration', 'volume', 'mute', 'filename', 
+  'video-params/w', 'video-params/h', 'dwidth', 'dheight'
+] as const;
+
+export const VideoCanvas: React.FC = () => {
+    const { setDuration, setCurrentTime, setPlaying, setMetadata, setVolume, setMuted, setAspectRatio, aspectRatio } = usePlayerStore();
+
+  useEffect(() => {
+    // Crucial: Set background to transparent for MPV to show through
+    document.body.style.background = 'transparent';
+    document.documentElement.style.background = 'transparent';
+
+    console.log(' Lieb Player: Starting MPV Engine...');
+
+    // Track video dimensions to detect changes
+    let lastVideoW = 0;
+    let lastVideoH = 0;
+    // Temporary storage for width/height until both are available
+    let pendingW = 0;
+    let pendingH = 0;
+
+    const resizeWindowToVideo = async (videoW: number, videoH: number) => {
+      if (videoW === lastVideoW && videoH === lastVideoH) return;
+      lastVideoW = videoW;
+      lastVideoH = videoH;
+
+      try {
+        const appWindow = getCurrentWindow();
+        
+        // Update store with new ratio
+        setAspectRatio(videoW / videoH);
+
+        // CRITICAL: Window MUST be unmaximized to resize
+        if (await appWindow.isMaximized()) {
+          await appWindow.unmaximize();
+        }
+
+        const monitor = await currentMonitor();
+        const scaleFactor = await appWindow.scaleFactor();
+        if (!monitor) return;
+
+        const monitorW = monitor.size.width / scaleFactor;
+        const monitorH = (monitor.size.height / scaleFactor) - 100;
+
+        let targetW = videoW;
+        let targetH = videoH;
+
+        const scale = Math.min(monitorW / targetW, monitorH / targetH, 1.0);
+        targetW = Math.round(targetW * scale);
+        targetH = Math.round(targetH * scale);
+
+        console.log(` [RESIZE TRIGGERED] Video: ${videoW}x${videoH} -> Window: ${targetW}x${targetH}`);
+        
+        await appWindow.setSize(new PhysicalSize(
+          Math.round(targetW * scaleFactor), 
+          Math.round(targetH * scaleFactor)
+        ));
+        await appWindow.center();
+      } catch (err) {
+        console.warn(' Lieb Player: Resize failed:', err);
+      }
+    };
+
+    // Aspect Ratio Enforcement Listener (Smooth Throttled)
+    const appWindow = getCurrentWindow();
+    let isInternallyResizing = false;
+    let resizeTimeout: any = null;
+
+    const unlistenResize = appWindow.onResized(async () => {
+      if (isInternallyResizing) return;
+      
+      // Throttle the snap to avoid fighting the OS
+      if (resizeTimeout) return;
+      
+      resizeTimeout = setTimeout(async () => {
+        try {
+          const size = await appWindow.innerSize();
+          const currentAspect = usePlayerStore.getState().aspectRatio;
+          const ratio = currentAspect || (pendingW > 0 && pendingH > 0 ? pendingW / pendingH : 16/9);
+          
+          const expectedH = Math.round(size.width / ratio);
+          
+          // Only snap if the deviation is significant (> 5px)
+          if (Math.abs(size.height - expectedH) > 5) {
+            isInternallyResizing = true;
+            await appWindow.setSize(new PhysicalSize(size.width, expectedH));
+            setTimeout(() => { isInternallyResizing = false; }, 100);
+          }
+        } catch (err) {
+          isInternallyResizing = false;
+        }
+        resizeTimeout = null;
+      }, 16);
+    });
+
+    const setupEngine = async () => {
+      try {
+        await init({
+          args: [
+            '--hwdec=auto-safe',
+            '--vo=gpu-next',
+            '--keep-open=yes',
+            '--no-osc',
+            '--osd-level=0',
+            '--no-osd-bar',
+            '--osd-playing-msg=',
+            '--osd-msg1=',
+            '--osd-msg2=',
+            '--osd-msg3=',
+            '--script-opts=osc-visibility=never',
+            '--no-input-default-bindings',
+            '--idle=yes',
+            '--title=',
+            '--no-terminal',
+            '--load-scripts=no',
+            '--pause=yes',
+          ],
+          observedProperties: OBSERVED_PROPERTIES,
+        });
+        
+        console.log(' Lieb Player: Engine Initialized Successfully');
+
+        const unlisten = await observeProperties(
+          OBSERVED_PROPERTIES,
+          ({ name, data }) => {
+            if (name !== 'time-pos') {
+              console.log(` [MPV Prop] ${name}:`, data);
+            }
+
+            switch (name) {
+              case 'time-pos':
+                setCurrentTime((data as number) || 0);
+                break;
+              case 'duration':
+                setDuration((data as number) || 0);
+                break;
+              case 'pause':
+                setPlaying(!(data as boolean));
+                break;
+              case 'volume':
+                setVolume(data as number);
+                break;
+              case 'mute':
+                setMuted(data as boolean);
+                break;
+              case 'filename':
+                if (data) {
+                  setMetadata({ title: String(data) });
+                }
+                break;
+              case 'video-params/w':
+              case 'dwidth':
+                if (typeof data === 'number' && data > 0) {
+                  pendingW = data;
+                  if (pendingH > 0) resizeWindowToVideo(pendingW, pendingH);
+                }
+                break;
+              case 'video-params/h':
+              case 'dheight':
+                if (typeof data === 'number' && data > 0) {
+                  pendingH = data;
+                  if (pendingW > 0) resizeWindowToVideo(pendingW, pendingH);
+                }
+                break;
+            }
+          }
+        );
+
+        console.log(' Lieb Player: Monitoring Active');
+        return unlisten;
+      } catch (err) {
+        console.error(' Lieb Player: Engine Startup Failed:', err);
+      }
+    };
+
+    const cleanup = setupEngine();
+
+    return () => {
+      cleanup.then((unlisten) => unlisten?.());
+      unlistenResize.then(f => f?.());
+    };
+  }, [setDuration, setCurrentTime, setPlaying, setMetadata, setVolume, setMuted, setAspectRatio]);
+
+  const handleRightClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    command('cycle', ['pause']);
+  };
+
+  return (
+    <div 
+      className="absolute inset-0 bg-transparent pointer-events-auto"
+      onContextMenu={handleRightClick}
+      data-tauri-drag-region
+    >
+      <video-player 
+        class="w-full h-full bg-transparent" 
+        data-tauri-drag-region
+      />
+    </div>
+  );
+};

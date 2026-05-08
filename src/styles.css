@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+:root {
+  --accent: #6366f1;
+}
+
+@theme {
+  --color-background: #0a0a0a;
+  --color-surface: #1a1a1a;
+  --color-accent: var(--accent);
+  --color-accent-hover: color-mix(in srgb, var(--accent), black 20%);
+}
+
+@layer base {
+  * {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+    outline: none !important;
+  }
+  *:focus, *:focus-visible {
+    outline: none !important;
+  }
+  body {
+    @apply bg-background text-white antialiased overflow-hidden;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #444;
+}
+
+/* Glassmorphism Utilities */
+.glass {
+  @apply backdrop-blur-md bg-white/5 border border-white/10;
+}
+
+.glass-dark {
+  @apply backdrop-blur-xl bg-black/40 border border-white/5;
+}

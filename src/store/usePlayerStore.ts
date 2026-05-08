@@ -1,0 +1,143 @@
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+
+interface Metadata {
+  title: string;
+  description: string;
+  episode: string;
+  season: string;
+}
+
+interface PlayerState {
+  isPlaying: boolean;
+  volume: number;
+  duration: number;
+  currentTime: number;
+  isMuted: boolean;
+  currentTrack: string | null;
+  playlist: string[];
+  isSettingsOpen: boolean;
+  isLibraryOpen: boolean;
+  isFullscreen: boolean;
+  loopMode: 'off' | 'one' | 'all';
+  showControls: boolean;
+  showVolumeOSD: boolean;
+  equalizer: number[]; // 10 bands: 31, 62, 125, 250, 500, 1k, 2k, 4k, 8k, 16k
+  accentColor: string;
+  crossfade: boolean;
+  crossfadeDuration: number;
+  scrollMode: 'volume' | 'seek';
+  metadata: Metadata;
+  theme: 'dark' | 'light';
+  
+  // Actions
+  setPlaying: (playing: boolean) => void;
+  setVolume: (volume: number) => void;
+  setDuration: (duration: number) => void;
+  setCurrentTime: (time: number) => void;
+  setMuted: (muted: boolean) => void;
+  setCurrentTrack: (track: string | null) => void;
+  setPlaylist: (playlist: string[]) => void;
+  addToPlaylist: (track: string) => void;
+  removeFromPlaylist: (track: string) => void;
+  clearPlaylist: () => void;
+  setSettingsOpen: (open: boolean) => void;
+  setLibraryOpen: (open: boolean) => void;
+  setFullscreen: (full: boolean) => void;
+  setLoopMode: (mode: 'off' | 'one' | 'all') => void;
+  setShowControls: (show: boolean) => void;
+  setShowVolumeOSD: (show: boolean) => void;
+  setEqualizer: (bands: number[]) => void;
+  setAccentColor: (color: string) => void;
+  setCrossfade: (enabled: boolean) => void;
+  setCrossfadeDuration: (duration: number) => void;
+  setScrollMode: (mode: 'volume' | 'seek') => void;
+  setMetadata: (metadata: Partial<Metadata>) => void;
+  aspectRatio: number;
+  setAspectRatio: (ratio: number) => void;
+  setTheme: (theme: 'dark' | 'light') => void;
+}
+
+export const usePlayerStore = create<PlayerState>()(
+  persist(
+    (set, get) => ({
+      isPlaying: false,
+      volume: 100,
+      duration: 0,
+      currentTime: 0,
+      isMuted: false,
+      currentTrack: null,
+      playlist: [],
+      isSettingsOpen: false,
+      isLibraryOpen: false,
+      isFullscreen: false,
+      loopMode: 'off',
+      showControls: true,
+      showVolumeOSD: false,
+      equalizer: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      accentColor: '#6366f1',
+      crossfade: true,
+      crossfadeDuration: 2,
+      scrollMode: 'volume',
+      theme: 'dark',
+      aspectRatio: 16/9,
+      metadata: {
+        title: '',
+        description: '',
+        episode: '',
+        season: '',
+      },
+
+      setPlaying: (playing) => set({ isPlaying: playing }),
+      setVolume: (volume) => set({ volume }),
+      setDuration: (duration) => set({ duration }),
+      setCurrentTime: (time) => set({ currentTime: time }),
+      setMuted: (muted) => set({ isMuted: muted }),
+      setCurrentTrack: (track) => set({ currentTrack: track }),
+      setPlaylist: (playlist) => set({ playlist }),
+      addToPlaylist: (track) => set((state) => ({ playlist: [...state.playlist, track] })),
+      removeFromPlaylist: (track) => set((state) => ({ 
+        playlist: state.playlist.filter((t) => t !== track) 
+      })),
+      clearPlaylist: () => set({ playlist: [] }),
+      setSettingsOpen: (open) => set({ isSettingsOpen: open }),
+      setLibraryOpen: (open) => set({ isLibraryOpen: open }),
+      setFullscreen: (full) => set({ isFullscreen: full }),
+      setLoopMode: (mode) => set({ loopMode: mode }),
+      setAspectRatio: (ratio) => set({ aspectRatio: ratio }),
+      setShowControls: (show) => set({ showControls: show }),
+      setShowVolumeOSD: (show) => set({ showVolumeOSD: show }),
+      setEqualizer: (bands) => set({ equalizer: bands }),
+      setAccentColor: (color) => set({ accentColor: color }),
+      setCrossfade: (enabled) => set({ crossfade: enabled }),
+      setCrossfadeDuration: (duration) => set({ crossfadeDuration: duration }),
+      setScrollMode: (mode) => set({ scrollMode: mode }),
+      setMetadata: (metadata) => set({ metadata: { ...get().metadata, ...metadata } }),
+      setTheme: (theme) => set({ theme }),
+    }),
+    {
+      name: 'lieb-player-storage',
+      partialize: (state) => ({
+        volume: state.volume,
+        isMuted: state.isMuted,
+        playlist: state.playlist,
+        loopMode: state.loopMode,
+        equalizer: state.equalizer,
+        accentColor: state.accentColor,
+        crossfade: state.crossfade,
+        crossfadeDuration: state.crossfadeDuration,
+        scrollMode: state.scrollMode,
+        theme: state.theme,
+      }),
+    }
+  )
+);
+
+// Cross-window synchronization for Tauri webviews
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'lieb-player-storage') {
+      usePlayerStore.persist.rehydrate();
+    }
+  });
+}
