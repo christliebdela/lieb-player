@@ -359,9 +359,8 @@ export const MainControls: React.FC = () => {
                   disabled={!hasMedia}
                   onClick={async () => {
                     const next = !subsEnabled;
-                    await setProperty('sub-visibility', next);
                     setSubsEnabled(next);
-                    showActionOSD(next ? 'Captions On' : 'Captions Off', 'subtitles');
+                    showActionOSD(next ? t('captions.on') : t('captions.off'), 'subtitles');
                   }}
                   className={`transition-all cursor-pointer group ${subsEnabled ? 'text-accent' : hasMedia ? 'text-muted hover:text-accent' : 'text-muted/40 cursor-default'}`}
                   title={subsEnabled ? "Disable Subtitles" : "Enable Subtitles"}

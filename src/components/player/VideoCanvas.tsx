@@ -24,8 +24,9 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
     initialized.current = true;
 
     // Crucial: Set background to transparent for MPV to show through
-    document.body.style.background = 'transparent';
-    document.documentElement.style.background = 'transparent';
+    document.body.style.setProperty('background-color', 'transparent', 'important');
+    document.documentElement.style.setProperty('background-color', 'transparent', 'important');
+    document.documentElement.style.setProperty('--body-bg', 'transparent', 'important');
 
     console.log(' Lieb Player: Starting MPV Engine...');
 

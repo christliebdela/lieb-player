@@ -13,6 +13,7 @@ import { listen } from '@tauri-apps/api/event';
 import { command, setProperty } from 'tauri-plugin-mpv-api';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { Volume2, VolumeX, Volume1 } from 'lucide-react';
+import { showActionOSD } from './utils/osd';
 
 // ── Lightweight shell for secondary windows (no MPV, no player hooks) ──
 function SettingsWindow() {
@@ -142,6 +143,15 @@ function MainPlayer() {
     document.documentElement.style.setProperty('--accent', accentColor);
   }, [accentColor]);
 
+  // Handle transparency for video to show through
+  useEffect(() => {
+    if (hasMedia) {
+      document.documentElement.style.setProperty('--body-bg', 'transparent');
+    } else {
+      document.documentElement.style.setProperty('--body-bg', 'var(--background)');
+    }
+  }, [hasMedia]);
+
   // Sync Crossfade Settings to MPV
   useEffect(() => {
     setProperty('user-data/lieb/crossfade', crossfade ? 'yes' : 'no');
@@ -150,6 +160,11 @@ function MainPlayer() {
   useEffect(() => {
     setProperty('user-data/lieb/crossfade-duration', crossfadeDuration);
   }, [crossfadeDuration]);
+  
+  const subsEnabled = usePlayerStore(s => s.subsEnabled);
+  useEffect(() => {
+    setProperty('sub-visibility', subsEnabled ? 'yes' : 'no');
+  }, [subsEnabled]);
   
   // Sync Equalizer to MPV
   const equalizer = usePlayerStore(s => s.equalizer);
@@ -200,7 +215,7 @@ function MainPlayer() {
         // Load associated subtitles
         if (subs && subs.length > 0) {
           for (const sub of subs) {
-            await command('sub-add', [sub]);
+            await command('sub-add', [sub, 'select']);
           }
         }
         await command('set', ['pause', 'no']);
@@ -219,6 +234,8 @@ function MainPlayer() {
         const media = paths.filter((p: string) => !SUB_EXTS.some(ext => p.toLowerCase().endsWith(`.${ext}`)));
 
         try {
+          const currentState = usePlayerStore.getState();
+          
           if (media.length > 0) {
             console.log(' Lieb Player: Loading media:', media.length, 'files');
             
@@ -236,24 +253,32 @@ function MainPlayer() {
             
             const firstTrack = pairedPlaylist[0];
             await command('loadfile', [firstTrack.path, 'replace']);
-            // Load its subs
+            
+            // Load its subs with 'select' flag
             for (const sub of firstTrack.subs) {
-              await command('sub-add', [sub]);
+              await command('sub-add', [sub, 'select']);
             }
 
-            usePlayerStore.getState().setCurrentTrack(firstTrack.path);
+            currentState.setCurrentTrack(firstTrack.path);
             
             for (let i = 1; i < pairedPlaylist.length; i++) {
               await command('loadfile', [pairedPlaylist[i].path, 'append']);
             }
 
-            if (usePlayerStore.getState().autoPlay) {
+            if (currentState.autoPlay) {
               await setProperty('pause', false);
               setPlaying(true);
             } else {
               await setProperty('pause', true);
               setPlaying(false);
             }
+          } else if (subs.length > 0 && currentState.duration > 0) {
+            // Hot-load subtitles into currently playing media
+            console.log(' Lieb Player: Hot-loading', subs.length, 'subtitles');
+            for (const sub of subs) {
+              await command('sub-add', [sub, 'select']);
+            }
+            showActionOSD(t('captions.on'), 'subtitles');
           }
 
           setShowControls(true);

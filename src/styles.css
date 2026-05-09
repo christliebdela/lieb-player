@@ -55,7 +55,8 @@
     outline: none !important;
   }
   body {
-    @apply bg-background text-foreground antialiased overflow-hidden transition-colors duration-300;
+    background-color: var(--body-bg, var(--background));
+    @apply text-foreground antialiased overflow-hidden transition-colors duration-300;
   }
 }
 

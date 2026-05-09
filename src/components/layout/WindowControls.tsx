@@ -22,7 +22,9 @@ export const WindowControls: React.FC = () => {
     });
 
     return () => {
-      unlisten.then(u => u());
+      unlisten.then(u => {
+        if (typeof u === 'function') u();
+      }).catch(() => {});
     };
   }, [appWindow]);
 
