@@ -149,6 +149,23 @@ function MainPlayer() {
   useEffect(() => {
     setProperty('user-data/lieb/crossfade-duration', crossfadeDuration);
   }, [crossfadeDuration]);
+  
+  // Sync Equalizer to MPV
+  const equalizer = usePlayerStore(s => s.equalizer);
+  useEffect(() => {
+    const applyEq = async () => {
+      try {
+        const frequencies = [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000];
+        const filterChain = equalizer
+          .map((gain, idx) => `equalizer=f=${frequencies[idx]}:width_type=o:w=1:g=${gain}`)
+          .join(',');
+        await setProperty('af', filterChain);
+      } catch (err) {
+        console.error('Lieb Player: EQ Sync Error:', err);
+      }
+    };
+    applyEq();
+  }, [equalizer]);
 
   const formatDuration = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
