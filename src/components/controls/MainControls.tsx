@@ -139,7 +139,8 @@ export const MainControls: React.FC = () => {
         y: centerY,
         decorations: false,
         transparent: true,
-        alwaysOnTop: true,
+        alwaysOnTop: false,
+        parent: mainWin, 
       });
 
       // Show blocking overlay on main window

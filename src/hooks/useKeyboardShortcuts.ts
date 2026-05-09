@@ -33,7 +33,8 @@ const openWindow = async (label: string, title: string, width: number, height: n
       y: centerY,
       decorations: false,
       transparent: true,
-      alwaysOnTop: true,
+      alwaysOnTop: false,
+      parent: mainWin, // Set parent for grouped focus
     });
 
     // Show blocking overlay on main window
