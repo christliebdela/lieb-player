@@ -37,6 +37,7 @@
     "shortDescription": "Modern media player built with Tauri and mpv",
     "resources": [
       "mpv.exe",
+      "yt-dlp.exe",
       "portable_config/**/*",
       "portable_config/scripts/*"
     ],
