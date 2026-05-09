@@ -124,6 +124,7 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
 
   const handlePlayUrl = async (e?: React.FormEvent) => {
     e?.preventDefault();
+    window.console.log('>>> [UI] handlePlayUrl:', urlInput);
     if (!urlInput.trim()) return;
     try {
       await emit('lieb-play', { path: urlInput.trim(), subs: [] });
@@ -134,35 +135,38 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
       setShowUrlInput(false);
       handleClose();
     } catch (err) {
-      console.error('Failed to stream URL:', err);
+      window.console.error('>>> [UI] Failed to stream URL:', err);
     }
   };
 
-  React.useEffect(() => {
-    if (!standalone) return;
+    const unlistenRef = React.useRef<(() => void) | null>(null);
 
-    const unlisten = listen('tauri://drag-drop', async (event: any) => {
-      const paths = event.payload.paths || event.payload;
-      if (paths && paths.length > 0) {
-        const state = usePlayerStore.getState();
-        const firstPath = paths[0];
-        
-        // Add all to playlist
-        paths.forEach((path: string) => addToPlaylist(path));
+    React.useEffect(() => {
+      if (!standalone) return;
 
-        // If nothing is playing, play the first one dropped
-        if (!state.currentTrack || state.duration === 0) {
-          await emit('lieb-play', { path: firstPath, subs: [] });
-          state.setCurrentTrack(firstPath);
-          state.setPlaying(true);
+      listen('tauri://drag-drop', async (event: any) => {
+        const paths = event.payload.paths || event.payload;
+        window.console.log('>>> [UI] Drag-drop in standalone:', paths);
+        if (paths && paths.length > 0) {
+          const state = usePlayerStore.getState();
+          const firstPath = paths[0];
+          
+          paths.forEach((path: string) => addToPlaylist(path));
+
+          if (!state.currentTrack || state.duration === 0) {
+            await emit('lieb-play', { path: firstPath, subs: [] });
+            state.setCurrentTrack(firstPath);
+            state.setPlaying(true);
+          }
         }
-      }
-    });
+      }).then(u => {
+        unlistenRef.current = u;
+      });
 
-    return () => {
-      unlisten.then(u => u());
-    };
-  }, [standalone, addToPlaylist]);
+      return () => {
+        if (unlistenRef.current) unlistenRef.current();
+      };
+    }, [standalone, addToPlaylist]);
 
   const handleClose = () => {
     if (standalone) {
@@ -173,18 +177,15 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
   };
 
   const handlePlayEpisode = async (track: { path: string; subs: string[] }) => {
+    window.console.log('>>> [UI] handlePlayEpisode:', track.path);
     try {
       await emit('lieb-play', { path: track.path, subs: track.subs });
       setCurrentTrack(track.path);
       setPlaying(true);
-      showActionOSD(t('play'), 'play');
-      if (standalone) {
-        setTimeout(() => getCurrentWindow().close(), 100);
-      } else {
-        setLibraryOpen(false);
-      }
+      showActionOSD(getFileName(track.path), 'play');
+      handleClose();
     } catch (err) {
-      console.error('Failed to load episode:', err);
+      window.console.error('>>> [UI] Failed to play episode:', err);
     }
   };
 
@@ -255,7 +256,7 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
                       />
                       <div className="flex items-center gap-2">
                         {urlInput.trim() && (
-                          <button type="submit" className="text-accent hover:text-accent-hover font-bold text-[10px] uppercase tracking-widest px-2">
+                          <button type="submit" className="text-accent hover:text-accent-hover font-bold text-[10px] uppercase tracking-widest px-2 cursor-pointer">
                             Play
                           </button>
                         )}

@@ -212,89 +212,105 @@ function MainPlayer() {
     const handleContextMenu = (e: MouseEvent) => e.preventDefault();
     document.addEventListener('contextmenu', handleContextMenu);
 
-    const unlistenPlay = listen('lieb-play', async (event: any) => {
-      const { path, subs } = event.payload;
-      if (path) {
-        await command('loadfile', [path, 'replace']);
-        if (subs && subs.length > 0) {
-          for (const sub of subs) {
-            await command('sub-add', [sub, 'select']);
-          }
-        }
-        await command('set', ['pause', 'no']);
-      }
-    });
+    const unlistenRefs = {
+      play: null as any,
+      stop: null as any,
+      drop: null as any,
+      openFile: null as any,
+    };
 
-    const unlistenStop = listen('lieb-stop', async () => {
-      await command('stop');
-    });
-
-    const unlistenDrop = listen('tauri://drag-drop', async (event: any) => {
-      const paths = event.payload.paths || event.payload;
-      if (paths && paths.length > 0) {
-        const SUB_EXTS = ['srt', 'ass', 'sub', 'vtt', 'ssa'];
-        const MEDIA_EXTS = ['mp4', 'mkv', 'avi', 'mov', 'webm', 'm4v', 'flv', 'wmv', '3gp', 'ts', 'ogv', 'vob', 'mp3', 'flac', 'wav', 'm4a', 'ogg', 'opus', 'aac', 'wma'];
-        const subs = paths.filter((p: string) => SUB_EXTS.some(ext => p.toLowerCase().endsWith(`.${ext}`)));
-        const media = paths.filter((p: string) => MEDIA_EXTS.some(ext => p.toLowerCase().endsWith(`.${ext}`)));
-
-        try {
-          const currentState = usePlayerStore.getState();
-          if (media.length > 0) {
-            const pairedPlaylist = media.map((m: string) => {
-              const base = m.split(/[\\/]/).pop()?.split('.').slice(0, -1).join('.') || '';
-              const attachedSubs = subs.filter((s: string) => {
-                const subBase = s.split(/[\\/]/).pop()?.split('.').slice(0, -1).join('.') || '';
-                return subBase.toLowerCase().includes(base.toLowerCase()) || base.toLowerCase().includes(subBase.toLowerCase());
-              });
-              return { path: m, subs: attachedSubs };
-            });
-
-            setPlaylist(pairedPlaylist);
-            const firstTrack = pairedPlaylist[0];
-            await command('loadfile', [firstTrack.path, 'replace']);
-            if (firstTrack.subs && firstTrack.subs.length > 0) {
-              for (const sub of firstTrack.subs) {
-                await command('sub-add', [sub, 'select']);
-              }
+    const setupListeners = async () => {
+      unlistenRefs.play = await listen('lieb-play', async (event: any) => {
+        const { path, subs } = event.payload;
+        window.console.log('>>> [App] RECEIVED lieb-play:', path);
+        if (path) {
+          await command('loadfile', [path, 'replace']);
+          if (subs && subs.length > 0) {
+            for (const sub of subs) {
+              await command('sub-add', [sub, 'select']);
             }
-            await command('set', ['pause', 'no']);
-            currentState.setCurrentTrack(firstTrack.path);
-            currentState.setPlaying(true);
-            
-            for (let i = 1; i < pairedPlaylist.length; i++) {
-              await command('loadfile', [pairedPlaylist[i].path, 'append']);
-            }
-            setShowControls(true);
           }
-        } catch (err) {
-          console.error(' Lieb Player: Drag-drop error:', err);
-        }
-      }
-    });
-
-    const unlistenOpenFile = listen('open-file', async (event: any) => {
-      const filePath = event.payload as string;
-      if (filePath) {
-        setPlaylist([{ path: filePath, subs: [] }]);
-        try {
-          await command('loadfile', [filePath, 'replace']);
           await command('set', ['pause', 'no']);
-          setCurrentTrack(filePath);
-          setPlaying(true);
-        } catch (err) {
-          console.error(' Lieb: Failed to open file:', err);
         }
-      }
-    });
+      });
+
+      unlistenRefs.stop = await listen('lieb-stop', async () => {
+        window.console.log('>>> [App] RECEIVED lieb-stop');
+        await command('stop');
+      });
+
+      unlistenRefs.drop = await listen('tauri://drag-drop', async (event: any) => {
+        const paths = event.payload.paths || event.payload;
+        window.console.log('>>> [App] RECEIVED drag-drop:', paths);
+        
+        if (paths && paths.length > 0) {
+          const SUB_EXTS = ['srt', 'ass', 'sub', 'vtt', 'ssa'];
+          const MEDIA_EXTS = ['mp4', 'mkv', 'avi', 'mov', 'webm', 'm4v', 'flv', 'wmv', '3gp', 'ts', 'ogv', 'vob', 'mp3', 'flac', 'wav', 'm4a', 'ogg', 'opus', 'aac', 'wma'];
+          const subs = paths.filter((p: string) => SUB_EXTS.some(ext => p.toLowerCase().endsWith(`.${ext}`)));
+          const media = paths.filter((p: string) => MEDIA_EXTS.some(ext => p.toLowerCase().endsWith(`.${ext}`)));
+
+          try {
+            const currentState = usePlayerStore.getState();
+            if (media.length > 0) {
+              const pairedPlaylist = media.map((m: string) => {
+                const base = m.split(/[\\/]/).pop()?.split('.').slice(0, -1).join('.') || '';
+                const attachedSubs = subs.filter((s: string) => {
+                  const subBase = s.split(/[\\/]/).pop()?.split('.').slice(0, -1).join('.') || '';
+                  return subBase.toLowerCase().includes(base.toLowerCase()) || base.toLowerCase().includes(subBase.toLowerCase());
+                });
+                return { path: m, subs: attachedSubs };
+              });
+
+              setPlaylist(pairedPlaylist);
+              const firstTrack = pairedPlaylist[0];
+              await command('loadfile', [firstTrack.path, 'replace']);
+              if (firstTrack.subs && firstTrack.subs.length > 0) {
+                for (const sub of firstTrack.subs) {
+                  await command('sub-add', [sub, 'select']);
+                }
+              }
+              await command('set', ['pause', 'no']);
+              currentState.setCurrentTrack(firstTrack.path);
+              currentState.setPlaying(true);
+              
+              for (let i = 1; i < pairedPlaylist.length; i++) {
+                await command('loadfile', [pairedPlaylist[i].path, 'append']);
+              }
+              setShowControls(true);
+            }
+          } catch (err) {
+            window.console.error('>>> [App] Drag-drop error:', err);
+          }
+        }
+      });
+
+      unlistenRefs.openFile = await listen('open-file', async (event: any) => {
+        const filePath = event.payload as string;
+        window.console.log('>>> [App] RECEIVED open-file:', filePath);
+        if (filePath) {
+          setPlaylist([{ path: filePath, subs: [] }]);
+          try {
+            await command('loadfile', [filePath, 'replace']);
+            await command('set', ['pause', 'no']);
+            setCurrentTrack(filePath);
+            setPlaying(true);
+          } catch (err) {
+            window.console.error('>>> [App] Failed to open file:', err);
+          }
+        }
+      });
+    };
+
+    setupListeners();
 
     return () => {
       document.removeEventListener('contextmenu', handleContextMenu);
-      unlistenPlay.then(u => u());
-      unlistenStop.then(u => u());
-      unlistenDrop.then(u => u());
-      unlistenOpenFile.then(u => u());
+      if (unlistenRefs.play) unlistenRefs.play();
+      if (unlistenRefs.stop) unlistenRefs.stop();
+      if (unlistenRefs.drop) unlistenRefs.drop();
+      if (unlistenRefs.openFile) unlistenRefs.openFile();
     };
-  }, [setPlaylist, setShowControls, setPlaying]);
+  }, [setPlaylist, setShowControls, setPlaying, isEngineReady]);
 
   const handleFullscreenToggle = async () => {
     try {

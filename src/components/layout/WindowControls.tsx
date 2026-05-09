@@ -9,24 +9,29 @@ export const WindowControls: React.FC = () => {
   const [isMaximized, setIsMaximized] = React.useState(false);
   const { showControls } = usePlayerStore();
 
-  React.useEffect(() => {
-    const checkMaximized = async () => {
-      setIsMaximized(await appWindow.isMaximized());
-    };
+    const unlistenRef = React.useRef<(() => void) | null>(null);
     
-    checkMaximized();
-    
-    // Listen for resize events to update the state
-    const unlisten = appWindow.onResized(() => {
+    React.useEffect(() => {
+      const checkMaximized = async () => {
+        try {
+          setIsMaximized(await appWindow.isMaximized());
+        } catch (e) {
+          window.console.error('>>> [WindowControls] Error checking maximize state:', e);
+        }
+      };
+      
       checkMaximized();
-    });
+      
+      appWindow.onResized(() => {
+        checkMaximized();
+      }).then(u => {
+        unlistenRef.current = u;
+      });
 
-    return () => {
-      unlisten.then(u => {
-        if (typeof u === 'function') u();
-      }).catch(() => {});
-    };
-  }, [appWindow]);
+      return () => {
+        if (unlistenRef.current) unlistenRef.current();
+      };
+    }, [appWindow]);
 
   const handleMinimize = () => appWindow.minimize();
   const handleToggleMaximize = () => appWindow.toggleMaximize();

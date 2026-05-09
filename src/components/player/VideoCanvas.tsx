@@ -121,6 +121,7 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
 
     const setupEngine = async () => {
       try {
+        console.log('Lieb Player: Initializing MPV Engine...');
         const state = usePlayerStore.getState();
         const args = [
           state.hwAcceleration ? '--hwdec=auto-safe' : '--hwdec=no',
@@ -158,6 +159,7 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
           args,
           observedProperties: OBSERVED_PROPERTIES,
         });
+        console.log('Lieb Player: Engine Core Ready');
 
         // Set engine ready before applying props
         usePlayerStore.getState().setEngineReady(true);
@@ -254,8 +256,9 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
           // Only reload if we are currently playing a network stream
           if (s.currentTrack?.startsWith('http')) {
             const currentPos = s.currentTime;
+            console.log(`Lieb Player: Quality Switch -> ${quality}p (Seeking to ${currentPos}s)`);
             // Reload the file at the exact current position to switch quality
-            await command('loadfile', [s.currentTrack, 'replace', 0, `start=${currentPos}`]);
+            await command('loadfile', [s.currentTrack, 'replace', `start=${currentPos}`]);
             
             // If it was playing, make sure it continues playing
             if (s.isPlaying) {
