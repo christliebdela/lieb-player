@@ -150,7 +150,7 @@ function MainPlayer() {
     metadata, duration, setPlaylist, volume, isMuted, 
     showVolumeOSD, accentColor,
     isFullscreen, setFullscreen, setPlaying, setShowControls, isPlaying, showControls,
-    isBlocking, setCurrentTrack, isEngineReady, isBuffering
+    isBlocking, currentTrack, setCurrentTrack, isEngineReady, isBuffering
   } = usePlayerStore();
   const { t } = useTranslation();
   const hasMedia = duration > 0;
@@ -366,7 +366,7 @@ function MainPlayer() {
                 }}
               />
               <p className="mt-4 text-[10px] font-bold uppercase tracking-[0.4em] text-accent/60">
-                Initializing Stream
+                {currentTrack?.startsWith('http') ? 'Initializing Stream' : 'Loading Media'}
               </p>
             </div>
           </motion.div>
