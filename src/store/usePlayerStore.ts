@@ -44,6 +44,7 @@ interface PlayerState {
   customPresets: string[];
   isBlocking: boolean;
   seekInterval: number;
+  hasSubtitles: boolean;
   
   // Actions
   setBlocking: (blocking: boolean) => void;
@@ -80,6 +81,7 @@ interface PlayerState {
   setAppLanguage: (lang: 'English' | 'French' | 'Spanish') => void;
   setMetadata: (metadata: Partial<Metadata>) => void;
   setPersistLibrary: (persist: boolean) => void;
+  setHasSubtitles: (has: boolean) => void;
   aspectRatio: number;
   setAspectRatio: (ratio: number) => void;
   setTheme: (theme: 'midnight' | 'daylight' | 'aura' | 'sakura') => void;
@@ -124,6 +126,7 @@ export const usePlayerStore = create<PlayerState>()(
       customPresets: [],
       isBlocking: false,
       seekInterval: 10,
+      hasSubtitles: false,
       metadata: {
         title: '',
         description: '',
@@ -205,6 +208,7 @@ export const usePlayerStore = create<PlayerState>()(
       setBlocking: (blocking) => set({ isBlocking: blocking }),
       setSeekInterval: (interval) => set({ seekInterval: interval }),
       setPersistLibrary: (persist) => set({ persistLibrary: persist }),
+      setHasSubtitles: (has) => set({ hasSubtitles: has }),
     }),
     {
       name: 'lieb-player-storage',

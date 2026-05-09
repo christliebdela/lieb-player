@@ -358,6 +358,11 @@ export const MainControls: React.FC = () => {
                 <button 
                   disabled={!hasMedia}
                   onClick={async () => {
+                    const state = usePlayerStore.getState();
+                    if (!state.hasSubtitles) {
+                      showActionOSD(t('no.captions'), 'subtitles');
+                      return;
+                    }
                     const next = !subsEnabled;
                     setSubsEnabled(next);
                     showActionOSD(next ? t('captions.on') : t('captions.off'), 'subtitles');

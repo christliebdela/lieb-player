@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Sliders, Monitor, Keyboard, Info, ExternalLink, Activity, Palette, FastForward } from 'lucide-react';
+import { X, Sliders, Monitor, Keyboard, Info, ExternalLink, Activity, Palette, FastForward, Wrench, Trash2, RotateCcw } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { useTranslation } from '../../i18n';
 import { motion, AnimatePresence } from 'framer-motion';
 import { setProperty } from 'tauri-plugin-mpv-api';
 import { getCurrentWindow } from '@tauri-apps/api/window';
+import { showActionOSD } from '../../utils/osd';
 
 const isMainWindow = () => getCurrentWindow().label === 'main';
 
-type Tab = 'general' | 'interface' | 'video' | 'audio' | 'equalizer' | 'shortcuts' | 'about';
+type Tab = 'general' | 'interface' | 'video' | 'audio' | 'equalizer' | 'shortcuts' | 'about' | 'maintenance';
 
 const BANDS = [
   { freq: '31', label: '31' },
@@ -117,11 +118,13 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
     appLanguage, setAppLanguage,
     theme, setTheme,
     customPresets, addCustomPreset, removeCustomPreset,
-    seekInterval, setSeekInterval
+    seekInterval, setSeekInterval,
+    clearPlaylist
   } = usePlayerStore();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>('general');
   const [showPicker, setShowPicker] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   if (!isSettingsOpen && !standalone) return null;
 
@@ -139,6 +142,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
     { id: 'video', label: t('video'), icon: Monitor },
     { id: 'equalizer', label: t('equalizer'), icon: Activity },
     { id: 'shortcuts', label: t('shortcuts'), icon: Keyboard },
+    { id: 'maintenance', label: t('maintenance'), icon: Wrench },
     { id: 'about', label: t('about'), icon: Info },
   ];
 
@@ -192,7 +196,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
 
   // The inner panel that contains sidebar + content
   const panel = (
-    <div className={`bg-background overflow-hidden flex ${
+    <div className={`bg-background overflow-hidden flex relative ${
       standalone 
         ? 'w-full h-screen' 
         : 'w-full max-w-[780px] h-[520px] rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:shadow-[0_0_40px_rgba(0,0,0,0.3)] border border-border-subtle'
@@ -244,7 +248,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                 </button>
               </header>
 
-              <div className="flex-1 overflow-y-auto px-6 py-5 custom-scrollbar">
+              <div className="flex-1 overflow-y-auto px-6 py-5 custom-scrollbar relative">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={activeTab}
@@ -254,7 +258,6 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                     transition={{ duration: 0.15 }}
                     className="h-full"
                   >
-                    {/* ... (rest of the content remains same) */}
                     {activeTab === 'general' && (
                       <div className="space-y-8">
                         <div className="divide-y divide-white/[0.04]">
@@ -305,7 +308,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                             </div>
                           </SettingCard>
                         </div>
-
+                        <div className="h-5" /> {/* Bottom Padding */}
                       </div>
                     )}
 
@@ -582,7 +585,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
 
 
                     {activeTab === 'equalizer' && (
-                      <div className="h-full flex flex-col gap-5">
+                      <div className="space-y-8">
                         <div className="flex flex-wrap gap-1.5">
                           {EQ_PRESETS.map((preset) => {
                             const isActive = JSON.stringify(equalizer) === JSON.stringify(preset.bands);
@@ -640,7 +643,8 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                     )}
 
                     {activeTab === 'shortcuts' && (
-                      <div className="divide-y divide-border-subtle/30">
+                      <div className="space-y-8">
+                        <div className="divide-y divide-border-subtle/30">
                         {shortcuts.map((s, idx) => (
                           <div key={idx} className="flex items-center justify-between py-3">
                             <span className="text-[12px] text-muted font-medium">{s.desc}</span>
@@ -649,11 +653,12 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                             </kbd>
                           </div>
                         ))}
+                        </div>
                       </div>
                     )}
 
                     {activeTab === 'about' && (
-                      <div className="h-full flex flex-col justify-center">
+                      <div className="space-y-8">
                         <div className="flex items-start gap-8 mb-8">
                           <div className="w-16 h-16 flex-shrink-0">
                             <img src="/lieb-player-icon.png" alt="Lieb Player" className="w-full h-full object-contain" />
@@ -710,10 +715,91 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                         </div>
                       </div>
                     )}
+
+                    {activeTab === 'maintenance' && (
+                      <div className="space-y-8">
+                        <div className="divide-y divide-white/[0.04]">
+                          <div className="py-4 flex items-center justify-between group">
+                            <div className="flex items-center gap-4">
+                              <div className="w-10 h-10 rounded-xl bg-foreground/[0.03] border border-border-subtle flex items-center justify-center text-muted group-hover:text-red-400 group-hover:bg-red-400/5 transition-all">
+                                <Trash2 size={18} />
+                              </div>
+                              <div className="space-y-0.5">
+                                <h4 className="text-[13px] font-medium text-foreground/90">{t('clear.cache')}</h4>
+                                <p className="text-[11px] text-muted leading-relaxed font-medium">{t('clear.cache.desc')}</p>
+                              </div>
+                            </div>
+                            <button 
+                              onClick={() => {
+                                clearPlaylist();
+                                showActionOSD(t('cache.cleared'), 'trash');
+                              }}
+                              className="px-4 py-2 rounded-lg bg-foreground/[0.04] hover:bg-red-500/10 text-muted hover:text-red-400 text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer border border-border-subtle hover:border-red-500/20"
+                            >
+                              {t('clear.cache')}
+                            </button>
+                          </div>
+
+                          <div className="py-4 flex items-center justify-between group">
+                            <div className="flex items-center gap-4">
+                              <div className="w-10 h-10 rounded-xl bg-foreground/[0.03] border border-border-subtle flex items-center justify-center text-muted group-hover:text-red-500 group-hover:bg-red-400/5 transition-all">
+                                <RotateCcw size={18} />
+                              </div>
+                              <div className="space-y-0.5">
+                                <h4 className="text-[13px] font-medium text-foreground/90">{t('reset.app')}</h4>
+                                <p className="text-[11px] text-muted leading-relaxed font-medium">{t('reset.app.desc')}</p>
+                              </div>
+                            </div>
+                            <button 
+                              onClick={() => setShowConfirm(true)}
+                              className="px-4 py-2 rounded-lg bg-red-500 text-white text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer shadow-lg shadow-red-500/10 hover:brightness-110"
+                            >
+                              {t('reset.app')}
+                            </button>
+                          </div>
+                        </div>
+                        <div className="h-5" /> {/* Bottom Padding */}
+                      </div>
+                    )}
                   </motion.div>
                 </AnimatePresence>
               </div>
             </div>
+
+            <AnimatePresence>
+              {showConfirm && (
+                <div className="absolute inset-0 z-[300] flex items-center justify-center p-8 bg-black/40 backdrop-blur-md">
+                  <motion.div 
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.9, opacity: 0 }}
+                    className="w-full max-w-[320px] bg-background border border-border-subtle rounded-2xl p-6 shadow-2xl"
+                  >
+                    <h3 className="text-[14px] font-black text-foreground uppercase tracking-tighter mb-2">{t('reset.app')}</h3>
+                    <p className="text-[11px] text-muted leading-relaxed mb-6">
+                      {t('reset.app.desc')}
+                    </p>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => setShowConfirm(false)}
+                        className="flex-1 py-2.5 rounded-xl bg-foreground/[0.04] hover:bg-foreground/[0.08] text-muted text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer border border-border-subtle"
+                      >
+                        {t('cancel')}
+                      </button>
+                      <button 
+                        onClick={() => {
+                          localStorage.clear();
+                          window.location.reload();
+                        }}
+                        className="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer shadow-lg shadow-red-500/20 hover:brightness-110"
+                      >
+                        {t('reset.app')}
+                      </button>
+                    </div>
+                  </motion.div>
+                </div>
+              )}
+            </AnimatePresence>
     </div>
   );
 

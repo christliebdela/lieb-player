@@ -10,6 +10,7 @@ const translations = {
     'equalizer': 'Equalizer',
     'shortcuts': 'Shortcuts',
     'about': 'About',
+    'maintenance': 'Maintenance',
     'hardware.accel': 'Hardware Acceleration',
     'hardware.accel.desc': 'Use GPU for video decoding',
     'remember.pos': 'Remember Position',
@@ -29,6 +30,12 @@ const translations = {
     'hex': 'Hex',
     'spectrum': 'Spectrum',
     'luminance': 'Luminance',
+    'clear.cache': 'Clear Cache',
+    'clear.cache.desc': 'Remove playback history and temporary data',
+    'reset.app': 'Reset App',
+    'reset.app.desc': 'Wipe all settings and restart',
+    'cache.cleared': 'Cache Cleared',
+    'cancel': 'Cancel',
     
     // Interface
     'theme': 'Theme',
@@ -99,6 +106,7 @@ const translations = {
     'pause': 'Pause',
     'seek.fwd': '+10 Seconds',
     'seek.bwd': '-10 Seconds',
+    'no.captions': 'No Captions Available',
   },
   French: {
     'drop.media': 'Déposez un média pour jouer',
@@ -108,6 +116,7 @@ const translations = {
     'equalizer': 'Égaliseur',
     'shortcuts': 'Raccourcis',
     'about': 'À propos',
+    'maintenance': 'Maintenance',
     'hardware.accel': 'Accélération matérielle',
     'hardware.accel.desc': 'Utiliser le GPU pour décoder',
     'remember.pos': 'Mémoriser la position',
@@ -127,6 +136,12 @@ const translations = {
     'hex': 'Hex',
     'spectrum': 'Spectre',
     'luminance': 'Luminance',
+    'clear.cache': 'Vider le cache',
+    'clear.cache.desc': 'Supprimer l\'historique et les données temporaires',
+    'reset.app': 'Réinitialiser l\'app',
+    'reset.app.desc': 'Effacer tous les paramètres et redémarrer',
+    'cache.cleared': 'Cache vidé',
+    'cancel': 'Annuler',
     
     'theme': 'Thème',
     'theme.desc': 'Apparence de l\'application',
@@ -190,6 +205,7 @@ const translations = {
     'pause': 'Pause',
     'seek.fwd': '+10 Secondes',
     'seek.bwd': '-10 Secondes',
+    'no.captions': 'Aucun sous-titre disponible',
   },
   Spanish: {
     'drop.media': 'Suelta un archivo para jugar',
@@ -199,6 +215,7 @@ const translations = {
     'equalizer': 'Ecualizador',
     'shortcuts': 'Atajos',
     'about': 'Acerca de',
+    'maintenance': 'Mantenimiento',
     'hardware.accel': 'Aceleración por hardware',
     'hardware.accel.desc': 'Usar GPU para decodificar',
     'remember.pos': 'Recordar posición',
@@ -218,6 +235,12 @@ const translations = {
     'hex': 'Hex',
     'spectrum': 'Espectro',
     'luminance': 'Luminancia',
+    'clear.cache': 'Limpiar caché',
+    'clear.cache.desc': 'Eliminar historial y datos temporales',
+    'reset.app': 'Reiniciar app',
+    'reset.app.desc': 'Borrar ajustes y reiniciar',
+    'cache.cleared': 'Caché limpia',
+    'cancel': 'Cancelar',
     
     'theme': 'Tema',
     'theme.desc': 'Apariencia de la aplicación',
@@ -281,6 +304,7 @@ const translations = {
     'pause': 'Pausa',
     'seek.fwd': '+10 Segundos',
     'seek.bwd': '-10 Segundos',
+    'no.captions': 'No hay subtítulos disponibles',
   }
 };
 

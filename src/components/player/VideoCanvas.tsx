@@ -7,7 +7,8 @@ import { useTranslation } from '../../i18n';
 
 const OBSERVED_PROPERTIES = [
   'pause', 'time-pos', 'duration', 'volume', 'mute', 'filename', 'path',
-  'video-params/w', 'video-params/h', 'dwidth', 'dheight', 'eof-reached'
+  'video-params/w', 'video-params/h', 'dwidth', 'dheight', 'eof-reached',
+  'track-list'
 ] as const;
 
 export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onToggleFullscreen }) => {
@@ -158,6 +159,14 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
               case 'mute': setMuted(data as boolean); break;
               case 'filename': if (data) setMetadata({ title: String(data) }); break;
               case 'path': if (data) usePlayerStore.getState().setCurrentTrack(String(data)); break;
+              case 'track-list': {
+                const tracks = data as any[];
+                if (Array.isArray(tracks)) {
+                  const hasSubs = tracks.some(t => t.type === 'sub');
+                  usePlayerStore.getState().setHasSubtitles(hasSubs);
+                }
+                break;
+              }
               case 'video-params/w':
               case 'dwidth':
                 if (typeof data === 'number' && data > 0) {
