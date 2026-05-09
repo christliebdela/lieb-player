@@ -52,8 +52,8 @@
         "displayLanguageSelector": false,
         "installerIcon": "icons/icon.ico",
         "uninstallerIcon": "icons/icon.ico",
-        "headerImage": "icons/icon.ico",
-        "sidebarImage": "icons/icon.ico"
+        "headerImage": null,
+        "sidebarImage": null
       }
     },
     "fileAssociations": [
