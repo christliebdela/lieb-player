@@ -411,7 +411,10 @@ export const MainControls: React.FC = () => {
       <Tooltip content="Screenshot">
         <button 
           disabled={!hasMedia}
-          onClick={async () => {
+          onClick={async (e) => {
+            const btn = e.currentTarget;
+            btn.classList.add('text-accent');
+            setTimeout(() => btn.classList.remove('text-accent'), 300);
             try {
               await command('screenshot');
               showActionOSD('Screenshot Saved', 'camera');
@@ -419,7 +422,7 @@ export const MainControls: React.FC = () => {
               console.error('Screenshot failed:', err);
             }
           }}
-          className={`transition-all cursor-pointer group ${hasMedia ? 'text-muted hover:text-accent' : 'text-muted/40 cursor-default'}`}
+          className={`transition-all duration-300 cursor-pointer group ${hasMedia ? 'text-muted hover:text-accent' : 'text-muted/40 cursor-default'}`}
         >
           <Camera size={18} className="group-hover:scale-110 transition-transform" />
         </button>

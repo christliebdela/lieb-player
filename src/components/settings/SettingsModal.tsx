@@ -100,9 +100,12 @@ const SettingCard = ({ label, description, children }: {
   </div>
 );
 
-/* ─── Quality Slider ─── */
+/* ─── Quality Slider (Rectangle Strip) ─── */
 const QualitySlider = ({ value, onChange }: { value: string, onChange: (v: string) => void }) => {
   const levels = [
+    { val: '144', label: '144p' },
+    { val: '240', label: '240p' },
+    { val: '360', label: '360p' },
     { val: '480', label: '480p' },
     { val: '720', label: '720p' },
     { val: '1080', label: '1080p' },
@@ -111,51 +114,47 @@ const QualitySlider = ({ value, onChange }: { value: string, onChange: (v: strin
   ];
   
   const currentIndex = levels.findIndex(l => l.val === value);
-  const safeIndex = currentIndex === -1 ? 2 : currentIndex;
+  const safeIndex = currentIndex === -1 ? 5 : currentIndex;
 
   return (
-    <div className="w-full max-w-[280px] pt-4 pb-8 px-4">
-      <div className="relative h-1 bg-foreground/[0.05] rounded-full">
-        {/* Track Highlight */}
-        <div 
-          className="absolute h-full bg-accent rounded-full transition-all duration-500 ease-out"
-          style={{ width: `${(safeIndex / (levels.length - 1)) * 100}%` }}
-        />
-        
-        {/* Snap Points */}
-        <div className="absolute inset-0 flex justify-between">
-          {levels.map((level, idx) => (
-            <button
-              key={level.val}
-              onClick={() => onChange(level.val)}
-              className="relative flex flex-col items-center group"
-              style={{ width: '0' }}
-            >
-              <div className={`w-1.5 h-1.5 rounded-full -translate-y-[1px] transition-all duration-300 ${
-                idx <= safeIndex ? 'bg-accent' : 'bg-foreground/10'
-              } group-hover:scale-150`} />
-              
-              <div className={`absolute -bottom-6 flex flex-col items-center transition-all duration-300 ${
-                idx === safeIndex ? 'text-accent translate-y-0 opacity-100' : 'text-muted/40 translate-y-1 opacity-100'
-              }`}>
-                <span className="text-[9px] font-black uppercase tracking-widest whitespace-nowrap">
+    <div className="w-full pt-4 pb-12">
+      <div className="flex gap-1.5 h-3.5 w-full relative">
+        {levels.map((level, idx) => (
+          <button
+            key={level.val}
+            onClick={() => onChange(level.val)}
+            className="flex-1 relative group cursor-pointer"
+          >
+            {/* Segment Rectangle */}
+            <div 
+              className={`h-full w-full rounded-sm transition-all duration-500 ease-out ${
+                idx <= safeIndex 
+                  ? 'bg-accent shadow-[0_0_20px_rgba(var(--accent-rgb),0.2)]' 
+                  : 'bg-foreground/[0.05] hover:bg-foreground/[0.1]'
+              }`} 
+            />
+            
+            {/* Active Label (Only for selected) */}
+            {idx === safeIndex && (
+              <motion.div 
+                layoutId="active-quality"
+                className="absolute top-full mt-4 left-1/2 -translate-x-1/2 flex flex-col items-center"
+              >
+                <span className="text-[10px] font-black text-accent uppercase tracking-[0.2em] whitespace-nowrap">
                   {level.label}
                 </span>
-                {idx === safeIndex && (
-                  <motion.div layoutId="quality-dot" className="w-1 h-1 rounded-full bg-accent mt-1" />
-                )}
-              </div>
-            </button>
-          ))}
-        </div>
+                <div className="w-1.5 h-1.5 rounded-full bg-accent mt-1 shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)]" />
+              </motion.div>
+            )}
 
-        {/* Invisible range for dragging */}
-        <input 
-          type="range" min="0" max="4" step="1"
-          value={safeIndex}
-          onChange={(e) => onChange(levels[parseInt(e.target.value)].val)}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
-        />
+            {/* Hover Tooltip */}
+            <div className="absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none -translate-y-1 group-hover:translate-y-0">
+              <div className="px-2 py-1 rounded bg-foreground text-background text-[8px] font-black uppercase tracking-tighter shadow-xl">
+                {level.label}
+              </div>
+            </div>
+          </button>
+        ))}
       </div>
     </div>
   );
@@ -179,6 +178,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
     theme, setTheme,
     customPresets, addCustomPreset, removeCustomPreset,
     seekInterval, setSeekInterval,
+    streamingQuality, setStreamingQuality,
     clearPlaylist
   } = usePlayerStore();
   const { t } = useTranslation();
@@ -197,28 +197,28 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
   };
 
   const tabs = [
-    { id: 'general', label: t('general'), icon: Sliders },
-    { id: 'interface', label: t('interface'), icon: Palette },
-    { id: 'video', label: t('video'), icon: Monitor },
-    { id: 'equalizer', label: t('equalizer'), icon: Activity },
-    { id: 'shortcuts', label: t('shortcuts'), icon: Keyboard },
-    { id: 'maintenance', label: t('maintenance'), icon: Wrench },
-    { id: 'about', label: t('about'), icon: Info },
+    { id: 'general', label: t('general' as any), icon: Sliders },
+    { id: 'interface', label: t('interface' as any), icon: Palette },
+    { id: 'video', label: t('video' as any), icon: Monitor },
+    { id: 'equalizer', label: t('equalizer' as any), icon: Activity },
+    { id: 'shortcuts', label: t('shortcuts' as any), icon: Keyboard },
+    { id: 'maintenance', label: t('maintenance' as any), icon: Wrench },
+    { id: 'about', label: t('about' as any), icon: Info },
   ];
 
   const shortcuts = [
-    { key: 'Space', desc: t('sc.play_pause') },
-    { key: 'F', desc: t('sc.fullscreen') },
-    { key: 'M', desc: t('sc.mute') },
-    { key: 'L', desc: t('sc.library') },
-    { key: 'S', desc: t('sc.settings') },
-    { key: 'N', desc: t('sc.next') },
-    { key: 'P', desc: t('sc.prev') },
-    { key: '→', desc: t('sc.seek_fwd') },
-    { key: '←', desc: t('sc.seek_bwd') },
-    { key: '↑ / ↓', desc: t('sc.volume') },
-    { key: 'C', desc: t('sc.subtitles') },
-    { key: 'Esc', desc: t('sc.exit') },
+    { key: 'Space', desc: t('sc.play_pause' as any) },
+    { key: 'F', desc: t('sc.fullscreen' as any) },
+    { key: 'M', desc: t('sc.mute' as any) },
+    { key: 'L', desc: t('sc.library' as any) },
+    { key: 'S', desc: t('sc.settings' as any) },
+    { key: 'N', desc: t('sc.next' as any) },
+    { key: 'P', desc: t('sc.prev' as any) },
+    { key: '→', desc: t('sc.seek_fwd' as any) },
+    { key: '←', desc: t('sc.seek_bwd' as any) },
+    { key: '↑ / ↓', desc: t('sc.volume' as any) },
+    { key: 'C', desc: t('sc.subtitles' as any) },
+    { key: 'Esc', desc: t('sc.exit' as any) },
   ];
 
   const updateEqualizer = async (index: number, value: number) => {
@@ -360,7 +360,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                           <div className="py-6 border-t border-border-subtle/30">
                             <div className="flex items-center gap-2 mb-5">
                               <Palette size={13} className="text-muted/60" />
-                              <span className="text-[11px] font-semibold uppercase tracking-widest text-muted">{t('accent.color')}</span>
+                              <span className="text-[11px] font-semibold uppercase tracking-widest text-muted">{t('accent.color' as any)}</span>
                             </div>
                             
                             <div className="grid grid-cols-6 gap-2 mb-6">
@@ -403,7 +403,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                               ))}
                               <button onClick={() => setShowPicker(true)} className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all border cursor-pointer ${showPicker ? 'bg-accent/10 border-accent/20' : 'bg-transparent border-border-subtle hover:bg-foreground/[0.04]'}`}>
                                 <div className="w-4 h-4 rounded-full shrink-0 ring-1 ring-foreground/10 bg-[conic-gradient(from_0deg,#ff0000,#ffff00,#00ff00,#00ffff,#0000ff,#ff00ff,#ff0000)]" />
-                                <span className="text-[10px] font-bold tracking-tight text-muted group-hover:text-foreground">{t('mixer')}</span>
+                                <span className="text-[10px] font-bold tracking-tight text-muted group-hover:text-foreground">{t('mixer' as any)}</span>
                               </button>
                             </div>
 
@@ -415,7 +415,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                                     <div className="flex items-center justify-between mb-4 px-1">
                                       <div className="flex items-center gap-2.5">
                                         <div className="w-1.5 h-1.5 rounded-full bg-accent" />
-                                        <h3 className="text-[13px] font-semibold text-foreground/90 capitalize">{t('color.mixer')}</h3>
+                                        <h3 className="text-[13px] font-semibold text-foreground/90 capitalize">{t('color.mixer' as any)}</h3>
                                       </div>
                                       <button onClick={() => setShowPicker(false)} className="text-muted hover:text-foreground p-1"><X size={14} /></button>
                                     </div>
@@ -480,7 +480,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                           <SettingCard label={t('interpolation' as any)} description={t('interpolation.desc' as any)}>
                             <Toggle checked={interpolation} onChange={setInterpolation} />
                           </SettingCard>
-                          <SettingCard label={t('deband')} description={t('deband.desc')}>
+                          <SettingCard label={t('deband' as any)} description={t('deband.desc' as any)}>
                             <Toggle checked={deband} onChange={setDeband} />
                           </SettingCard>
 
@@ -489,18 +489,15 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                               <Globe size={13} className="text-accent" />
                               <span className="text-[11px] font-bold uppercase tracking-widest text-accent">Online Streaming</span>
                             </div>
-                            <div className="flex items-center justify-between group py-2 mb-4">
+                            <div className="flex flex-col gap-4 py-2">
                               <div className="space-y-0.5">
                                 <h4 className="text-[13px] font-medium text-foreground/90">Streaming Quality</h4>
                                 <p className="text-[11px] text-muted leading-relaxed font-medium">Preferred resolution for web videos (YouTube/Twitch)</p>
                               </div>
-                            </div>
-                            <div className="flex justify-center px-4">
                               <QualitySlider 
-                                value={(usePlayerStore.getState() as any).streamingQuality || '1080'}
-                                onChange={async (val) => {
-                                  await setProperty('ytdl-format', `bestvideo[height<=${val}]+bestaudio/best`);
-                                  usePlayerStore.setState({ streamingQuality: val } as any);
+                                value={streamingQuality}
+                                onChange={(val) => {
+                                  setStreamingQuality(val);
                                 }}
                               />
                             </div>
@@ -515,7 +512,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                           {EQ_PRESETS.map((preset) => (
                             <button key={preset.name} onClick={() => applyPreset(preset.bands)} className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all cursor-pointer ${JSON.stringify(equalizer) === JSON.stringify(preset.bands) ? 'bg-accent text-white' : 'bg-foreground/[0.04] text-muted hover:bg-foreground/[0.08] hover:text-foreground'}`}>{preset.name}</button>
                           ))}
-                          <button onClick={resetEqualizer} className="px-3 py-1.5 rounded-lg text-[11px] font-medium text-muted hover:text-foreground transition-colors cursor-pointer ml-auto">{t('reset')}</button>
+                          <button onClick={resetEqualizer} className="px-3 py-1.5 rounded-lg text-[11px] font-medium text-muted hover:text-foreground transition-colors cursor-pointer ml-auto">{t('reset' as any)}</button>
                         </div>
                         <div className="flex-1 flex items-stretch gap-1 min-h-[220px] p-4 rounded-xl bg-foreground/[0.01] border border-border-subtle">
                           {BANDS.map((band, idx) => (
@@ -553,17 +550,17 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                           <div className="w-16 h-16 flex-shrink-0"><img src="/lieb-player-icon.png" alt="Lieb Player" className="w-full h-full object-contain" /></div>
                           <div className="flex-1 pt-1">
                             <div className="flex items-center gap-3 mb-1"><h2 className="text-xl font-black text-foreground tracking-tighter uppercase">Lieb</h2><span className="px-1.5 py-0.5 rounded-[2px] bg-foreground text-background text-[8px] font-black tracking-[0.2em] uppercase">Alpha 0.1</span></div>
-                            <p className="text-[10px] text-muted font-bold uppercase tracking-[0.3em]">{t('about.subtitle')}</p>
+                            <p className="text-[10px] text-muted font-bold uppercase tracking-[0.3em]">{t('about.subtitle' as any)}</p>
                           </div>
                         </div>
                         <div className="mb-10 space-y-6">
-                          <p className="text-[13px] text-foreground/80 leading-[1.8] font-normal max-w-xl">{t('about.story')}</p>
-                          <p className="text-[12px] text-muted leading-[1.8] font-normal max-w-xl">{t('about.tech')}</p>
+                          <p className="text-[13px] text-foreground/80 leading-[1.8] font-normal max-w-xl">{t('about.story' as any)}</p>
+                          <p className="text-[12px] text-muted leading-[1.8] font-normal max-w-xl">{t('about.tech' as any)}</p>
                         </div>
                         <div className="grid grid-cols-3 gap-8 pt-6 border-t border-white/[0.04]">
-                          <div><p className="text-[9px] text-muted font-black uppercase tracking-[0.2em] mb-2">{t('designer')}</p><p className="text-[11px] font-bold text-foreground">Christlieb Dela</p></div>
+                          <div><p className="text-[9px] text-muted font-black uppercase tracking-[0.2em] mb-2">{t('designer' as any)}</p><p className="text-[11px] font-bold text-foreground">Christlieb Dela</p></div>
                           <div><p className="text-[9px] text-muted font-black uppercase tracking-[0.2em] mb-2">{t('repository' as any)}</p><a href="https://github.com/christliebdela/lieb-player" target="_blank" className="text-[11px] font-bold text-foreground hover:text-accent transition-colors flex items-center gap-1.5">{t('source' as any)} <ExternalLink size={10} strokeWidth={3} /></a></div>
-                          <div><p className="text-[9px] text-muted font-black uppercase tracking-[0.2em] mb-2">{t('feedback')}</p><a href="https://github.com/christliebdela/lieb-player/issues" target="_blank" className="text-[11px] font-bold text-accent hover:underline decoration-2 underline-offset-4">{t('report.issue')}</a></div>
+                          <div><p className="text-[9px] text-muted font-black uppercase tracking-[0.2em] mb-2">{t('feedback' as any)}</p><a href="https://github.com/christliebdela/lieb-player/issues" target="_blank" className="text-[11px] font-bold text-accent hover:underline decoration-2 underline-offset-4">{t('report.issue' as any)}</a></div>
                         </div>
                       </div>
                     )}
@@ -574,16 +571,16 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                           <div className="py-4 flex items-center justify-between group">
                             <div className="flex items-center gap-4">
                               <div className="w-10 h-10 rounded-xl bg-foreground/[0.03] border border-border-subtle flex items-center justify-center text-muted group-hover:text-red-400 group-hover:bg-red-400/5 transition-all"><Trash2 size={18} /></div>
-                              <div className="space-y-0.5"><h4 className="text-[13px] font-medium text-foreground/90">{t('clear.cache')}</h4><p className="text-[11px] text-muted leading-relaxed font-medium">{t('clear.cache.desc')}</p></div>
+                              <div className="space-y-0.5"><h4 className="text-[13px] font-medium text-foreground/90">{t('clear.cache' as any)}</h4><p className="text-[11px] text-muted leading-relaxed font-medium">{t('clear.cache.desc' as any)}</p></div>
                             </div>
-                            <button onClick={() => { clearPlaylist(); showActionOSD(t('cache.cleared'), 'trash'); }} className="px-4 py-2 rounded-lg bg-foreground/[0.04] hover:bg-red-500/10 text-muted hover:text-red-400 text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer border border-border-subtle hover:border-red-500/20">{t('clear.cache')}</button>
+                            <button onClick={() => { clearPlaylist(); showActionOSD(t('cache.cleared' as any), 'trash'); }} className="px-4 py-2 rounded-lg bg-foreground/[0.04] hover:bg-red-500/10 text-muted hover:text-red-400 text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer border border-border-subtle hover:border-red-500/20">{t('clear.cache' as any)}</button>
                           </div>
                           <div className="py-4 flex items-center justify-between group">
                             <div className="flex items-center gap-4">
                               <div className="w-10 h-10 rounded-xl bg-foreground/[0.03] border border-border-subtle flex items-center justify-center text-muted group-hover:text-red-500 group-hover:bg-red-400/5 transition-all"><RotateCcw size={18} /></div>
-                              <div className="space-y-0.5"><h4 className="text-[13px] font-medium text-foreground/90">{t('reset.app')}</h4><p className="text-[11px] text-muted leading-relaxed font-medium">{t('reset.app.desc')}</p></div>
+                              <div className="space-y-0.5"><h4 className="text-[13px] font-medium text-foreground/90">{t('reset.app' as any)}</h4><p className="text-[11px] text-muted leading-relaxed font-medium">{t('reset.app.desc' as any)}</p></div>
                             </div>
-                            <button onClick={() => setShowConfirm(true)} className="px-4 py-2 rounded-lg bg-red-500 text-white text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer shadow-lg shadow-red-500/10 hover:brightness-110">{t('reset.app')}</button>
+                            <button onClick={() => setShowConfirm(true)} className="px-4 py-2 rounded-lg bg-red-500 text-white text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer shadow-lg shadow-red-500/10 hover:brightness-110">{t('reset.app' as any)}</button>
                           </div>
                         </div>
                       </div>
@@ -597,11 +594,11 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
               {showConfirm && (
                 <div className="absolute inset-0 z-[300] flex items-center justify-center p-8 bg-black/40 backdrop-blur-md">
                   <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="w-full max-w-[320px] bg-background border border-border-subtle rounded-2xl p-6 shadow-2xl">
-                    <h3 className="text-[14px] font-black text-foreground uppercase tracking-tighter mb-2">{t('reset.app')}</h3>
-                    <p className="text-[11px] text-muted leading-relaxed mb-6">{t('reset.app.desc')}</p>
+                    <h3 className="text-[14px] font-black text-foreground uppercase tracking-tighter mb-2">{t('reset.app' as any)}</h3>
+                    <p className="text-[11px] text-muted leading-relaxed mb-6">{t('reset.app.desc' as any)}</p>
                     <div className="flex gap-2">
-                      <button onClick={() => setShowConfirm(false)} className="flex-1 py-2.5 rounded-xl bg-foreground/[0.04] hover:bg-foreground/[0.08] text-muted text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer border border-border-subtle">{t('cancel')}</button>
-                      <button onClick={() => { localStorage.clear(); window.location.reload(); }} className="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer shadow-lg shadow-red-500/20 hover:brightness-110">{t('reset.app')}</button>
+                      <button onClick={() => setShowConfirm(false)} className="flex-1 py-2.5 rounded-xl bg-foreground/[0.04] hover:bg-foreground/[0.08] text-muted text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer border border-border-subtle">{t('cancel' as any)}</button>
+                      <button onClick={() => { localStorage.clear(); window.location.reload(); }} className="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer shadow-lg shadow-red-500/20 hover:brightness-110">{t('reset.app' as any)}</button>
                     </div>
                   </motion.div>
                 </div>

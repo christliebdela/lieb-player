@@ -236,6 +236,34 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
       }
     };
 
+  useEffect(() => {
+    const quality = usePlayerStore.getState().streamingQuality || '1080';
+    setProperty('ytdl-format', `bestvideo[height<=${quality}]+bestaudio/best`)
+      .catch(err => console.error('Lieb Player: Failed to set initial quality:', err));
+  }, []);
+
+  useEffect(() => {
+    const unsub = usePlayerStore.subscribe(
+      (state) => state.streamingQuality,
+      async (quality) => {
+        try {
+          await setProperty('ytdl-format', `bestvideo[height<=${quality}]+bestaudio/best`);
+          if (usePlayerStore.getState().isPlaying) {
+            // Reload the stream to apply quality changes immediately if playing
+            // but only for network streams
+            const track = usePlayerStore.getState().currentTrack;
+            if (track?.startsWith('http')) {
+              await command('loadfile', [track]);
+            }
+          }
+        } catch (err) {
+          console.error('Lieb Player: Failed to switch quality:', err);
+        }
+      }
+    );
+    return unsub;
+  }, []);
+
     const cleanupPromise = setupEngine();
 
     return () => {

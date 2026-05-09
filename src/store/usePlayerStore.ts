@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, subscribeWithSelector } from 'zustand/middleware';
 import { emit } from '@tauri-apps/api/event';
 
 interface Metadata {
@@ -20,6 +20,7 @@ interface PlayerState {
   isSettingsOpen: boolean;
   isLibraryOpen: boolean;
   isSubSearchOpen: boolean;
+  streamingQuality: string;
   isFullscreen: boolean;
   subsEnabled: boolean;
   loopMode: 'off' | 'one' | 'all';
@@ -62,6 +63,7 @@ interface PlayerState {
   setSettingsOpen: (open: boolean) => void;
   setLibraryOpen: (open: boolean) => void;
   setSubSearchOpen: (open: boolean) => void;
+  setStreamingQuality: (quality: string) => void;
   setFullscreen: (full: boolean) => void;
   setSubsEnabled: (enabled: boolean) => void;
   setLoopMode: (mode: 'off' | 'one' | 'all') => void;
@@ -90,8 +92,9 @@ interface PlayerState {
 }
 
 export const usePlayerStore = create<PlayerState>()(
-  persist(
-    (set, get) => ({
+  subscribeWithSelector(
+    persist(
+      (set, get) => ({
       isPlaying: false,
       volume: 100,
       duration: 0,
@@ -102,6 +105,7 @@ export const usePlayerStore = create<PlayerState>()(
       isSettingsOpen: false,
       isLibraryOpen: false,
       isSubSearchOpen: false,
+      streamingQuality: '1080',
       isFullscreen: false,
       subsEnabled: true,
       loopMode: 'off',
@@ -168,6 +172,7 @@ export const usePlayerStore = create<PlayerState>()(
       setSettingsOpen: (open) => set({ isSettingsOpen: open }),
       setLibraryOpen: (open) => set({ isLibraryOpen: open }),
       setSubSearchOpen: (open) => set({ isSubSearchOpen: open }),
+      setStreamingQuality: (quality) => set({ streamingQuality: quality }),
       setFullscreen: (full) => set({ isFullscreen: full }),
       setSubsEnabled: (enabled) => set({ subsEnabled: enabled }),
       setLoopMode: (mode) => set({ loopMode: mode }),
@@ -237,6 +242,7 @@ export const usePlayerStore = create<PlayerState>()(
       }),
     }
   )
+)
 );
 
 // Cross-window synchronization for Tauri webviews

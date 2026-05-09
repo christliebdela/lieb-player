@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { 
   Subtitles, Maximize, PictureInPicture2, 
-  Rewind, FastForward, Repeat, Repeat1, Play, Pause
+  Rewind, FastForward, Repeat, Repeat1, Play, Pause, Camera, Trash2
 } from 'lucide-react';
 
 const getIcon = (iconName: string) => {
@@ -18,6 +18,8 @@ const getIcon = (iconName: string) => {
     case 'repeat-1': return <Repeat1 size={size} strokeWidth={2} />;
     case 'play': return <Play size={size} strokeWidth={2} fill="currentColor" />;
     case 'pause': return <Pause size={size} strokeWidth={2} fill="currentColor" />;
+    case 'camera': return <Camera size={size} strokeWidth={2} />;
+    case 'trash': return <Trash2 size={size} strokeWidth={2} />;
     default: return <Play size={size} strokeWidth={2} />;
   }
 };
