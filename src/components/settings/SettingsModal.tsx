@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Sliders, Monitor, Keyboard, Info, ExternalLink, Activity, Palette, FastForward, Wrench, Trash2, RotateCcw } from 'lucide-react';
+import { X, Sliders, Monitor, Keyboard, Info, ExternalLink, Activity, Palette, Wrench, Trash2, RotateCcw } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { useTranslation } from '../../i18n';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -105,8 +105,6 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
     isSettingsOpen, setSettingsOpen, 
     equalizer, setEqualizer,
     accentColor, setAccentColor,
-    crossfade, setCrossfade,
-    crossfadeDuration, setCrossfadeDuration,
     scrollMode, setScrollMode,
     hwAcceleration, setHwAcceleration,
     rememberPosition, setRememberPosition,
@@ -531,7 +529,16 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                     {activeTab === 'video' && (
                       <div className="space-y-8 pt-2">
                         <div className="divide-y divide-border-subtle/30">
-                          <SettingCard label={t('rendering.backend')} description={t('rendering.backend.desc')}>
+                          <div className="py-4 flex items-center justify-between">
+                            <div className="flex flex-col gap-1">
+                              <div className="flex items-center gap-2">
+                                <h4 className="text-[13px] font-medium text-foreground">{t('rendering.backend')}</h4>
+                                <span className="px-1.5 py-0.5 rounded-[4px] bg-amber-500/10 text-amber-500 text-[8px] font-bold uppercase tracking-wider border border-amber-500/20">
+                                  {t('restart.required')}
+                                </span>
+                              </div>
+                              <p className="text-[10px] text-muted">{t('rendering.backend.desc')}</p>
+                            </div>
                             <SegmentedControl 
                               options={['GPU-Next', 'D3D11', 'Vulkan']}
                               value={renderingBackend === 'gpu-next' ? 'GPU-Next' : renderingBackend === 'd3d11' ? 'D3D11' : 'Vulkan'}
@@ -540,7 +547,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                                 setRenderingBackend(backend);
                               }}
                             />
-                          </SettingCard>
+                          </div>
                           <SettingCard label={t('interpolation')} description={t('interpolation.desc')}>
                             <Toggle checked={interpolation} onChange={setInterpolation} />
                           </SettingCard>
@@ -549,37 +556,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                           </SettingCard>
                         </div>
 
-                        <div className="p-5 rounded-xl bg-foreground/[0.03] border border-border-subtle space-y-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2.5">
-                              <FastForward size={14} className="text-accent" />
-                              <div>
-                                <h4 className="text-[13px] font-medium text-foreground">{t('crossfade')}</h4>
-                                <p className="text-[10px] text-muted mt-0.5">{t('crossfade.desc')}</p>
-                              </div>
-                            </div>
-                            <Toggle checked={crossfade} onChange={setCrossfade} />
-                          </div>
-                          
-                          {crossfade && (
-                            <motion.div 
-                              initial={{ height: 0, opacity: 0 }} 
-                              animate={{ height: 'auto', opacity: 1 }}
-                              className="pt-3 border-t border-border-subtle space-y-3"
-                            >
-                              <div className="flex items-center justify-between text-[11px]">
-                                <span className="text-muted font-medium">{t('duration')}</span>
-                                <span className="text-accent font-semibold font-mono">{crossfadeDuration}s</span>
-                              </div>
-                              <input 
-                                type="range" min="1" max="10" step="0.5"
-                                value={crossfadeDuration}
-                                onChange={(e) => setCrossfadeDuration(parseFloat(e.target.value))}
-                                className="w-full accent-accent bg-foreground/[0.08] h-[3px] rounded-full cursor-pointer appearance-none"
-                              />
-                            </motion.div>
-                          )}
-                        </div>
+
                       </div>
                     )}
 

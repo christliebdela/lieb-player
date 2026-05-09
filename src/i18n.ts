@@ -109,6 +109,7 @@ const translations = {
     'seek.fwd': '+10 Seconds',
     'seek.bwd': '-10 Seconds',
     'no.captions': 'No Captions Available',
+    'restart.required': 'Requires Restart',
   },
   French: {
     'drop.media': 'Déposez un média pour jouer',
@@ -210,6 +211,7 @@ const translations = {
     'seek.fwd': '+10 Secondes',
     'seek.bwd': '-10 Secondes',
     'no.captions': 'Aucun sous-titre disponible',
+    'restart.required': 'Redémarrage Requis',
   },
   Spanish: {
     'drop.media': 'Suelta un archivo para jugar',
@@ -311,6 +313,7 @@ const translations = {
     'seek.fwd': '+10 Segundos',
     'seek.bwd': '-10 Segundos',
     'no.captions': 'No hay subtítulos disponibles',
+    'restart.required': 'Requiere Reinicio',
   }
 };
 

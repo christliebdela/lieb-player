@@ -27,8 +27,6 @@ interface PlayerState {
   actionOSD: { message: string; icon: string } | null;
   equalizer: number[]; // 10 bands: 31, 62, 125, 250, 500, 1k, 2k, 4k, 8k, 16k
   accentColor: string;
-  crossfade: boolean;
-  crossfadeDuration: number;
   scrollMode: 'volume' | 'seek';
   hwAcceleration: boolean;
   rememberPosition: boolean;
@@ -69,8 +67,6 @@ interface PlayerState {
   setActionOSD: (osd: { message: string; icon: string } | null) => void;
   setEqualizer: (bands: number[]) => void;
   setAccentColor: (color: string) => void;
-  setCrossfade: (enabled: boolean) => void;
-  setCrossfadeDuration: (duration: number) => void;
   setScrollMode: (mode: 'volume' | 'seek') => void;
   setHwAcceleration: (enabled: boolean) => void;
   setRememberPosition: (enabled: boolean) => void;
@@ -109,8 +105,6 @@ export const usePlayerStore = create<PlayerState>()(
       actionOSD: null,
       equalizer: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       accentColor: '#6366f1',
-      crossfade: true,
-      crossfadeDuration: 2,
       scrollMode: 'volume',
       hwAcceleration: true,
       rememberPosition: true,
@@ -176,8 +170,6 @@ export const usePlayerStore = create<PlayerState>()(
       setActionOSD: (osd) => set({ actionOSD: osd }),
       setEqualizer: (bands) => set({ equalizer: bands }),
       setAccentColor: (color) => set({ accentColor: color }),
-      setCrossfade: (enabled) => set({ crossfade: enabled }),
-      setCrossfadeDuration: (duration) => set({ crossfadeDuration: duration }),
       setScrollMode: (mode) => set({ scrollMode: mode }),
       setHwAcceleration: (enabled) => set({ hwAcceleration: enabled }),
       setRememberPosition: (enabled) => set({ rememberPosition: enabled }),
@@ -220,8 +212,6 @@ export const usePlayerStore = create<PlayerState>()(
         loopMode: state.loopMode,
         equalizer: state.equalizer,
         accentColor: state.accentColor,
-        crossfade: state.crossfade,
-        crossfadeDuration: state.crossfadeDuration,
         scrollMode: state.scrollMode,
         hwAcceleration: state.hwAcceleration,
         rememberPosition: state.rememberPosition,
