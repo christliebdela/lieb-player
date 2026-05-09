@@ -250,8 +250,17 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
         try {
           await setProperty('ytdl-format', `bestvideo[height<=${quality}]+bestaudio/best`);
           const s = usePlayerStore.getState();
-          if (s.isPlaying && s.currentTrack?.startsWith('http')) {
-            await command('loadfile', [s.currentTrack]);
+          
+          // Only reload if we are currently playing a network stream
+          if (s.currentTrack?.startsWith('http')) {
+            const currentPos = s.currentTime;
+            // Reload the file at the exact current position to switch quality
+            await command('loadfile', [s.currentTrack, 'replace', 0, `start=${currentPos}`]);
+            
+            // If it was playing, make sure it continues playing
+            if (s.isPlaying) {
+              await setProperty('pause', false);
+            }
           }
         } catch (err) {
           console.error('Lieb Player: Quality Switch Error:', err);

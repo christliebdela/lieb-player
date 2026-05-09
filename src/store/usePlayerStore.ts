@@ -243,6 +243,7 @@ export const usePlayerStore = create<PlayerState>()(
         customPresets: state.customPresets,
         seekInterval: state.seekInterval,
         metadata: state.metadata,
+        streamingQuality: state.streamingQuality,
       }),
     }
   )
