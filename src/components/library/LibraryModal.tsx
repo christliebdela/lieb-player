@@ -3,8 +3,8 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Play, Film, Library, Trash2, ListMusic, ChevronRight } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
-import { command, setProperty } from 'tauri-plugin-mpv-api';
-import { listen } from '@tauri-apps/api/event';
+import { listen, emit } from '@tauri-apps/api/event';
+import { showActionOSD } from '../../utils/osd';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { useTranslation } from '../../i18n';
 
@@ -12,7 +12,7 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
   const { 
     isLibraryOpen, setLibraryOpen, 
     playlist, addToPlaylist, removeFromPlaylist, clearPlaylist,
-    currentTrack, setCurrentTrack 
+    currentTrack, setCurrentTrack, setPlaying 
   } = usePlayerStore();
   const { t } = useTranslation();
 
@@ -22,6 +22,7 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
     const unlisten = listen('tauri://drag-drop', (event: any) => {
       const paths = event.payload.paths || event.payload;
       if (paths && paths.length > 0) {
+        // Simple add for drop-on-library-window
         paths.forEach((path: string) => addToPlaylist(path));
       }
     });
@@ -39,12 +40,17 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
     }
   };
 
-  const handlePlayEpisode = async (path: string) => {
+  const handlePlayEpisode = async (track: { path: string; subs: string[] }) => {
     try {
-      await command('loadfile', [path, 'replace']);
-      await setProperty('pause', false);
-      setCurrentTrack(path);
-      setLibraryOpen(false);
+      await emit('lieb-play', { path: track.path, subs: track.subs });
+      setCurrentTrack(track.path);
+      setPlaying(true);
+      showActionOSD(t('play'), 'play');
+      if (standalone) {
+        setTimeout(() => getCurrentWindow().close(), 100);
+      } else {
+        setLibraryOpen(false);
+      }
     } catch (err) {
       console.error('Failed to load episode:', err);
     }
@@ -104,50 +110,57 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
             <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
               <div className="flex flex-col gap-1.5">
                 {playlist.length > 0 ? (
-                  playlist.map((path, index) => (
+                  playlist.map((track, index) => (
                     <motion.div
                       key={index}
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.03 }}
                       className={`group flex items-center gap-4 p-3.5 rounded-xl transition-all border ${
-                        currentTrack === path 
+                        currentTrack === track.path 
                         ? 'bg-accent/5 border-accent/20' 
                         : 'bg-transparent border-transparent hover:bg-foreground/[0.04] hover:border-border-subtle'
                       }`}
                     >
                       <button 
-                        onClick={() => handlePlayEpisode(path)}
+                        onClick={() => handlePlayEpisode(track)}
                         className="flex-1 flex items-center gap-4 min-w-0 cursor-pointer text-left"
                       >
                         <div className="relative w-11 h-11 shrink-0 rounded-lg bg-foreground/[0.08] border border-border-subtle flex items-center justify-center text-muted group-hover:text-accent group-hover:border-accent/20 transition-all">
                           <Film size={20} />
                           <div className="absolute -bottom-1.5 -right-1.5 px-1.5 py-0.5 bg-background rounded-md border border-border-subtle text-[7px] font-black tracking-wider text-muted">
-                            {getFileExtension(path)}
+                            {getFileExtension(track.path)}
                           </div>
                         </div>
                         
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-[13px] text-foreground/80 font-medium truncate group-hover:text-accent transition-colors">
-                            {getFileName(path)}
-                          </h4>
+                          <div className="flex items-center gap-2">
+                            <h4 className="text-[13px] text-foreground/80 font-medium truncate group-hover:text-accent transition-colors">
+                              {getFileName(track.path)}
+                            </h4>
+                            {track.subs.length > 0 && (
+                              <span className="px-1.5 py-0.5 rounded-md bg-accent/10 border border-accent/20 text-accent text-[8px] font-bold">
+                                {track.subs.length} SUBS
+                              </span>
+                            )}
+                          </div>
                           <p className="text-muted text-[10px] mt-0.5 truncate font-mono">
-                            {path}
+                            {track.path}
                           </p>
                         </div>
                       </button>
 
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button 
-                          onClick={() => handlePlayEpisode(path)}
+                          onClick={() => handlePlayEpisode(track)}
                           className="w-8 h-8 rounded-lg bg-accent text-black flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-[0_0_15px_rgba(var(--accent-rgb),0.3)]"
                           title="Play"
                         >
                           <Play size={14} fill="currentColor" />
                         </button>
                         <button 
-                          onClick={() => removeFromPlaylist(path)}
-                          className="w-8 h-8 rounded-lg bg-foreground/[0.08] text-muted flex items-center justify-center hover:bg-red-500/20 hover:text-red-400 transition-all cursor-pointer border border-border-subtle"
+                          onClick={() => removeFromPlaylist(track.path)}
+                          className="w-8 h-8 rounded-lg bg-foreground/[0.04] text-muted hover:text-red-400 hover:bg-red-400/10 flex items-center justify-center transition-all cursor-pointer"
                           title="Remove"
                         >
                           <Trash2 size={14} />

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { command, init, observeProperties, setProperty } from 'tauri-plugin-mpv-api';
 import { getCurrentWindow, PhysicalSize, currentMonitor } from '@tauri-apps/api/window';
@@ -11,20 +11,26 @@ const OBSERVED_PROPERTIES = [
 ] as const;
 
 export const VideoCanvas: React.FC = () => {
-    const { setDuration, setCurrentTime, setPlaying, setMetadata, setVolume, setMuted, setAspectRatio, isFullscreen } = usePlayerStore();
-    const { t } = useTranslation();
+  const { 
+    setDuration, setCurrentTime, setPlaying, 
+    setMetadata, setVolume, setMuted, 
+    setAspectRatio, isFullscreen 
+  } = usePlayerStore();
+  const { t } = useTranslation();
+  const initialized = useRef(false);
 
   useEffect(() => {
+    if (initialized.current) return;
+    initialized.current = true;
+
     // Crucial: Set background to transparent for MPV to show through
     document.body.style.background = 'transparent';
     document.documentElement.style.background = 'transparent';
 
     console.log(' Lieb Player: Starting MPV Engine...');
 
-    // Track video dimensions to detect changes
     let lastVideoW = 0;
     let lastVideoH = 0;
-    // Temporary storage for width/height until both are available
     let pendingW = 0;
     let pendingH = 0;
 
@@ -35,11 +41,8 @@ export const VideoCanvas: React.FC = () => {
 
       try {
         const appWindow = getCurrentWindow();
-        
-        // Update store with new ratio
         setAspectRatio(videoW / videoH);
 
-        // CRITICAL: Window MUST be unmaximized to resize
         if (await appWindow.isMaximized()) {
           await appWindow.unmaximize();
         }
@@ -58,8 +61,6 @@ export const VideoCanvas: React.FC = () => {
         targetW = Math.round(targetW * scale);
         targetH = Math.round(targetH * scale);
 
-        console.log(` [RESIZE TRIGGERED] Video: ${videoW}x${videoH} -> Window: ${targetW}x${targetH}`);
-        
         await appWindow.setSize(new PhysicalSize(
           Math.round(targetW * scaleFactor), 
           Math.round(targetH * scaleFactor)
@@ -70,15 +71,12 @@ export const VideoCanvas: React.FC = () => {
       }
     };
 
-    // Aspect Ratio Enforcement Listener (Smooth Throttled)
     const appWindow = getCurrentWindow();
     let isInternallyResizing = false;
     let resizeTimeout: any = null;
 
     const unlistenResize = appWindow.onResized(async () => {
       if (isInternallyResizing) return;
-      
-      // Throttle the snap to avoid fighting the OS
       if (resizeTimeout) return;
       
       resizeTimeout = setTimeout(async () => {
@@ -94,18 +92,14 @@ export const VideoCanvas: React.FC = () => {
           }
 
           const ratio = currentAspect || (pendingW > 0 && pendingH > 0 ? pendingW / pendingH : 16/9);
-          
           const expectedH = Math.round(size.width / ratio);
           
-          // Only snap if the deviation is significant (> 5px)
           if (Math.abs(size.height - expectedH) > 5) {
             isInternallyResizing = true;
             await appWindow.setSize(new PhysicalSize(size.width, expectedH));
             setTimeout(() => { isInternallyResizing = false; }, 100);
           }
-        } catch (err) {
-          isInternallyResizing = false;
-        }
+        } catch (err) {}
         resizeTimeout = null;
       }, 16);
     });
@@ -113,7 +107,6 @@ export const VideoCanvas: React.FC = () => {
     const setupEngine = async () => {
       try {
         const state = usePlayerStore.getState();
-        
         const args = [
           state.hwAcceleration ? '--hwdec=auto-safe' : '--hwdec=no',
           state.rememberPosition ? '--save-position-on-quit=yes' : '--save-position-on-quit=no',
@@ -146,49 +139,24 @@ export const VideoCanvas: React.FC = () => {
           args,
           observedProperties: OBSERVED_PROPERTIES,
         });
-        
-        console.log(' Lieb Player: Engine Initialized Successfully');
 
-        // If we have a current track in store, load it (paused)
         const track = usePlayerStore.getState().currentTrack;
         if (track) {
           await command('loadfile', [track, 'replace']);
           await setProperty('pause', true);
         }
 
-        const unlisten = await observeProperties(
+        const unlistenProps = await observeProperties(
           OBSERVED_PROPERTIES,
           ({ name, data }) => {
-            if (name !== 'time-pos') {
-              console.log(` [MPV Prop] ${name}:`, data);
-            }
-
             switch (name) {
-              case 'time-pos':
-                setCurrentTime((data as number) || 0);
-                break;
-              case 'duration':
-                setDuration((data as number) || 0);
-                break;
-              case 'pause':
-                setPlaying(!(data as boolean));
-                break;
-              case 'volume':
-                setVolume(data as number);
-                break;
-              case 'mute':
-                setMuted(data as boolean);
-                break;
-              case 'filename':
-                if (data) {
-                  setMetadata({ title: String(data) });
-                }
-                break;
-              case 'path':
-                if (data) {
-                  usePlayerStore.getState().setCurrentTrack(String(data));
-                }
-                break;
+              case 'time-pos': setCurrentTime((data as number) || 0); break;
+              case 'duration': setDuration((data as number) || 0); break;
+              case 'pause': setPlaying(!(data as boolean)); break;
+              case 'volume': setVolume(data as number); break;
+              case 'mute': setMuted(data as boolean); break;
+              case 'filename': if (data) setMetadata({ title: String(data) }); break;
+              case 'path': if (data) usePlayerStore.getState().setCurrentTrack(String(data)); break;
               case 'video-params/w':
               case 'dwidth':
                 if (typeof data === 'number' && data > 0) {
@@ -207,17 +175,16 @@ export const VideoCanvas: React.FC = () => {
           }
         );
 
-        console.log(' Lieb Player: Monitoring Active');
-        return unlisten;
+        return unlistenProps;
       } catch (err) {
         console.error(' Lieb Player: Engine Startup Failed:', err);
       }
     };
 
-    const cleanup = setupEngine();
+    const cleanupPromise = setupEngine();
 
     return () => {
-      cleanup.then((unlisten) => unlisten?.());
+      cleanupPromise.then(unlisten => unlisten?.());
       unlistenResize.then(f => f?.());
     };
   }, [setDuration, setCurrentTime, setPlaying, setMetadata, setVolume, setMuted, setAspectRatio]);
@@ -225,7 +192,6 @@ export const VideoCanvas: React.FC = () => {
   const handleRightClick = (e: React.MouseEvent) => {
     e.preventDefault();
     command('cycle', ['pause']);
-    // Trigger OSD
     const state = usePlayerStore.getState();
     showActionOSD(!state.isPlaying ? t('play') : t('pause'), !state.isPlaying ? 'play' : 'pause');
   };

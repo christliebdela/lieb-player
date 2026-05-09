@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { command } from 'tauri-plugin-mpv-api';
+import { emit } from '@tauri-apps/api/event';
 
 interface Metadata {
   title: string;
@@ -16,7 +16,7 @@ interface PlayerState {
   currentTime: number;
   isMuted: boolean;
   currentTrack: string | null;
-  playlist: string[];
+  playlist: { path: string; subs: string[] }[];
   isSettingsOpen: boolean;
   isLibraryOpen: boolean;
   isFullscreen: boolean;
@@ -48,8 +48,8 @@ interface PlayerState {
   setCurrentTime: (time: number) => void;
   setMuted: (muted: boolean) => void;
   setCurrentTrack: (track: string | null) => void;
-  setPlaylist: (playlist: string[]) => void;
-  addToPlaylist: (track: string) => void;
+  setPlaylist: (playlist: { path: string; subs: string[] }[]) => void;
+  addToPlaylist: (path: string, subs?: string[]) => void;
   removeFromPlaylist: (track: string) => void;
   clearPlaylist: () => void;
   setSettingsOpen: (open: boolean) => void;
@@ -126,15 +126,17 @@ export const usePlayerStore = create<PlayerState>()(
       setMuted: (muted) => set({ isMuted: muted }),
       setCurrentTrack: (track) => set({ currentTrack: track }),
       setPlaylist: (playlist) => set({ playlist }),
-      addToPlaylist: (track) => set((state) => ({ playlist: [...state.playlist, track] })),
-      removeFromPlaylist: (track) => {
+      addToPlaylist: (path, subs = []) => set((state) => {
+        // Prevent duplicates
+        if (state.playlist.find(p => p.path === path)) return state;
+        return { playlist: [...state.playlist, { path, subs }] };
+      }),
+      removeFromPlaylist: (path) => {
         const state = get();
-        const newPlaylist = state.playlist.filter((t) => t !== track);
+        const newPlaylist = state.playlist.filter((t) => t.path !== path);
         
-        // If we remove the current track, stop playback or skip?
-        // User says "still keeps it playing", so let's stop it if it's the current one.
-        if (state.currentTrack === track) {
-          command('stop');
+        if (state.currentTrack === path) {
+          emit('lieb-stop');
           set({ currentTrack: null, duration: 0, currentTime: 0, isPlaying: false });
         }
         
@@ -143,7 +145,7 @@ export const usePlayerStore = create<PlayerState>()(
       clearPlaylist: () => {
         const state = get();
         if (state.currentTrack) {
-          command('stop');
+          emit('lieb-stop');
           set({ currentTrack: null, duration: 0, currentTime: 0, isPlaying: false });
         }
         set({ playlist: [] });

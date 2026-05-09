@@ -174,7 +174,26 @@ function MainPlayer() {
 
     console.log(' Lieb Player: App Mounted and Listening...');
     
-    const unlisten = listen('tauri://drag-drop', async (event: any) => {
+    // Listen for cross-window MPV commands
+    const unlistenPlay = listen('lieb-play', async (event: any) => {
+      const { path, subs } = event.payload;
+      if (path) {
+        await command('loadfile', [path, 'replace']);
+        // Load associated subtitles
+        if (subs && subs.length > 0) {
+          for (const sub of subs) {
+            await command('sub-add', [sub]);
+          }
+        }
+        await command('set', ['pause', 'no']);
+      }
+    });
+
+    const unlistenStop = listen('lieb-stop', async () => {
+      await command('stop');
+    });
+
+    const unlistenDrop = listen('tauri://drag-drop', async (event: any) => {
       const paths = event.payload.paths || event.payload;
       if (paths && paths.length > 0) {
         const SUB_EXTS = ['srt', 'ass', 'sub', 'vtt', 'ssa'];
@@ -184,25 +203,38 @@ function MainPlayer() {
         try {
           if (media.length > 0) {
             console.log(' Lieb Player: Loading media:', media.length, 'files');
-            setPlaylist(media);
-            await command('loadfile', [media[0], 'replace']);
-            usePlayerStore.getState().setCurrentTrack(media[0]);
-            for (let i = 1; i < media.length; i++) {
-              await command('loadfile', [media[i], 'append']);
+            
+            // Smart Pairing
+            const pairedPlaylist = media.map((m: string) => {
+              const base = m.split(/[\\/]/).pop()?.split('.').slice(0, -1).join('.') || '';
+              const attachedSubs = subs.filter((s: string) => {
+                const subBase = s.split(/[\\/]/).pop()?.split('.').slice(0, -1).join('.') || '';
+                return subBase.toLowerCase().includes(base.toLowerCase()) || base.toLowerCase().includes(subBase.toLowerCase());
+              });
+              return { path: m, subs: attachedSubs };
+            });
+
+            setPlaylist(pairedPlaylist);
+            
+            const firstTrack = pairedPlaylist[0];
+            await command('loadfile', [firstTrack.path, 'replace']);
+            // Load its subs
+            for (const sub of firstTrack.subs) {
+              await command('sub-add', [sub]);
             }
+
+            usePlayerStore.getState().setCurrentTrack(firstTrack.path);
+            
+            for (let i = 1; i < pairedPlaylist.length; i++) {
+              await command('loadfile', [pairedPlaylist[i].path, 'append']);
+            }
+
             if (usePlayerStore.getState().autoPlay) {
               await setProperty('pause', false);
               setPlaying(true);
             } else {
               await setProperty('pause', true);
               setPlaying(false);
-            }
-          }
-
-          if (subs.length > 0) {
-            for (const sub of subs) {
-              console.log(' Lieb Player: Injecting subtitle:', sub);
-              await command('sub-add', [sub]);
             }
           }
 
@@ -217,7 +249,7 @@ function MainPlayer() {
       const filePath = event.payload as string;
       if (filePath) {
         console.log(' Lieb Player: Opened via file association:', filePath);
-        setPlaylist([filePath]);
+        setPlaylist([{ path: filePath, subs: [] }]);
         try {
           await command('loadfile', [filePath, 'replace']);
           if (usePlayerStore.getState().autoPlay) {
@@ -236,7 +268,9 @@ function MainPlayer() {
 
     return () => {
       document.removeEventListener('contextmenu', handleContextMenu);
-      unlisten.then(u => u());
+      unlistenPlay.then(u => u());
+      unlistenStop.then(u => u());
+      unlistenDrop.then(u => u());
       unlistenOpenFile.then(u => u());
     };
   }, [setPlaylist, setShowControls, setPlaying]);
