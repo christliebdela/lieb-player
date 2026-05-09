@@ -60,8 +60,8 @@ const translations = {
     'source': 'Source',
     'report.issue': 'Report Issue',
     'about.subtitle': 'Modern Media Architecture',
-    'about.story': 'I built Lieb Player because I wanted more control and deep customization options that most other players simply don\'t provide. It\'s a project born from the need for a truly personal media experience—one that doesn\'t just play your files, but respects the craft of the media itself.',
-    'about.tech': 'By leveraging the power of MPV and the speed of Rust, Lieb Player provides studio-grade rendering, advanced subtitle management, and a highly responsive interface that stays out of your way. This is an open-source project, built with a commitment to privacy, transparency, and community-driven development.',
+    'about.story': 'Lieb was created out of a personal need for a more controllable and customizable media experience. It focuses on providing a clean, high-performance environment for those who want their player to stay out of the way while respecting the details of the media.',
+    'about.tech': 'Built on top of MPV and Rust, it offers studio-grade rendering and deep subtitle management. Lieb remains an open-source project dedicated to privacy, speed, and a distraction-free viewing experience.',
     
     // Shortcuts
     'sc.play_pause': 'Play / Pause',
@@ -154,8 +154,8 @@ const translations = {
     'source': 'Source',
     'report.issue': 'Signaler',
     'about.subtitle': 'Architecture Média Moderne',
-    'about.story': 'J\'ai construit Lieb Player parce que je voulais plus de contrôle et d\'options de personnalisation profonde que la plupart des autres lecteurs ne proposent tout simplement pas. C\'est un projet né du besoin d\'une expérience médiatique véritablement personnelle—une qui ne se contente pas de lire vos fichiers, mais respecte l\'art du média lui-même.',
-    'about.tech': 'En s\'appuyant sur la puissance de MPV et la rapidité de Rust, Lieb Player offre un rendu de qualité studio, une gestion avancée des sous-titres et une interface très réactive qui ne vous gêne pas. Il s\'agit d\'un projet open-source, construit avec un engagement envers la vie privée, la transparence et le développement communautaire.',
+    'about.story': 'Lieb a été créé à partir d\'un besoin personnel pour une expérience médiatique plus contrôlable et personnalisable. Il se concentre sur la fourniture d\'un environnement propre et performant pour ceux qui veulent que leur lecteur s\'efface tout en respectant les détails du média.',
+    'about.tech': 'Basé sur MPV et Rust, il offre un rendu de qualité studio et une gestion approfondie des sous-titres. Lieb reste un projet open-source dédié à la vie privée, à la rapidité et à une expérience de visionnage sans distraction.',
     
     'sc.play_pause': 'Lecture / Pause',
     'sc.fullscreen': 'Plein écran',
@@ -245,8 +245,8 @@ const translations = {
     'source': 'Fuente',
     'report.issue': 'Reportar',
     'about.subtitle': 'Arquitectura de Medios Moderna',
-    'about.story': 'Construí Lieb Player porque quería más control y opciones de personalización profundas que la mayoría de los otros reproductores simplemente no ofrecen. Es un proyecto nacido de la necesidad de una experiencia multimedia verdaderamente personal, una que no solo reproduce tus archivos, sino que respeta el arte del medio en sí.',
-    'about.tech': 'Aprovechando el poder de MPV y la velocidad de Rust, Lieb Player proporciona renderizado de calidad de estudio, gestión avanzada de subtítulos y una interfaz altamente reactiva que no estorba. Este es un proyecto de código abierto, construido con un compromiso con la privacidad, la transparencia y el desarrollo impulsado por la comunidad.',
+    'about.story': 'Lieb fue creado a partir de una necesidad personal de una experiencia multimedia más controlable y personalizable. Se centra en proporcionar un entorno limpio y de alto rendimiento para aquellos que quieren que su reproductor no estorbe mientras se respetan los detalles del medio.',
+    'about.tech': 'Basado en MPV y Rust, ofrece renderizado de calidad de estudio y gestión avanzada de subtítulos. Lieb sigue siendo un proyecto de código abierto dedicado a la privacidad, la velocidad y una experiencia de visualización sin distracciones.',
     
     'sc.play_pause': 'Reproducir / Pausa',
     'sc.fullscreen': 'Pantalla completa',

@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Lieb Player",
+  "productName": "Lieb",
   "version": "0.1.0",
   "identifier": "com.lieb.player",
   "build": {
@@ -13,7 +13,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "Lieb Player",
+        "title": "Lieb",
         "width": 1280,
         "height": 720,
         "minWidth": 940,
@@ -32,7 +32,7 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "publisher": "Lieb Player",
+    "publisher": "Lieb",
     "shortDescription": "Modern media player built with Tauri and mpv",
     "resources": [
       "mpv.exe",
@@ -58,14 +58,14 @@
       {
         "ext": ["mp4", "mkv", "avi", "mov", "webm", "m4v", "flv", "wmv", "3gp", "ts"],
         "name": "Video File",
-        "description": "Video file handled by Lieb Player",
+        "description": "Video file handled by Lieb",
         "mimeType": "video/*",
         "role": "Viewer"
       },
       {
         "ext": ["mp3", "wav", "flac", "ogg", "m4a", "wma", "aac", "opus"],
         "name": "Audio File",
-        "description": "Audio file handled by Lieb Player",
+        "description": "Audio file handled by Lieb",
         "mimeType": "audio/*",
         "role": "Viewer"
       }

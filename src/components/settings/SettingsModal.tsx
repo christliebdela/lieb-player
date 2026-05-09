@@ -661,7 +661,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                           <div className="flex-1 pt-1">
                             <div className="flex items-center gap-3 mb-1">
                               <h2 className="text-xl font-black text-foreground tracking-tighter uppercase">
-                                Lieb Player
+                                Lieb
                               </h2>
                               <span className="px-1.5 py-0.5 rounded-[2px] bg-foreground text-background text-[8px] font-black tracking-[0.2em] uppercase">
                                 Alpha 0.1
@@ -672,10 +672,10 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                         </div>
 
                         <div className="mb-10 space-y-6">
-                          <p className="text-[13px] text-foreground/80 leading-[1.8] font-medium max-w-xl">
+                          <p className="text-[13px] text-foreground/80 leading-[1.8] font-normal max-w-xl">
                             {t('about.story')}
                           </p>
-                          <p className="text-[12px] text-muted leading-[1.8] font-medium max-w-xl">
+                          <p className="text-[12px] text-muted leading-[1.8] font-normal max-w-xl">
                             {t('about.tech')}
                           </p>
                         </div>

@@ -28,7 +28,7 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
     document.documentElement.style.setProperty('background-color', 'transparent', 'important');
     document.documentElement.style.setProperty('--body-bg', 'transparent', 'important');
 
-    console.log(' Lieb Player: Starting MPV Engine...');
+    console.log(' Lieb: Starting MPV Engine...');
 
     let lastVideoW = 0;
     let lastVideoH = 0;
@@ -68,7 +68,7 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
         ));
         await appWindow.center();
       } catch (err) {
-        console.warn(' Lieb Player: Resize failed:', err);
+        console.warn(' Lieb: Resize failed:', err);
       }
     };
 
@@ -187,7 +187,7 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
 
         return unlistenProps;
       } catch (err) {
-        console.error(' Lieb Player: Engine Startup Failed:', err);
+        console.error(' Lieb: Engine Startup Failed:', err);
       }
     };
 

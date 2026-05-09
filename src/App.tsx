@@ -214,7 +214,7 @@ function MainPlayer() {
     // We'll use a simpler cleanup in useEffect return instead of intercepting
     // onCloseRequested which can block in some Tauri versions.
 
-    console.log(' Lieb Player: App Mounted and Listening...');
+    console.log(' Lieb: App Mounted and Listening...');
     
     // Listen for cross-window MPV commands
     const unlistenPlay = listen('lieb-play', async (event: any) => {
@@ -246,7 +246,7 @@ function MainPlayer() {
           const currentState = usePlayerStore.getState();
           
           if (media.length > 0) {
-            console.log(' Lieb Player: Loading media:', media.length, 'files');
+            console.log(' Lieb: Loading media:', media.length, 'files');
             
             // Smart Pairing
             const pairedPlaylist = media.map((m: string) => {
@@ -283,7 +283,7 @@ function MainPlayer() {
             }
           } else if (subs.length > 0 && currentState.duration > 0) {
             // Hot-load subtitles into currently playing media
-            console.log(' Lieb Player: Hot-loading', subs.length, 'subtitles');
+            console.log(' Lieb: Hot-loading', subs.length, 'subtitles');
             for (const sub of subs) {
               await command('sub-add', [sub, 'select']);
             }
@@ -300,7 +300,7 @@ function MainPlayer() {
     const unlistenOpenFile = listen('open-file', async (event: any) => {
       const filePath = event.payload as string;
       if (filePath) {
-        console.log(' Lieb Player: Opened via file association:', filePath);
+        console.log(' Lieb: Opened via file association:', filePath);
         setPlaylist([{ path: filePath, subs: [] }]);
         try {
           await command('loadfile', [filePath, 'replace']);
@@ -335,7 +335,7 @@ function MainPlayer() {
       const { showActionOSD } = await import('./utils/osd');
       showActionOSD(next ? t('fullscreen.on') : t('fullscreen.off'), 'maximize');
     } catch (err) {
-      console.error(' Lieb Player: Fullscreen toggle error:', err);
+      console.error(' Lieb: Fullscreen toggle error:', err);
     }
   };
 
@@ -395,12 +395,12 @@ function MainPlayer() {
         <div className="absolute inset-0 flex flex-col items-center justify-center z-0 pointer-events-none">
           <img 
             src="/lieb-player-icon.png" 
-            alt="Lieb Player" 
+            alt="Lieb" 
             className="w-[clamp(48px,6vw,80px)] h-auto object-contain opacity-15 grayscale"
           />
           <div className="mt-8 text-center">
             <h1 className="text-[11px] font-black text-foreground tracking-[0.5em] uppercase opacity-[0.08]">
-              Lieb Player
+              Lieb
             </h1>
             <p className="mt-3 text-[9px] text-muted font-bold uppercase tracking-[0.3em]">
               {t('drop.media')}
@@ -420,7 +420,7 @@ function MainPlayer() {
           <div className="flex items-center gap-2 px-3 py-1.5 opacity-20 hover:opacity-100 transition-opacity pointer-events-none">
             <img src="/lieb-player-icon.png" alt="Logo" className="w-3.5 h-3.5 object-contain grayscale" />
             <span className="text-foreground text-[10px] tracking-[0.2em] font-bold uppercase">
-              Lieb Player
+              Lieb
             </span>
           </div>
 
