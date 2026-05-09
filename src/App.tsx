@@ -211,8 +211,7 @@ function MainPlayer() {
     hasUpdate, setSettingsActiveTab, setSettingsOpen
   } = usePlayerStore();
 
-  // FOR PREVIEW: Force hasUpdate to true if you want to see it now
-  const isUpdateAvailable = hasUpdate || true; 
+  const isUpdateAvailable = hasUpdate; 
 
   useEffect(() => {
     if (!autoUpdateCheck) return;
@@ -483,8 +482,8 @@ function MainPlayer() {
           }`}
           data-tauri-drag-region={!isFullscreen ? "true" : undefined}
         >
-          <div className="flex items-center gap-2.5 px-3 py-1.5 opacity-40 hover:opacity-100 transition-opacity pointer-events-none">
-            <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2.5 px-3 py-1.5 opacity-40 hover:opacity-100 transition-opacity pointer-events-none">
               <img src="/lieb-player-icon.png" alt="Logo" className="w-3.5 h-3.5 object-contain" />
               <span className="text-foreground text-[10px] tracking-[0.15em] font-bold uppercase">
                 Lieb
@@ -501,15 +500,15 @@ function MainPlayer() {
                     setSettingsActiveTab('maintenance');
                     setSettingsOpen(true);
                   }}
-                  className="ml-2 flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-accent/10 border border-accent/20 text-accent hover:bg-accent hover:text-white transition-all cursor-pointer group shadow-[0_0_15px_rgba(var(--accent-rgb),0.1)] pointer-events-auto"
+                  className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent border border-accent/20 text-white transition-all cursor-pointer group shadow-lg shadow-accent/20 hover:brightness-110 active:scale-95 pointer-events-auto"
                 >
                   <motion.div
-                    animate={{ y: [0, 2, 0] }}
+                    animate={{ y: [0, 1.5, 0] }}
                     transition={{ duration: 1.5, repeat: Infinity }}
                   >
-                    <Download size={10} strokeWidth={3} />
+                    <Download size={8} strokeWidth={4} />
                   </motion.div>
-                  <span className="text-[8px] font-black uppercase tracking-wider">Update</span>
+                  <span className="text-[8px] font-black uppercase tracking-widest">Update</span>
                 </motion.button>
               )}
             </AnimatePresence>
