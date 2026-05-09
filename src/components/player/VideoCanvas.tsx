@@ -45,8 +45,8 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
         const appWindow = getCurrentWindow();
         setAspectRatio(videoW / videoH);
 
-        if (await appWindow.isMaximized()) {
-          await appWindow.unmaximize();
+        if (await appWindow.isMaximized() || isFullscreen) {
+          return;
         }
 
         const monitor = await currentMonitor();
@@ -88,7 +88,7 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
           const isMaxed = await appWindow.isMaximized();
           const isFull = await appWindow.isFullscreen();
           
-          if (isMaxed || isFull) {
+          if (isMaxed || isFull || isFullscreen) {
             resizeTimeout = null;
             return;
           }
@@ -131,6 +131,10 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
           '--no-terminal',
           '--load-scripts=no',
           '--pause=yes',
+          // Windows Audio Stabilization
+          '--ao=wasapi',
+          '--audio-stream-silence=yes',
+          '--audio-wait-open=0.5',
         ];
 
         if (state.renderingBackend !== 'gpu-next') {
@@ -219,7 +223,10 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
     <div 
       className="absolute inset-0 bg-transparent pointer-events-auto"
       onContextMenu={handleRightClick}
-      onDoubleClick={onToggleFullscreen}
+      onDoubleClick={(e) => {
+        e.stopPropagation();
+        onToggleFullscreen?.();
+      }}
       data-tauri-drag-region={!isFullscreen ? "true" : undefined}
     >
       <video-player 
