@@ -2,6 +2,11 @@
 
 :root {
   --accent: #6366f1;
+  --background: #0a0a0a;
+  --surface: #1a1a1a;
+  --text: #ffffff;
+  --border: rgba(255, 255, 255, 0.08);
+  --muted: rgba(255, 255, 255, 0.4);
 }
 
 [data-theme='midnight'] {

@@ -29,7 +29,7 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
     document.documentElement.style.setProperty('background-color', 'transparent', 'important');
     document.documentElement.style.setProperty('--body-bg', 'transparent', 'important');
 
-    console.log(' Lieb: Starting MPV Engine...');
+
 
     let lastVideoW = 0;
     let lastVideoH = 0;

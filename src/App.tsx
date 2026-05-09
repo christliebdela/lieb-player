@@ -207,7 +207,7 @@ function MainPlayer() {
     // We'll use a simpler cleanup in useEffect return instead of intercepting
     // onCloseRequested which can block in some Tauri versions.
 
-    console.log(' Lieb: App Mounted and Listening...');
+
     
     // Listen for cross-window MPV commands
     const unlistenPlay = listen('lieb-play', async (event: any) => {
@@ -240,7 +240,7 @@ function MainPlayer() {
           const currentState = usePlayerStore.getState();
           
           if (media.length > 0) {
-            console.log(' Lieb: Loading media:', media.length, 'files');
+
             
             // Smart Pairing
             const pairedPlaylist = media.map((m: string) => {
@@ -271,7 +271,7 @@ function MainPlayer() {
             setShowControls(true);
           } else if (subs.length > 0 && currentState.duration > 0) {
             // Hot-load subtitles into currently playing media
-            console.log(' Lieb: Hot-loading', subs.length, 'subtitles');
+
             for (const sub of subs) {
               await command('sub-add', [sub, 'select']);
             }
@@ -288,7 +288,7 @@ function MainPlayer() {
     const unlistenOpenFile = listen('open-file', async (event: any) => {
       const filePath = event.payload as string;
       if (filePath) {
-        console.log(' Lieb: Opened via file association:', filePath);
+
         setPlaylist([{ path: filePath, subs: [] }]);
         try {
           await command('loadfile', [filePath, 'replace']);
@@ -466,7 +466,12 @@ function App() {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
+    // Show window only when ready
+    const timer = setTimeout(() => {
+      getCurrentWindow().show();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [theme, label]);
 
   if (label === 'settings') return <SettingsWindow />;
   if (label === 'library') return <LibraryWindow />;
