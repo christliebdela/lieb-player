@@ -111,7 +111,7 @@ export const MainControls: React.FC = () => {
     
     if (scrollMode === 'volume') {
       const delta = e.deltaY < 0 ? 5 : -5;
-      const newVol = Math.max(0, Math.min(100, volume + delta));
+      const newVol = Math.max(0, Math.min(150, volume + delta));
       await setProperty('volume', newVol);
     } else {
       const delta = e.deltaY < 0 ? 5 : -5;
@@ -318,7 +318,7 @@ export const MainControls: React.FC = () => {
             <motion.div 
               className="absolute top-0 left-0 h-full bg-accent"
               initial={false}
-              animate={{ width: `${isMuted ? 0 : volume}%` }}
+              animate={{ width: `${isMuted ? 0 : (volume / 150) * 100}%` }}
             />
           </div>
           <span className="text-[10px] font-bold tabular-nums text-muted min-w-[20px]">
@@ -327,7 +327,7 @@ export const MainControls: React.FC = () => {
           <input 
             type="range"
             min="0"
-            max="100"
+            max="150"
             value={volume}
             onChange={(e) => setProperty('volume', Number(e.target.value))}
             className="absolute inset-0 opacity-0 cursor-pointer appearance-none"

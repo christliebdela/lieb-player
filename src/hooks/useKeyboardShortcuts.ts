@@ -157,7 +157,7 @@ export const useKeyboardShortcuts = () => {
         case 'ArrowUp': {
           e.preventDefault();
           const currentVol = usePlayerStore.getState().volume;
-          const newVol = Math.min(100, currentVol + 5);
+          const newVol = Math.min(150, currentVol + 5);
           await setProperty('volume', newVol);
           showVolumeOSD();
           break;
@@ -197,7 +197,7 @@ export const useKeyboardShortcuts = () => {
       const delta = e.deltaY < 0 ? 5 : -5;
 
       if (state.scrollMode === 'volume') {
-        const newVol = Math.max(0, Math.min(100, state.volume + delta));
+        const newVol = Math.max(0, Math.min(150, state.volume + delta));
         await setProperty('volume', newVol);
         showVolumeOSD();
       } else {

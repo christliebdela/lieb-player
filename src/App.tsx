@@ -360,7 +360,7 @@ function MainPlayer() {
                 <motion.div 
                   className="absolute bottom-0 w-full bg-accent rounded-full shadow-[0_0_15px_rgba(var(--accent-rgb),0.5)]"
                   initial={false}
-                  animate={{ height: `${isMuted ? 0 : volume}%` }}
+                  animate={{ height: `${isMuted ? 0 : (volume / 150) * 100}%` }}
                   transition={{ type: "spring", damping: 25, stiffness: 200 }}
                 />
               </div>
