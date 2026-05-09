@@ -1,7 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Play, Film, Library, Trash2, ListMusic, ChevronRight, FilePlus, FolderPlus, Globe, Link as LinkIcon } from 'lucide-react';
+import { X, Play, Film, Library, Trash2, ListMusic, ChevronRight, FilePlus, FolderPlus, Globe } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { listen, emit } from '@tauri-apps/api/event';
 import { showActionOSD } from '../../utils/osd';
