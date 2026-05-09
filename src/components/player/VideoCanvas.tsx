@@ -19,6 +19,7 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
   } = usePlayerStore();
   const { t } = useTranslation();
   const initialized = useRef(false);
+  const resizeDebounceTimer = useRef<number | null>(null);
 
   useEffect(() => {
     if (initialized.current) return;
@@ -38,38 +39,50 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
 
     const resizeWindowToVideo = async (videoW: number, videoH: number) => {
       if (videoW === lastVideoW && videoH === lastVideoH) return;
-      lastVideoW = videoW;
-      lastVideoH = videoH;
+      
+      const performResize = async () => {
+        lastVideoW = videoW;
+        lastVideoH = videoH;
 
-      try {
-        const appWindow = getCurrentWindow();
-        setAspectRatio(videoW / videoH);
+        try {
+          const appWindow = getCurrentWindow();
+          setAspectRatio(videoW / videoH);
 
-        if (await appWindow.isMaximized() || isFullscreen) {
-          return;
+          if (await appWindow.isMaximized() || isFullscreen) {
+            return;
+          }
+
+          const monitor = await currentMonitor();
+          const scaleFactor = await appWindow.scaleFactor();
+          if (!monitor) return;
+
+          const monitorW = monitor.size.width / scaleFactor;
+          const monitorH = (monitor.size.height / scaleFactor) - 100;
+
+          let targetW = videoW;
+          let targetH = videoH;
+
+          const scale = Math.min(monitorW / targetW, monitorH / targetH, 1.0);
+          targetW = Math.round(targetW * scale);
+          targetH = Math.round(targetH * scale);
+
+          await appWindow.setSize(new PhysicalSize(
+            Math.round(targetW * scaleFactor), 
+            Math.round(targetH * scaleFactor)
+          ));
+          await appWindow.center();
+        } catch (err) {
+          console.warn(' Lieb: Resize failed:', err);
         }
+      };
 
-        const monitor = await currentMonitor();
-        const scaleFactor = await appWindow.scaleFactor();
-        if (!monitor) return;
-
-        const monitorW = monitor.size.width / scaleFactor;
-        const monitorH = (monitor.size.height / scaleFactor) - 100;
-
-        let targetW = videoW;
-        let targetH = videoH;
-
-        const scale = Math.min(monitorW / targetW, monitorH / targetH, 1.0);
-        targetW = Math.round(targetW * scale);
-        targetH = Math.round(targetH * scale);
-
-        await appWindow.setSize(new PhysicalSize(
-          Math.round(targetW * scaleFactor), 
-          Math.round(targetH * scaleFactor)
-        ));
-        await appWindow.center();
-      } catch (err) {
-        console.warn(' Lieb: Resize failed:', err);
+      // If it's the first resize for this session, do it immediately.
+      // If it's a change during playback, debounce to skip momentary glitches.
+      if (lastVideoW === 0) {
+        performResize();
+      } else {
+        if (resizeDebounceTimer.current) window.clearTimeout(resizeDebounceTimer.current);
+        resizeDebounceTimer.current = window.setTimeout(performResize, 250);
       }
     };
 
@@ -221,6 +234,7 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
     const cleanupPromise = setupEngine();
 
     return () => {
+      if (resizeDebounceTimer.current) window.clearTimeout(resizeDebounceTimer.current);
       cleanupPromise.then(unlisten => unlisten?.());
       unlistenResize.then(f => f?.());
     };
