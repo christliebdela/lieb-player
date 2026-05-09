@@ -538,8 +538,8 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                                   name: 'Default', 
                                   preview: (
                                     <div className="w-full h-3 flex items-center justify-between px-1.5 opacity-60">
-                                      <div className="flex gap-1"><div className="w-2 h-1.5 bg-accent rounded-sm" /><div className="w-4 h-1.5 bg-white/20 rounded-sm" /></div>
-                                      <div className="flex gap-1"><div className="w-1.5 h-1.5 bg-white/20 rounded-sm" /><div className="w-1.5 h-1.5 bg-white/20 rounded-sm" /></div>
+                                      <div className="flex gap-1"><div className="w-2 h-1.5 bg-accent rounded-sm" /><div className="w-4 h-1.5 bg-foreground/10 rounded-sm" /></div>
+                                      <div className="flex gap-1"><div className="w-1.5 h-1.5 bg-foreground/10 rounded-sm" /><div className="w-1.5 h-1.5 bg-foreground/10 rounded-sm" /></div>
                                     </div>
                                   )
                                 },
@@ -548,9 +548,9 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                                   name: 'Centered', 
                                   preview: (
                                     <div className="w-full h-3 flex items-center justify-between px-1.5 opacity-60">
-                                      <div className="w-3 h-1.5 bg-white/20 rounded-sm" />
+                                      <div className="w-3 h-1.5 bg-foreground/10 rounded-sm" />
                                       <div className="w-2.5 h-2.5 bg-accent rounded-full -mt-0.5" />
-                                      <div className="w-3 h-1.5 bg-white/20 rounded-sm" />
+                                      <div className="w-3 h-1.5 bg-foreground/10 rounded-sm" />
                                     </div>
                                   )
                                 },
@@ -560,8 +560,8 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                                   preview: (
                                     <div className="w-full h-3 flex items-center px-1.5 gap-1.5 opacity-60">
                                       <div className="w-2 h-1.5 bg-accent rounded-sm" />
-                                      <div className="w-5 h-1.5 bg-white/20 rounded-sm" />
-                                      <div className="ml-auto w-1.5 h-1.5 bg-white/20 rounded-sm" />
+                                      <div className="w-5 h-1.5 bg-foreground/10 rounded-sm" />
+                                      <div className="ml-auto w-1.5 h-1.5 bg-foreground/10 rounded-sm" />
                                     </div>
                                   )
                                 },
@@ -571,7 +571,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                                   preview: (
                                     <div className="w-full h-3 flex items-center justify-center gap-4 opacity-60">
                                       <div className="w-2 h-2 bg-accent rounded-sm" />
-                                      <div className="w-2 h-2 bg-white/20 rounded-sm" />
+                                      <div className="w-2 h-2 bg-foreground/10 rounded-sm" />
                                     </div>
                                   )
                                 },
