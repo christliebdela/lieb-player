@@ -10,11 +10,11 @@ const OBSERVED_PROPERTIES = [
   'video-params/w', 'video-params/h', 'dwidth', 'dheight', 'eof-reached'
 ] as const;
 
-export const VideoCanvas: React.FC = () => {
+export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onToggleFullscreen }) => {
   const { 
     setDuration, setCurrentTime, setPlaying, 
     setMetadata, setVolume, setMuted, 
-    setAspectRatio, isFullscreen, setFullscreen 
+    setAspectRatio, isFullscreen 
   } = usePlayerStore();
   const { t } = useTranslation();
   const initialized = useRef(false);
@@ -209,7 +209,7 @@ export const VideoCanvas: React.FC = () => {
     <div 
       className="absolute inset-0 bg-transparent pointer-events-auto"
       onContextMenu={handleRightClick}
-      onDoubleClick={() => setFullscreen(!isFullscreen)}
+      onDoubleClick={onToggleFullscreen}
       data-tauri-drag-region={!isFullscreen ? "true" : undefined}
     >
       <video-player 

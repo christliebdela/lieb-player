@@ -293,6 +293,18 @@ function MainPlayer() {
     };
   }, [setPlaylist, setShowControls, setPlaying]);
 
+  const handleFullscreenToggle = async () => {
+    try {
+      const next = !isFullscreen;
+      await getCurrentWindow().setFullscreen(next);
+      setFullscreen(next);
+      const { showActionOSD } = await import('./utils/osd');
+      showActionOSD(next ? t('fullscreen.on') : t('fullscreen.off'), 'maximize');
+    } catch (err) {
+      console.error(' Lieb Player: Fullscreen toggle error:', err);
+    }
+  };
+
   const handleMouseMove = () => {
     setShowControls(true);
     if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
@@ -306,9 +318,9 @@ function MainPlayer() {
       className={`relative w-full h-screen overflow-hidden font-inter select-none ${hasMedia ? 'bg-transparent' : 'bg-background'}`}
       style={{ cursor: !showControls && hasMedia ? 'none' : 'auto' }}
       onMouseMove={handleMouseMove}
-      onDoubleClick={() => setFullscreen(!isFullscreen)}
+      onDoubleClick={handleFullscreenToggle}
     >
-      <VideoCanvas />
+      <VideoCanvas onToggleFullscreen={handleFullscreenToggle} />
       
       <ActionOSD />
 
