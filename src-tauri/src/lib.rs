@@ -11,9 +11,11 @@ pub fn run() {
             // Safety: Clean up any zombie MPV processes from previous runs
             #[cfg(target_os = "windows")]
             {
+                use std::os::windows::process::CommandExt;
                 let _ = std::process::Command::new("taskkill")
                     .args(&["/F", "/IM", "mpv.exe", "/T"])
-                    .output(); // Wait for it to finish to ensure locks are released
+                    .creation_flags(0x08000000) // CREATE_NO_WINDOW
+                    .output();
             }
 
             // Handle file opened via "Open With" or file association

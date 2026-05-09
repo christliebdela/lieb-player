@@ -155,7 +155,11 @@ function MainPlayer() {
   // Handle transparency for video to show through
   useEffect(() => {
     if (hasMedia) {
-      document.documentElement.style.setProperty('--body-bg', 'transparent');
+      // Delay transparency slightly to avoid flicker during window resize/initial paint
+      const timer = setTimeout(() => {
+        document.documentElement.style.setProperty('--body-bg', 'transparent');
+      }, 500);
+      return () => clearTimeout(timer);
     } else {
       document.documentElement.style.setProperty('--body-bg', 'var(--background)');
     }
