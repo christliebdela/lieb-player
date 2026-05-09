@@ -144,7 +144,6 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
           '--no-terminal',
           '--load-scripts=yes',
           '--pause=yes',
-          // Windows Audio Stabilization
           '--ao=wasapi',
           '--audio-stream-silence=yes',
           '--audio-wait-open=0.5',
@@ -154,17 +153,27 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
           args.push(`--gpu-api=${state.renderingBackend}`);
         }
 
+        // 1. Initialize Engine
         await init({
           args,
           observedProperties: OBSERVED_PROPERTIES,
         });
 
-        const track = usePlayerStore.getState().currentTrack;
+        // Set engine ready before applying props
+        usePlayerStore.getState().setEngineReady(true);
+
+        // 2. Apply Initial Properties Safely
+        const quality = state.streamingQuality || '1080';
+        await setProperty('ytdl-format', `bestvideo[height<=${quality}]+bestaudio/best`);
+
+        // 3. Load File if needed
+        const track = state.currentTrack;
         if (track) {
           await command('loadfile', [track, 'replace']);
           await setProperty('pause', true);
         }
 
+        // 4. Setup Properties Observer
         const unlistenProps = await observeProperties(
           OBSERVED_PROPERTIES,
           async ({ name, data }) => {
@@ -183,13 +192,11 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
               case 'path': 
                 if (data) {
                   const newPath = String(data);
-                  const state = usePlayerStore.getState();
-                  state.setCurrentTrack(newPath);
-                  
-                  // Auto-sync subtitles for the new path from the playlist
-                  const track = state.playlist.find(t => t.path === newPath);
-                  if (track && track.subs && track.subs.length > 0) {
-                    for (const sub of track.subs) {
+                  const s = usePlayerStore.getState();
+                  s.setCurrentTrack(newPath);
+                  const t = s.playlist.find(it => it.path === newPath);
+                  if (t && t.subs && t.subs.length > 0) {
+                    for (const sub of t.subs) {
                       await command('sub-add', [sub, 'select']);
                     }
                   }
@@ -219,8 +226,8 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
                 break;
               case 'eof-reached':
                 if (data === true) {
-                  const state = usePlayerStore.getState();
-                  if (state.loopMode === 'off') {
+                  const s = usePlayerStore.getState();
+                  if (s.loopMode === 'off') {
                     command('seek', [0, 'absolute']);
                     setProperty('pause', true);
                   }
@@ -236,38 +243,27 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
       }
     };
 
-  useEffect(() => {
-    const quality = usePlayerStore.getState().streamingQuality || '1080';
-    setProperty('ytdl-format', `bestvideo[height<=${quality}]+bestaudio/best`)
-      .catch(err => console.error('Lieb Player: Failed to set initial quality:', err));
-  }, []);
-
-  useEffect(() => {
-    const unsub = usePlayerStore.subscribe(
+    // Quality Watcher (only active after component mounts)
+    const unsubQuality = usePlayerStore.subscribe(
       (state) => state.streamingQuality,
       async (quality) => {
         try {
           await setProperty('ytdl-format', `bestvideo[height<=${quality}]+bestaudio/best`);
-          if (usePlayerStore.getState().isPlaying) {
-            // Reload the stream to apply quality changes immediately if playing
-            // but only for network streams
-            const track = usePlayerStore.getState().currentTrack;
-            if (track?.startsWith('http')) {
-              await command('loadfile', [track]);
-            }
+          const s = usePlayerStore.getState();
+          if (s.isPlaying && s.currentTrack?.startsWith('http')) {
+            await command('loadfile', [s.currentTrack]);
           }
         } catch (err) {
-          console.error('Lieb Player: Failed to switch quality:', err);
+          console.error('Lieb Player: Quality Switch Error:', err);
         }
       }
     );
-    return unsub;
-  }, []);
 
     const cleanupPromise = setupEngine();
 
     return () => {
       if (resizeDebounceTimer.current) window.clearTimeout(resizeDebounceTimer.current);
+      unsubQuality();
       cleanupPromise.then(unlisten => unlisten?.());
       unlistenResize.then(f => f?.());
     };

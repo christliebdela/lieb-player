@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Sliders, Monitor, Keyboard, Info, ExternalLink, Activity, Palette, Wrench, Trash2, RotateCcw, Globe } from 'lucide-react';
+import { X, Sliders, Monitor, Keyboard, Info, ExternalLink, Activity, Palette, Moon, Wrench, Trash2, RotateCcw, Globe } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { useTranslation } from '../../i18n';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -349,118 +349,190 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                     {activeTab === 'interface' && (
                       <div className="space-y-8 pt-2">
                         <div className="divide-y divide-border-subtle/30">
-                          <SettingCard label={t('theme' as any)} description={t('theme.desc' as any)}>
-                            <SegmentedControl 
-                              options={['Midnight', 'Daylight', 'Aura', 'Sakura']}
-                              value={theme.charAt(0).toUpperCase() + theme.slice(1)}
-                              onChange={(v) => setTheme(v.toLowerCase() as any)}
-                            />
-                          </SettingCard>
-                          
-                          <div className="py-6 border-t border-border-subtle/30">
+                          <div className="py-6">
                             <div className="flex items-center gap-2 mb-5">
-                              <Palette size={13} className="text-muted/60" />
-                              <span className="text-[11px] font-semibold uppercase tracking-widest text-muted">{t('accent.color' as any)}</span>
+                              <Moon size={13} className="text-muted/60" />
+                              <span className="text-[11px] font-semibold uppercase tracking-widest text-muted">{t('theme' as any)}</span>
                             </div>
-                            
-                            <div className="grid grid-cols-6 gap-2 mb-6">
-                              {PRESET_COLORS.map((preset) => (
-                                <button
-                                  key={preset.color}
-                                  onClick={() => setAccentColor(preset.color)}
-                                  className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all cursor-pointer border ${
-                                    accentColor === preset.color 
-                                    ? 'bg-accent/10 border-accent/20' 
-                                    : 'bg-transparent border-border-subtle hover:bg-foreground/[0.04]'
-                                  }`}
+                            <div className="grid grid-cols-4 gap-3">
+                              {(['midnight', 'daylight', 'aura', 'sakura'] as const).map((id) => (
+                                <button 
+                                  key={id} 
+                                  onClick={() => setTheme(id)} 
+                                  className={`group flex flex-col items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${theme === id ? 'bg-accent/10 border-accent/20 text-accent shadow-[0_4px_12px_rgba(var(--accent-rgb),0.1)]' : 'bg-foreground/[0.02] border-border-subtle text-muted hover:bg-foreground/[0.04] hover:text-foreground'}`}
                                 >
-                                  <div className="w-4 h-4 rounded-full shrink-0 ring-1 ring-foreground/10" style={{ backgroundColor: preset.color }} />
-                                  <span className={`text-[10px] font-bold tracking-tight transition-colors ${
-                                    accentColor === preset.color ? 'text-accent' : 'text-muted group-hover:text-foreground'
+                                  <div className={`w-full aspect-video rounded-lg border relative overflow-hidden p-1.5 flex flex-col gap-1 ${
+                                    id === 'midnight' ? 'bg-[#0a0a0a] border-white/5' :
+                                    id === 'daylight' ? 'bg-[#f8f9fa] border-black/5' :
+                                    id === 'aura' ? 'bg-[#0f0b1a] border-violet-500/10' :
+                                    'bg-[#fff5f7] border-pink-500/10'
                                   }`}>
-                                    {preset.name}
-                                  </span>
-                                </button>
-                              ))}
-                              {customPresets.map((color, idx) => (
-                                <button
-                                  key={idx}
-                                  onClick={() => setAccentColor(color)}
-                                  className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all cursor-pointer border ${
-                                    accentColor === color 
-                                    ? 'bg-accent/10 border-accent/20' 
-                                    : 'bg-transparent border-border-subtle hover:bg-foreground/[0.04]'
-                                  }`}
-                                >
-                                  <div className="w-4 h-4 rounded-full shrink-0 ring-1 ring-foreground/10" style={{ backgroundColor: color }} />
-                                  <span className={`text-[10px] font-bold tracking-tight transition-colors ${
-                                    accentColor === color ? 'text-accent' : 'text-muted group-hover:text-foreground'
-                                  }`}>
-                                    Saved {idx + 1}
-                                  </span>
-                                  <button onClick={(e) => { e.stopPropagation(); removeCustomPreset(color); }} className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[8px]">×</button>
-                                </button>
-                              ))}
-                              <button onClick={() => setShowPicker(true)} className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all border cursor-pointer ${showPicker ? 'bg-accent/10 border-accent/20' : 'bg-transparent border-border-subtle hover:bg-foreground/[0.04]'}`}>
-                                <div className="w-4 h-4 rounded-full shrink-0 ring-1 ring-foreground/10 bg-[conic-gradient(from_0deg,#ff0000,#ffff00,#00ff00,#00ffff,#0000ff,#ff00ff,#ff0000)]" />
-                                <span className="text-[10px] font-bold tracking-tight text-muted group-hover:text-foreground">{t('mixer' as any)}</span>
-                              </button>
-                            </div>
-
-                            <AnimatePresence>
-                              {showPicker && (
-                                <div className="fixed inset-0 flex items-center justify-center z-[110] p-6 pointer-events-none">
-                                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowPicker(false)} className="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto" />
-                                  <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} className="relative w-64 p-3 rounded-xl bg-background border border-border-subtle shadow-2xl pointer-events-auto">
-                                    <div className="flex items-center justify-between mb-4 px-1">
-                                      <div className="flex items-center gap-2.5">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-accent" />
-                                        <h3 className="text-[13px] font-semibold text-foreground/90 capitalize">{t('color.mixer' as any)}</h3>
+                                    {/* Mini Window Mockup */}
+                                    <div className="flex justify-between w-full">
+                                      <div className="w-4 h-1 rounded-full opacity-40" style={{ backgroundColor: id === 'daylight' || id === 'sakura' ? '#000' : '#fff' }} />
+                                      <div className="flex gap-0.5">
+                                        <div className="w-1 h-1 rounded-full bg-[#ff5f56]" />
+                                        <div className="w-1 h-1 rounded-full bg-[#ffbd2e]" />
+                                        <div className="w-1 h-1 rounded-full bg-[#27c93f]" />
                                       </div>
-                                      <button onClick={() => setShowPicker(false)} className="text-muted hover:text-foreground p-1"><X size={14} /></button>
                                     </div>
-                                    <div className="space-y-3">
-                                      <div className="flex flex-col items-center gap-3">
-                                        <div className="w-full h-14 rounded-lg shadow-xl border border-white/10" style={{ backgroundColor: accentColor }} />
-                                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-foreground/[0.03] border border-border-subtle">
-                                          <span className="text-[9px] font-bold text-muted uppercase">HEX</span>
-                                          <input type="text" value={accentColor.toUpperCase()} onChange={(e) => setAccentColor(e.target.value)} className="w-16 bg-transparent border-none text-[10px] font-mono font-bold text-accent uppercase focus:ring-0 p-0 text-center" />
+                                    <div className="flex-1 rounded-sm border border-current/5 bg-current/5 flex items-center justify-center">
+                                      <div className="w-4 h-4 rounded-full shadow-sm" style={{ 
+                                        backgroundColor: 
+                                          id === 'midnight' ? '#6366f1' : // Indigo
+                                          id === 'daylight' ? '#0ea5e9' : // Sky
+                                          id === 'aura' ? '#8b5cf6' :     // Violet
+                                          '#f43f5e'                        // Rose
+                                      }} />
+                                    </div>
+                                    <div className="h-2 w-full rounded-sm bg-current/10 mt-auto" />
+                                  </div>
+                                  <span className="text-[10px] font-bold">{t(`theme.${id}` as any)}</span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          
+                            <div className="py-6 border-t border-border-subtle/30">
+                              <div className="flex items-center gap-2 mb-5">
+                                <Palette size={13} className="text-muted/60" />
+                                <span className="text-[11px] font-semibold uppercase tracking-widest text-muted">{t('accent.color' as any)}</span>
+                              </div>
+                              
+                              <div className="grid grid-cols-4 gap-2 mb-6">
+                                {PRESET_COLORS.map((preset) => (
+                                  <button
+                                    key={preset.color}
+                                    onClick={() => setAccentColor(preset.color)}
+                                    className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all cursor-pointer border ${
+                                      accentColor === preset.color 
+                                      ? 'bg-accent/10 border-accent/20' 
+                                      : 'bg-transparent border-border-subtle hover:bg-foreground/[0.04]'
+                                    }`}
+                                  >
+                                    <div className="w-4 h-4 rounded-full shrink-0 ring-1 ring-foreground/10" style={{ backgroundColor: preset.color }} />
+                                    <span className={`text-[10px] font-bold tracking-tight transition-colors ${
+                                      accentColor === preset.color ? 'text-accent' : 'text-muted group-hover:text-foreground'
+                                    }`}>
+                                      {preset.name}
+                                    </span>
+                                  </button>
+                                ))}
+                                {customPresets.map((color, idx) => (
+                                  <button
+                                    key={idx}
+                                    onClick={() => setAccentColor(color)}
+                                    className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all cursor-pointer border ${
+                                      accentColor === color 
+                                      ? 'bg-accent/10 border-accent/20' 
+                                      : 'bg-transparent border-border-subtle hover:bg-foreground/[0.04]'
+                                    }`}
+                                  >
+                                    <div className="w-4 h-4 rounded-full shrink-0 ring-1 ring-foreground/10" style={{ backgroundColor: color }} />
+                                    <span className={`text-[10px] font-bold tracking-tight transition-colors ${
+                                      accentColor === color ? 'text-accent' : 'text-muted group-hover:text-foreground'
+                                    }`}>
+                                      {t('custom' as any)} {idx + 1}
+                                    </span>
+                                    <button onClick={(e) => { e.stopPropagation(); removeCustomPreset(color); }} className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[8px]">×</button>
+                                  </button>
+                                ))}
+                                <button onClick={() => setShowPicker(true)} className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all border cursor-pointer ${showPicker ? 'bg-accent/10 border-accent/20' : 'bg-transparent border-border-subtle hover:bg-foreground/[0.04]'}`}>
+                                  <div className="w-4 h-4 rounded-full shrink-0 ring-1 ring-foreground/10 bg-[conic-gradient(from_0deg,#ff0000,#ffff00,#00ff00,#00ffff,#0000ff,#ff00ff,#ff0000)]" />
+                                  <span className="text-[10px] font-bold tracking-tight text-muted group-hover:text-foreground">{t('mixer' as any)}</span>
+                                </button>
+                              </div>
+
+                              {/* ... Picker Modal stays same ... */}
+                              <AnimatePresence>
+                                {showPicker && (
+                                  <div className="fixed inset-0 flex items-center justify-center z-[110] p-6 pointer-events-none">
+                                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowPicker(false)} className="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto" />
+                                    <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} className="relative w-64 p-3 rounded-xl bg-background border border-border-subtle shadow-2xl pointer-events-auto">
+                                      <div className="flex items-center justify-between mb-4 px-1">
+                                        <div className="flex items-center gap-2.5">
+                                          <div className="w-1.5 h-1.5 rounded-full bg-accent" />
+                                          <h3 className="text-[13px] font-semibold text-foreground/90 capitalize">{t('color.mixer' as any)}</h3>
+                                        </div>
+                                        <button onClick={() => setShowPicker(false)} className="text-muted hover:text-foreground p-1"><X size={14} /></button>
+                                      </div>
+                                      <div className="space-y-3">
+                                        <div className="flex flex-col items-center gap-3">
+                                          <div className="w-full h-14 rounded-lg shadow-xl border border-white/10" style={{ backgroundColor: accentColor }} />
+                                          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-foreground/[0.03] border border-border-subtle">
+                                            <span className="text-[9px] font-bold text-muted uppercase">HEX</span>
+                                            <input type="text" value={accentColor.toUpperCase()} onChange={(e) => setAccentColor(e.target.value)} className="w-16 bg-transparent border-none text-[10px] font-mono font-bold text-accent uppercase focus:ring-0 p-0 text-center" />
+                                          </div>
+                                        </div>
+                                        <div className="space-y-2.5">
+                                          <input type="range" min="0" max="360" className="w-full h-2 rounded-full appearance-none cursor-pointer bg-[linear-gradient(to_right,#ff0000,#ffff00,#00ff00,#00ffff,#0000ff,#ff00ff,#ff0000)]" onChange={(e) => setAccentColor(`hsl(${e.target.value}, 70%, 60%)`)} />
+                                          <input type="range" min="20" max="90" className="w-full h-2 rounded-full appearance-none cursor-pointer" style={{ background: `linear-gradient(to right, #000, ${accentColor}, #fff)` }} onChange={(e) => {
+                                            const matches = accentColor.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
+                                            if (matches) setAccentColor(`hsl(${matches[1]}, ${matches[2]}%, ${e.target.value}%)`);
+                                          }} />
+                                        </div>
+                                        <div className="flex gap-2 pt-2">
+                                          <button onClick={() => { addCustomPreset(accentColor); setShowPicker(false); }} className="flex-1 py-2 rounded-lg bg-foreground/[0.05] text-foreground text-[9px] font-bold uppercase border border-border-subtle">{t('save' as any)}</button>
+                                          <button onClick={() => setShowPicker(false)} className="flex-1 py-2 rounded-lg bg-accent text-white text-[10px] font-bold uppercase shadow-lg shadow-accent/20">{t('done' as any)}</button>
                                         </div>
                                       </div>
-                                      <div className="space-y-2.5">
-                                        <input type="range" min="0" max="360" className="w-full h-2 rounded-full appearance-none cursor-pointer bg-[linear-gradient(to_right,#ff0000,#ffff00,#00ff00,#00ffff,#0000ff,#ff00ff,#ff0000)]" onChange={(e) => setAccentColor(`hsl(${e.target.value}, 70%, 60%)`)} />
-                                        <input type="range" min="20" max="90" className="w-full h-2 rounded-full appearance-none cursor-pointer" style={{ background: `linear-gradient(to right, #000, ${accentColor}, #fff)` }} onChange={(e) => {
-                                          const matches = accentColor.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
-                                          if (matches) setAccentColor(`hsl(${matches[1]}, ${matches[2]}%, ${e.target.value}%)`);
-                                        }} />
-                                      </div>
-                                      <div className="flex gap-2 pt-2">
-                                        <button onClick={() => { addCustomPreset(accentColor); setShowPicker(false); }} className="flex-1 py-2 rounded-lg bg-foreground/[0.05] text-foreground text-[9px] font-bold uppercase border border-border-subtle">Save</button>
-                                        <button onClick={() => setShowPicker(false)} className="flex-1 py-2 rounded-lg bg-accent text-white text-[10px] font-bold uppercase shadow-lg shadow-accent/20">Done</button>
+                                    </motion.div>
+                                  </div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+
+                            <div className="py-6 border-t border-border-subtle/30">
+                              <div className="flex items-center gap-2 mb-5">
+                                <Monitor size={13} className="text-muted/60" />
+                                <span className="text-[11px] font-semibold uppercase tracking-widest text-muted">{t('control.layout' as any)}</span>
+                              </div>
+                              <div className="grid grid-cols-4 gap-3">
+                                {(['default', 'centered', 'compact', 'minimal'] as const).map((id) => (
+                                  <button key={id} onClick={() => setControlBarLayout(id)} className={`group flex flex-col items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${controlBarLayout === id ? 'bg-accent/10 border-accent/20 text-accent shadow-[0_4px_12px_rgba(var(--accent-rgb),0.1)]' : 'bg-foreground/[0.02] border-border-subtle text-muted hover:bg-foreground/[0.04] hover:text-foreground'}`}>
+                                    <div className={`w-full aspect-[2/1] rounded-lg border relative overflow-hidden p-1 ${controlBarLayout === id ? 'bg-accent/10 border-accent/20' : 'bg-foreground/[0.03] border-border-subtle'}`}>
+                                      {/* Mini Layout Preview */}
+                                      <div className="absolute inset-0 flex flex-col justify-end p-1 gap-1">
+                                        {id === 'default' && (
+                                          <div className="flex items-center gap-1 w-full">
+                                            <div className="flex gap-0.5 shrink-0">
+                                              <div className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
+                                              <div className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
+                                            </div>
+                                            <div className="h-0.5 flex-1 bg-current opacity-20 rounded-full" />
+                                            <div className="w-2 h-1.5 rounded-full bg-current opacity-60" />
+                                          </div>
+                                        )}
+                                        {id === 'centered' && (
+                                          <div className="flex flex-col gap-1 w-full">
+                                            <div className="h-0.5 w-full bg-current opacity-20 rounded-full" />
+                                            <div className="flex justify-center gap-1">
+                                              <div className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
+                                              <div className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
+                                              <div className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
+                                            </div>
+                                          </div>
+                                        )}
+                                        {id === 'compact' && (
+                                          <div className="flex items-center gap-1 w-full px-1 py-0.5 bg-current/5 rounded-full">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
+                                            <div className="h-0.5 flex-1 bg-current opacity-20 rounded-full" />
+                                            <div className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
+                                          </div>
+                                        )}
+                                        {id === 'minimal' && (
+                                          <div className="flex flex-col gap-0.5 w-full items-center">
+                                            <div className="h-0.5 w-3/4 bg-current opacity-20 rounded-full" />
+                                            <div className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
+                                          </div>
+                                        )}
                                       </div>
                                     </div>
-                                  </motion.div>
-                                </div>
-                              )}
-                            </AnimatePresence>
-                          </div>
-
-                          <div className="py-6 border-t border-border-subtle/30">
-                            <div className="flex items-center gap-2 mb-5">
-                              <Monitor size={13} className="text-muted/60" />
-                              <span className="text-[11px] font-semibold uppercase tracking-widest text-muted">Control Layout</span>
+                                    <span className="text-[10px] font-bold">{t(`layout.${id}` as any)}</span>
+                                  </button>
+                                ))}
+                              </div>
                             </div>
-                            <div className="grid grid-cols-4 gap-2.5">
-                              {['default', 'centered', 'compact', 'minimal'].map((id) => (
-                                <button key={id} onClick={() => setControlBarLayout(id as any)} className={`group flex flex-col items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${controlBarLayout === id ? 'bg-accent/10 border-accent/20 text-accent shadow-[0_4px_12px_rgba(var(--accent-rgb),0.1)]' : 'bg-foreground/[0.02] border-border-subtle text-muted hover:bg-foreground/[0.04] hover:text-foreground'}`}>
-                                  <div className={`w-full aspect-[2/1] rounded-lg border flex items-center justify-center ${controlBarLayout === id ? 'bg-accent/10 border-accent/20' : 'bg-foreground/[0.03] border-border-subtle'}`}>
-                                    <div className="text-[8px] font-bold uppercase opacity-40">{id}</div>
-                                  </div>
-                                  <span className="text-[10px] font-bold capitalize">{id}</span>
-                                </button>
-                              ))}
-                            </div>
-                          </div>
                         </div>
                       </div>
                     )}
@@ -487,12 +559,12 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                           <div className="pt-6 mt-6 border-t border-border-subtle/30">
                             <div className="flex items-center gap-2 mb-4">
                               <Globe size={13} className="text-accent" />
-                              <span className="text-[11px] font-bold uppercase tracking-widest text-accent">Online Streaming</span>
+                              <span className="text-[11px] font-bold uppercase tracking-widest text-accent">{t('online.streaming' as any)}</span>
                             </div>
                             <div className="flex flex-col gap-4 py-2">
                               <div className="space-y-0.5">
-                                <h4 className="text-[13px] font-medium text-foreground/90">Streaming Quality</h4>
-                                <p className="text-[11px] text-muted leading-relaxed font-medium">Preferred resolution for web videos (YouTube/Twitch)</p>
+                                <h4 className="text-[13px] font-medium text-foreground/90">{t('streaming.quality' as any)}</h4>
+                                <p className="text-[11px] text-muted leading-relaxed font-medium">{t('streaming.desc' as any)}</p>
                               </div>
                               <QualitySlider 
                                 value={streamingQuality}

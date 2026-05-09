@@ -22,6 +22,7 @@ interface PlayerState {
   isSubSearchOpen: boolean;
   streamingQuality: string;
   isFullscreen: boolean;
+  isEngineReady: boolean;
   subsEnabled: boolean;
   loopMode: 'off' | 'one' | 'all';
   showControls: boolean;
@@ -65,6 +66,7 @@ interface PlayerState {
   setSubSearchOpen: (open: boolean) => void;
   setStreamingQuality: (quality: string) => void;
   setFullscreen: (full: boolean) => void;
+  setEngineReady: (ready: boolean) => void;
   setSubsEnabled: (enabled: boolean) => void;
   setLoopMode: (mode: 'off' | 'one' | 'all') => void;
   setShowControls: (show: boolean) => void;
@@ -107,6 +109,7 @@ export const usePlayerStore = create<PlayerState>()(
       isSubSearchOpen: false,
       streamingQuality: '1080',
       isFullscreen: false,
+      isEngineReady: false,
       subsEnabled: true,
       loopMode: 'off',
       showControls: true,
@@ -174,6 +177,7 @@ export const usePlayerStore = create<PlayerState>()(
       setSubSearchOpen: (open) => set({ isSubSearchOpen: open }),
       setStreamingQuality: (quality) => set({ streamingQuality: quality }),
       setFullscreen: (full) => set({ isFullscreen: full }),
+      setEngineReady: (ready) => set({ isEngineReady: ready }),
       setSubsEnabled: (enabled) => set({ subsEnabled: enabled }),
       setLoopMode: (mode) => set({ loopMode: mode }),
       setAspectRatio: (ratio) => set({ aspectRatio: ratio }),

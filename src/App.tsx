@@ -150,7 +150,7 @@ function MainPlayer() {
     metadata, duration, setPlaylist, volume, isMuted, 
     showVolumeOSD, accentColor,
     isFullscreen, setFullscreen, setPlaying, setShowControls, isPlaying, showControls,
-    isBlocking, setCurrentTrack
+    isBlocking, setCurrentTrack, isEngineReady
   } = usePlayerStore();
   const { t } = useTranslation();
   const hasMedia = duration > 0;
@@ -172,11 +172,14 @@ function MainPlayer() {
 
   const subsEnabled = usePlayerStore(s => s.subsEnabled);
   useEffect(() => {
-    setProperty('sub-visibility', subsEnabled ? 'yes' : 'no');
-  }, [subsEnabled]);
+    if (!isEngineReady) return;
+    setProperty('sub-visibility', subsEnabled ? 'yes' : 'no')
+      .catch(err => console.warn('Lieb: Subs guard hit:', err));
+  }, [subsEnabled, isEngineReady]);
   
   const equalizer = usePlayerStore(s => s.equalizer);
   useEffect(() => {
+    if (!isEngineReady) return;
     const applyEq = async () => {
       try {
         const frequencies = [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000];
@@ -189,7 +192,7 @@ function MainPlayer() {
       }
     };
     applyEq();
-  }, [equalizer]);
+  }, [equalizer, isEngineReady]);
 
   const formatDuration = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
@@ -201,7 +204,9 @@ function MainPlayer() {
   const timeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
-    setProperty('load-scripts', 'yes');
+    if (!isEngineReady) return;
+    setProperty('load-scripts', 'yes')
+      .catch(err => console.warn('Lieb: Script guard hit:', err));
     getCurrentWindow().center();
 
     const handleContextMenu = (e: MouseEvent) => e.preventDefault();
