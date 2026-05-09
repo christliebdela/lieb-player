@@ -154,7 +154,7 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
 
         const unlistenProps = await observeProperties(
           OBSERVED_PROPERTIES,
-          ({ name, data }) => {
+          async ({ name, data }) => {
             switch (name) {
               case 'time-pos': setCurrentTime((data as number) || 0); break;
               case 'duration': setDuration((data as number) || 0); break;
@@ -162,7 +162,21 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
               case 'volume': setVolume(data as number); break;
               case 'mute': setMuted(data as boolean); break;
               case 'filename': if (data) setMetadata({ title: String(data) }); break;
-              case 'path': if (data) usePlayerStore.getState().setCurrentTrack(String(data)); break;
+              case 'path': 
+                if (data) {
+                  const newPath = String(data);
+                  const state = usePlayerStore.getState();
+                  state.setCurrentTrack(newPath);
+                  
+                  // Auto-sync subtitles for the new path from the playlist
+                  const track = state.playlist.find(t => t.path === newPath);
+                  if (track && track.subs && track.subs.length > 0) {
+                    for (const sub of track.subs) {
+                      await command('sub-add', [sub, 'select']);
+                    }
+                  }
+                }
+                break;
               case 'track-list': {
                 const tracks = data as any[];
                 if (Array.isArray(tracks)) {

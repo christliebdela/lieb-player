@@ -257,6 +257,12 @@ function MainPlayer() {
             const firstTrack = pairedPlaylist[0];
             try {
               await command('loadfile', [firstTrack.path, 'replace']);
+              // Load associated subtitles for the first track
+              if (firstTrack.subs && firstTrack.subs.length > 0) {
+                for (const sub of firstTrack.subs) {
+                  await command('sub-add', [sub, 'select']);
+                }
+              }
               await command('set', ['pause', 'no']);
               currentState.setCurrentTrack(firstTrack.path);
               currentState.setPlaying(true);
