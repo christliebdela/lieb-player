@@ -141,7 +141,7 @@ const ResizeGrip: React.FC<{ position: 'tl' | 'tr' | 'bl' | 'br', show: boolean 
 function MainPlayer() {
   const { 
     metadata, duration, setPlaylist, volume, isMuted, 
-    showVolumeOSD, accentColor, crossfade, crossfadeDuration,
+    showVolumeOSD, accentColor,
     isFullscreen, setFullscreen, setPlaying, setShowControls, isPlaying, showControls,
     isBlocking, setCurrentTrack
   } = usePlayerStore();
@@ -161,14 +161,7 @@ function MainPlayer() {
     }
   }, [hasMedia]);
 
-  // Sync Crossfade Settings to MPV
-  useEffect(() => {
-    setProperty('user-data/lieb/crossfade', crossfade ? 'yes' : 'no');
-  }, [crossfade]);
 
-  useEffect(() => {
-    setProperty('user-data/lieb/crossfade-duration', crossfadeDuration);
-  }, [crossfadeDuration]);
   
   const subsEnabled = usePlayerStore(s => s.subsEnabled);
   useEffect(() => {
