@@ -239,8 +239,9 @@ function MainPlayer() {
       const paths = event.payload.paths || event.payload;
       if (paths && paths.length > 0) {
         const SUB_EXTS = ['srt', 'ass', 'sub', 'vtt', 'ssa'];
+        const MEDIA_EXTS = ['mp4', 'mkv', 'avi', 'mov', 'webm', 'm4v', 'flv', 'wmv', '3gp', 'ts', 'ogv', 'vob', 'mp3', 'flac', 'wav', 'm4a', 'ogg', 'opus', 'aac', 'wma'];
         const subs = paths.filter((p: string) => SUB_EXTS.some(ext => p.toLowerCase().endsWith(`.${ext}`)));
-        const media = paths.filter((p: string) => !SUB_EXTS.some(ext => p.toLowerCase().endsWith(`.${ext}`)));
+        const media = paths.filter((p: string) => MEDIA_EXTS.some(ext => p.toLowerCase().endsWith(`.${ext}`)));
 
         try {
           const currentState = usePlayerStore.getState();

@@ -4,8 +4,18 @@ pub fn run() {
     
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_mpv::init())
         .setup(|app| {
+            // Safety: Clean up any zombie MPV processes from previous runs
+            #[cfg(target_os = "windows")]
+            {
+                let _ = std::process::Command::new("taskkill")
+                    .args(&["/F", "/IM", "mpv.exe", "/T"])
+                    .output(); // Wait for it to finish to ensure locks are released
+            }
+
             // Handle file opened via "Open With" or file association
             let args: Vec<String> = std::env::args().collect();
             if args.len() > 1 {

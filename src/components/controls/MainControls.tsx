@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { 
   Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, 
   Maximize, Minimize, Settings, LayoutGrid, Subtitles,
-  RotateCcw, RotateCw, Repeat, Repeat1, PictureInPicture2
+  ChevronsLeft, ChevronsRight, Repeat, Repeat1, PictureInPicture2
 } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { motion } from 'framer-motion';
@@ -271,8 +271,7 @@ export const MainControls: React.FC = () => {
                 }}
                 className="text-muted hover:text-accent transition-all cursor-pointer relative group/btn"
               >
-                <RotateCcw size={isSmall ? 18 : 22} className="group-hover/btn:scale-110 transition-transform" />
-                <span className={`absolute inset-0 flex items-center justify-center font-black mt-0.5 ml-[-1px] ${isSmall ? 'text-[5px]' : 'text-[7px]'}`}>{seekInterval}</span>
+                <ChevronsLeft size={isSmall ? 18 : 22} className="group-hover/btn:scale-110 transition-transform" />
               </button>
 
               <button 
@@ -282,8 +281,7 @@ export const MainControls: React.FC = () => {
                 }}
                 className="text-muted hover:text-accent transition-all cursor-pointer relative group/btn"
               >
-                <RotateCw size={isSmall ? 18 : 22} className="group-hover/btn:scale-110 transition-transform" />
-                <span className={`absolute inset-0 flex items-center justify-center font-black mt-0.5 mr-[-1px] ${isSmall ? 'text-[5px]' : 'text-[7px]'}`}>{seekInterval}</span>
+                <ChevronsRight size={isSmall ? 18 : 22} className="group-hover/btn:scale-110 transition-transform" />
               </button>
             </div>
 

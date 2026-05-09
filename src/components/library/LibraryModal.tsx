@@ -1,12 +1,14 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Play, Film, Library, Trash2, ListMusic, ChevronRight } from 'lucide-react';
+import { X, Play, Film, Library, Trash2, ListMusic, ChevronRight, FilePlus, FolderPlus } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { listen, emit } from '@tauri-apps/api/event';
 import { showActionOSD } from '../../utils/osd';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { useTranslation } from '../../i18n';
+import { open } from '@tauri-apps/plugin-dialog';
+import { readDir } from '@tauri-apps/plugin-fs';
 
 export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone }) => {
   const { 
@@ -15,6 +17,107 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
     currentTrack, setCurrentTrack, setPlaying 
   } = usePlayerStore();
   const { t } = useTranslation();
+
+  const handleAddFiles = async () => {
+    try {
+      const selected = await open({
+        multiple: true,
+        filters: [{
+          name: 'Media',
+          extensions: ['mp4', 'mkv', 'avi', 'mov', 'webm', 'm4v', 'flv', 'wmv', '3gp', 'ts', 'mp3', 'flac', 'wav', 'm4a', 'ogg', 'opus', 'aac', 'wma']
+        }]
+      });
+      
+      if (selected) {
+        const paths = Array.isArray(selected) ? selected : [selected];
+        const subExtensions = ['srt', 'ass', 'sub', 'vtt', 'ssa'];
+
+        for (const path of paths) {
+          // Look for subs in the same folder
+          const dirPath = path.split(/[\\/]/).slice(0, -1).join(path.includes('\\') ? '\\' : '/');
+          const fileName = path.split(/[\\/]/).pop()?.split('.').slice(0, -1).join('.') || '';
+          
+          let matchedSubs: string[] = [];
+          try {
+            const entries = await readDir(dirPath);
+            matchedSubs = entries
+              .filter(e => !e.isDirectory)
+              .filter(e => {
+                const ext = e.name.split('.').pop()?.toLowerCase() || '';
+                const base = e.name.split('.').slice(0, -1).join('.');
+                return subExtensions.includes(ext) && (base.toLowerCase().includes(fileName.toLowerCase()) || fileName.toLowerCase().includes(base.toLowerCase()));
+              })
+              .map(e => `${dirPath}${dirPath.includes('\\') ? '\\' : '/'}${e.name}`);
+          } catch (e) {
+            console.warn('Could not scan for subs in', dirPath);
+          }
+
+          addToPlaylist(path, matchedSubs);
+        }
+        showActionOSD(`${paths.length} ${t('library.files')}`, 'plus');
+      }
+    } catch (err) {
+      console.error('Failed to open files:', err);
+    }
+  };
+
+  const handleAddFolder = async () => {
+    try {
+      const selected = await open({
+        directory: true,
+        multiple: false,
+      });
+
+      if (selected && typeof selected === 'string') {
+        const mediaFiles: string[] = [];
+        const subFiles: string[] = [];
+        const extensions = ['mp4', 'mkv', 'avi', 'mov', 'webm', 'm4v', 'flv', 'wmv', '3gp', 'ts', 'ogv', 'vob', 'mp3', 'flac', 'wav', 'm4a', 'ogg', 'opus', 'aac', 'wma'];
+        const subExtensions = ['srt', 'ass', 'sub', 'vtt', 'ssa'];
+
+        const scanDir = async (path: string) => {
+          try {
+            const entries = await readDir(path);
+            for (const entry of entries) {
+              // Robust path join
+              const sep = path.includes('\\') ? '\\' : '/';
+              const entryPath = path.endsWith(sep) ? `${path}${entry.name}` : `${path}${sep}${entry.name}`;
+              
+              if (entry.isDirectory) {
+                await scanDir(entryPath);
+              } else if (entry.name) {
+                const ext = entry.name.split('.').pop()?.toLowerCase() || '';
+                if (extensions.includes(ext)) {
+                  mediaFiles.push(entryPath);
+                } else if (subExtensions.includes(ext)) {
+                  subFiles.push(entryPath);
+                }
+              }
+            }
+          } catch (err) {
+            console.warn(` Lieb: Skipping unreadable directory: ${path}`, err);
+          }
+        };
+
+        await scanDir(selected);
+        
+        // Smart Pairing: Match subtitles to media files
+        const pairedItems = mediaFiles.map(mPath => {
+          const mBase = mPath.split(/[\\/]/).pop()?.split('.').slice(0, -1).join('.') || '';
+          const matchedSubs = subFiles.filter(sPath => {
+            const sBase = sPath.split(/[\\/]/).pop()?.split('.').slice(0, -1).join('.') || '';
+            // Match if names are similar (e.g., Episode1.mp4 and Episode1.srt)
+            return sBase.toLowerCase().includes(mBase.toLowerCase()) || mBase.toLowerCase().includes(sBase.toLowerCase());
+          });
+          return { path: mPath, subs: matchedSubs };
+        });
+
+        pairedItems.forEach(item => addToPlaylist(item.path, item.subs));
+        showActionOSD(`${pairedItems.length} ${t('library.files')}`, 'folder');
+      }
+    } catch (err) {
+      console.error('Failed to open folder:', err);
+    }
+  };
 
   React.useEffect(() => {
     if (!standalone) return;
@@ -99,14 +202,6 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
               </div>
 
               <div className="flex items-center gap-3">
-                {playlist.length > 0 && (
-                  <button 
-                    onClick={clearPlaylist}
-                    className="px-3 py-1.5 rounded-md bg-foreground/[0.03] hover:bg-red-500/10 text-muted hover:text-red-400 text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer border border-border-subtle hover:border-red-500/20"
-                  >
-                    {t('library.clear')}
-                  </button>
-                )}
                 <button 
                   onClick={handleClose}
                   className="w-7 h-7 flex items-center justify-center hover:bg-white/10 rounded-lg transition-colors text-muted hover:text-foreground cursor-pointer"
@@ -194,10 +289,39 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
               </div>
             </div>
             {/* Footer */}
-            <footer className="h-10 px-6 flex items-center border-t border-border-subtle shrink-0">
+            <footer className="h-12 px-6 flex items-center justify-between border-t border-border-subtle shrink-0">
                <div className="flex items-center gap-1.5 text-[9px] font-bold text-muted uppercase tracking-widest">
                  <span className="w-1 h-1 rounded-full bg-accent animate-pulse" />
                  Lieb Media Engine
+               </div>
+               <div className="flex items-center gap-2">
+                 <button 
+                   onClick={handleAddFiles}
+                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-foreground/[0.03] hover:bg-foreground/[0.08] text-muted hover:text-foreground text-[9px] font-bold uppercase tracking-widest transition-all cursor-pointer border border-border-subtle/50"
+                 >
+                   <FilePlus size={12} />
+                   <span>{t('library.add.file')}</span>
+                 </button>
+                 <button 
+                   onClick={handleAddFolder}
+                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-foreground/[0.03] hover:bg-foreground/[0.08] text-muted hover:text-foreground text-[9px] font-bold uppercase tracking-widest transition-all cursor-pointer border border-border-subtle/50"
+                 >
+                   <FolderPlus size={12} />
+                   <span>{t('library.add.folder')}</span>
+                 </button>
+
+                 {playlist.length > 0 && (
+                   <>
+                    <div className="w-[1px] h-4 bg-border-subtle mx-1" />
+                    <button 
+                      onClick={clearPlaylist}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/5 hover:bg-red-500/10 text-red-500/60 hover:text-red-500 text-[9px] font-bold uppercase tracking-widest transition-all cursor-pointer border border-red-500/10 hover:border-red-500/20"
+                    >
+                      <Trash2 size={12} />
+                      {t('library.clear')}
+                    </button>
+                   </>
+                 )}
                </div>
             </footer>
     </div>
