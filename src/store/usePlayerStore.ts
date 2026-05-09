@@ -230,6 +230,7 @@ export const usePlayerStore = create<PlayerState>()(
         persistLibrary: state.persistLibrary,
         customPresets: state.customPresets,
         seekInterval: state.seekInterval,
+        metadata: state.metadata,
       }),
     }
   )
