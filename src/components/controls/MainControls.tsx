@@ -24,7 +24,8 @@ export const MainControls: React.FC = () => {
     playlist, currentTrack, setCurrentTrack,
     scrollMode,
     aspectRatio,
-    subsEnabled, setSubsEnabled
+    subsEnabled, setSubsEnabled,
+    seekInterval
   } = usePlayerStore();
   const { t } = useTranslation();
 
@@ -264,24 +265,24 @@ export const MainControls: React.FC = () => {
             <div className={`flex items-center ${isSmall ? 'gap-3' : 'gap-6'} ${!hasMedia ? 'opacity-20 pointer-events-none' : ''}`}>
               <button 
                 onClick={() => {
-                  command('seek', [-10, 'relative']);
-                  showActionOSD(t('seek.bwd'), 'rewind');
+                  command('seek', [-seekInterval, 'relative']);
+                  showActionOSD(`${seekInterval}s`, 'rewind');
                 }}
                 className="text-muted hover:text-accent transition-all cursor-pointer relative group/btn"
               >
                 <RotateCcw size={isSmall ? 18 : 22} className="group-hover/btn:scale-110 transition-transform" />
-                <span className={`absolute inset-0 flex items-center justify-center font-black mt-0.5 ml-[-1px] ${isSmall ? 'text-[5px]' : 'text-[7px]'}`}>10</span>
+                <span className={`absolute inset-0 flex items-center justify-center font-black mt-0.5 ml-[-1px] ${isSmall ? 'text-[5px]' : 'text-[7px]'}`}>{seekInterval}</span>
               </button>
 
               <button 
                 onClick={() => {
-                  command('seek', [10, 'relative']);
-                  showActionOSD(t('seek.fwd'), 'forward');
+                  command('seek', [seekInterval, 'relative']);
+                  showActionOSD(`${seekInterval}s`, 'forward');
                 }}
                 className="text-muted hover:text-accent transition-all cursor-pointer relative group/btn"
               >
                 <RotateCw size={isSmall ? 18 : 22} className="group-hover/btn:scale-110 transition-transform" />
-                <span className={`absolute inset-0 flex items-center justify-center font-black mt-0.5 mr-[-1px] ${isSmall ? 'text-[5px]' : 'text-[7px]'}`}>10</span>
+                <span className={`absolute inset-0 flex items-center justify-center font-black mt-0.5 mr-[-1px] ${isSmall ? 'text-[5px]' : 'text-[7px]'}`}>{seekInterval}</span>
               </button>
             </div>
 

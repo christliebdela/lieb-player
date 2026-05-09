@@ -116,7 +116,8 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
     deband, setDeband,
     appLanguage, setAppLanguage,
     theme, setTheme,
-    customPresets, addCustomPreset, removeCustomPreset
+    customPresets, addCustomPreset, removeCustomPreset,
+    seekInterval, setSeekInterval
   } = usePlayerStore();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>('general');
@@ -292,6 +293,17 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                               onChange={setPersistLibrary} 
                             />
                           </SettingCard>
+                          <SettingCard label={t('seek.interval')} description={t('seek.interval.desc')}>
+                            <div className="flex items-center gap-4 min-w-[200px]">
+                              <input 
+                                type="range" min="5" max="60" step="5"
+                                value={seekInterval}
+                                onChange={(e) => setSeekInterval(Number(e.target.value))}
+                                className="flex-1 h-1.5 rounded-full appearance-none bg-foreground/10 cursor-pointer accent-accent"
+                              />
+                              <span className="text-[11px] font-mono font-bold text-accent w-8">{seekInterval}s</span>
+                            </div>
+                          </SettingCard>
                         </div>
 
                       </div>
@@ -427,30 +439,30 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
                                    animate={{ opacity: 1, scale: 1, y: 0 }}
                                    exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                                   className="relative w-64 p-6 rounded-[28px] bg-background border border-white/10 shadow-2xl pointer-events-auto"
+                                   className="relative w-64 p-3 rounded-2xl bg-background border border-border-subtle shadow-2xl pointer-events-auto"
                                  >
-                                   <div className="flex items-center justify-between mb-5">
-                                     <div className="flex items-center gap-2">
+                                   <div className="flex items-center justify-between mb-4 px-1">
+                                     <div className="flex items-center gap-2.5">
                                        <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-                                       <span className="text-[10px] font-black text-foreground uppercase tracking-[0.2em]">{t('color.mixer')}</span>
+                                       <h3 className="text-[10px] font-black text-foreground uppercase tracking-[0.2em]">{t('color.mixer')}</h3>
                                      </div>
                                      <button 
-                                       onClick={() => setShowPicker(false)} 
-                                       className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors text-muted hover:text-foreground cursor-pointer"
+                                       onClick={() => setShowPicker(false)}
+                                       className="text-muted hover:text-foreground transition-colors cursor-pointer p-1"
                                      >
                                        <X size={14} />
                                      </button>
                                    </div>
 
-                                   <div className="space-y-5">
+                                   <div className="space-y-3">
                                      {/* Full-width Visual Preview & Hex */}
                                      <div className="flex flex-col items-center gap-3">
-                                       <div 
+                                         <div 
                                          className="w-full h-14 rounded-2xl shadow-xl border border-white/10 flex items-center justify-center overflow-hidden" 
                                          style={{ backgroundColor: accentColor }} 
                                        />
-                                       <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/5">
-                                         <span className="text-[9px] font-bold text-muted uppercase tracking-widest">Hex</span>
+                                       <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-foreground/[0.03] border border-border-subtle">
+                                         <span className="text-[9px] font-bold text-muted uppercase tracking-widest">{t('hex')}</span>
                                          <input 
                                            type="text" 
                                            value={accentColor.toUpperCase()}
@@ -460,11 +472,11 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                                        </div>
                                      </div>
 
-                                     <div className="space-y-4">
+                                     <div className="space-y-2.5">
                                        {/* Hue Slider */}
                                        <div className="space-y-1.5">
                                          <div className="flex justify-between text-[8px] font-black text-muted uppercase tracking-[0.15em] opacity-60">
-                                           <span>Spectrum</span>
+                                           <span>{t('spectrum')}</span>
                                          </div>
                                          <input 
                                            type="range" min="0" max="360"
@@ -476,7 +488,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                                        {/* Brightness Slider */}
                                        <div className="space-y-1.5">
                                          <div className="flex justify-between text-[8px] font-black text-muted uppercase tracking-[0.15em] opacity-60">
-                                           <span>Luminance</span>
+                                           <span>{t('luminance')}</span>
                                          </div>
                                          <input 
                                            type="range" min="20" max="90"
@@ -490,20 +502,20 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                                        </div>
                                      </div>
 
-                                     <div className="flex gap-2 pt-2">
-                                       <button 
-                                         onClick={() => { addCustomPreset(accentColor); setShowPicker(false); }}
-                                         className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white text-[9px] font-black uppercase tracking-[0.1em] transition-all border border-white/5 cursor-pointer whitespace-nowrap"
-                                       >
-                                         Save
-                                       </button>
-                                       <button 
-                                         onClick={() => setShowPicker(false)}
-                                         className="flex-1 py-3 rounded-xl bg-accent text-white text-[10px] font-black uppercase tracking-[0.1em] hover:brightness-110 transition-all shadow-lg shadow-accent/20 cursor-pointer"
-                                       >
-                                         Done
-                                       </button>
-                                     </div>
+                                       <div className="flex gap-2 pt-2">
+                                         <button 
+                                           onClick={() => { addCustomPreset(accentColor); setShowPicker(false); }}
+                                           className="flex-1 py-3 rounded-xl bg-foreground/[0.05] hover:bg-foreground/[0.1] text-foreground text-[9px] font-black uppercase tracking-[0.1em] transition-all border border-border-subtle cursor-pointer whitespace-nowrap"
+                                         >
+                                           {t('save')}
+                                         </button>
+                                         <button 
+                                           onClick={() => setShowPicker(false)}
+                                           className="flex-1 py-3 rounded-xl bg-accent text-white text-[10px] font-black uppercase tracking-[0.1em] hover:brightness-110 transition-all shadow-lg shadow-accent/20 cursor-pointer"
+                                         >
+                                           {t('done')}
+                                         </button>
+                                       </div>
                                    </div>
                                  </motion.div>
                                </div>

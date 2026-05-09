@@ -43,9 +43,11 @@ interface PlayerState {
   thumbnailCacheDays: number;
   customPresets: string[];
   isBlocking: boolean;
+  seekInterval: number;
   
   // Actions
   setBlocking: (blocking: boolean) => void;
+  setSeekInterval: (interval: number) => void;
   setPlaying: (playing: boolean) => void;
   setVolume: (volume: number) => void;
   setDuration: (duration: number) => void;
@@ -121,6 +123,7 @@ export const usePlayerStore = create<PlayerState>()(
       aspectRatio: 16/9,
       customPresets: [],
       isBlocking: false,
+      seekInterval: 10,
       metadata: {
         title: '',
         description: '',
@@ -200,6 +203,7 @@ export const usePlayerStore = create<PlayerState>()(
         set({ customPresets: get().customPresets.filter(p => p !== color) });
       },
       setBlocking: (blocking) => set({ isBlocking: blocking }),
+      setSeekInterval: (interval) => set({ seekInterval: interval }),
       setPersistLibrary: (persist) => set({ persistLibrary: persist }),
     }),
     {
@@ -225,6 +229,7 @@ export const usePlayerStore = create<PlayerState>()(
         theme: state.theme,
         persistLibrary: state.persistLibrary,
         customPresets: state.customPresets,
+        seekInterval: state.seekInterval,
       }),
     }
   )

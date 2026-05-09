@@ -436,7 +436,7 @@ function MainPlayer() {
 
       {/* Input Blocker for Modals */}
       {isBlocking && (
-        <div className="fixed inset-0 z-[100] bg-black/5 backdrop-blur-[1px] pointer-events-auto" />
+        <div className="fixed inset-0 z-[100] bg-transparent pointer-events-auto" />
       )}
     </div>
   );

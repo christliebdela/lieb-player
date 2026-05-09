@@ -141,14 +141,16 @@ export const useKeyboardShortcuts = () => {
         }
         case 'ArrowRight':
           if (hasMedia) {
-            await command('seek', [10, 'relative']);
-            showActionOSD(t('seek.fwd'), 'forward');
+            const interval = usePlayerStore.getState().seekInterval;
+            await command('seek', [interval, 'relative']);
+            showActionOSD(`${interval}s`, 'forward');
           }
           break;
         case 'ArrowLeft':
           if (hasMedia) {
-            await command('seek', [-10, 'relative']);
-            showActionOSD(t('seek.bwd'), 'rewind');
+            const interval = usePlayerStore.getState().seekInterval;
+            await command('seek', [-interval, 'relative']);
+            showActionOSD(`${interval}s`, 'rewind');
           }
           break;
         case 'ArrowUp': {
