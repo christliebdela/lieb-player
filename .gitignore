@@ -40,4 +40,5 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-src-tauri/mpv.exe  
+src-tauri/mpv.exe
+kp.json

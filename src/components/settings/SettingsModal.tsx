@@ -6,6 +6,8 @@ import { useTranslation } from '../../i18n';
 import { motion, AnimatePresence } from 'framer-motion';
 import { setProperty } from 'tauri-plugin-mpv-api';
 import { getCurrentWindow } from '@tauri-apps/api/window';
+import { check } from '@tauri-apps/plugin-updater';
+import { relaunch } from '@tauri-apps/plugin-process';
 import { showActionOSD } from '../../utils/osd';
 
 const isMainWindow = () => getCurrentWindow().label === 'main';
@@ -179,12 +181,73 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
     customPresets, addCustomPreset, removeCustomPreset,
     seekInterval, setSeekInterval,
     streamingQuality, setStreamingQuality,
-    clearPlaylist
+    clearPlaylist,
+    settingsActiveTab
   } = usePlayerStore();
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<Tab>('general');
+  const [activeTab, setActiveTab] = useState<Tab>(settingsActiveTab as Tab);
+  
+  React.useEffect(() => {
+    if (isSettingsOpen) {
+      setActiveTab(settingsActiveTab as Tab);
+    }
+  }, [isSettingsOpen, settingsActiveTab]);
+
   const [showPicker, setShowPicker] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'available' | 'uptodate' | 'error'>('idle');
+
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const handleCheckUpdate = async () => {
+    setUpdateStatus('checking');
+    setErrorMsg(null);
+    try {
+      const update = await check();
+      if (update) {
+        setHasUpdate(true);
+        setUpdateStatus('available');
+        
+        let downloaded = 0;
+        let total = 0;
+        await update.downloadAndInstall((event) => {
+          switch (event.event) {
+            case 'Started':
+              total = event.data.contentLength || 0;
+              break;
+            case 'Progress':
+              downloaded += event.data.chunkLength;
+              if (total > 0) {
+                setDownloadProgress((downloaded / total) * 100);
+              }
+              break;
+          }
+        });
+        
+        await relaunch();
+      } else {
+        setHasUpdate(false);
+        setUpdateStatus('uptodate');
+        setTimeout(() => setUpdateStatus('idle'), 3000);
+      }
+    } catch (err: any) {
+      console.error('Update error:', err);
+      setUpdateStatus('error');
+      setErrorMsg(err.toString());
+      setTimeout(() => {
+        setUpdateStatus('idle');
+        setErrorMsg(null);
+      }, 5000);
+    }
+  };
+
+  const {
+    autoUpdateCheck, setAutoUpdateCheck,
+    autoUpdateDownload, setAutoUpdateDownload,
+    autoUpdateInstall, setAutoUpdateInstall,
+    downloadProgress, setDownloadProgress,
+    setHasUpdate
+  } = usePlayerStore();
 
   if (!isSettingsOpen && !standalone) return null;
 
@@ -640,6 +703,117 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                     {activeTab === 'maintenance' && (
                       <div className="space-y-8 pt-2">
                         <div className="divide-y divide-white/[0.04]">
+                          {/* Updates Section */}
+                          <div className="py-4 space-y-4">
+                            <h4 className="text-[10px] font-black text-accent uppercase tracking-[0.2em] mb-4">Updates</h4>
+                            <div className="space-y-4">
+                              <div className="flex items-center justify-between group">
+                                <div className="space-y-0.5">
+                                  <h4 className="text-[13px] font-medium text-foreground/90">{t('update.auto_check' as any)}</h4>
+                                  <p className="text-[11px] text-muted leading-relaxed font-medium">{t('update.auto_check.desc' as any)}</p>
+                                </div>
+                                <button 
+                                  onClick={() => setAutoUpdateCheck(!autoUpdateCheck)}
+                                  className={`w-10 h-5 rounded-full relative transition-all duration-300 cursor-pointer ${autoUpdateCheck ? 'bg-accent' : 'bg-foreground/10'}`}
+                                >
+                                  <motion.div 
+                                    animate={{ x: autoUpdateCheck ? 22 : 2 }}
+                                    className="absolute top-1 w-3 h-3 rounded-full bg-white shadow-sm"
+                                  />
+                                </button>
+                              </div>
+
+                              <div className="flex items-center justify-between group">
+                                <div className="space-y-0.5">
+                                  <h4 className="text-[13px] font-medium text-foreground/90">{t('update.auto_download' as any)}</h4>
+                                  <p className="text-[11px] text-muted leading-relaxed font-medium">{t('update.auto_download.desc' as any)}</p>
+                                </div>
+                                <button 
+                                  onClick={() => setAutoUpdateDownload(!autoUpdateDownload)}
+                                  className={`w-10 h-5 rounded-full relative transition-all duration-300 cursor-pointer ${autoUpdateDownload ? 'bg-accent' : 'bg-foreground/10'}`}
+                                >
+                                  <motion.div 
+                                    animate={{ x: autoUpdateDownload ? 22 : 2 }}
+                                    className="absolute top-1 w-3 h-3 rounded-full bg-white shadow-sm"
+                                  />
+                                </button>
+                              </div>
+
+                              <div className="flex items-center justify-between group">
+                                <div className="space-y-0.5">
+                                  <h4 className="text-[13px] font-medium text-foreground/90">{t('update.auto_install' as any)}</h4>
+                                  <p className="text-[11px] text-muted leading-relaxed font-medium">{t('update.auto_install.desc' as any)}</p>
+                                </div>
+                                <button 
+                                  onClick={() => setAutoUpdateInstall(!autoUpdateInstall)}
+                                  className={`w-10 h-5 rounded-full relative transition-all duration-300 cursor-pointer ${autoUpdateInstall ? 'bg-accent' : 'bg-foreground/10'}`}
+                                >
+                                  <motion.div 
+                                    animate={{ x: autoUpdateInstall ? 22 : 2 }}
+                                    className="absolute top-1 w-3 h-3 rounded-full bg-white shadow-sm"
+                                  />
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="pt-2">
+                              <button 
+                                onClick={handleCheckUpdate}
+                                disabled={updateStatus === 'checking' || (updateStatus === 'available' && downloadProgress !== null)}
+                                className={`w-full px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all border ${
+                                  updateStatus === 'checking' ? 'bg-accent/10 border-accent/20 text-accent animate-pulse' :
+                                  updateStatus === 'available' ? 'bg-accent border-accent text-white shadow-lg shadow-accent/20' :
+                                  updateStatus === 'uptodate' ? 'bg-green-500/10 border-green-500/20 text-green-500' :
+                                  updateStatus === 'error' ? 'bg-red-500/10 border-red-500/20 text-red-500' :
+                                  'bg-foreground/[0.03] border-border-subtle text-muted hover:text-accent hover:border-accent/20 cursor-pointer'
+                                }`}
+                              >
+                                {updateStatus === 'checking' ? t('update.checking' as any) :
+                                 updateStatus === 'available' ? (downloadProgress !== null ? `${Math.round(downloadProgress)}%` : 'Update Now') :
+                                 updateStatus === 'uptodate' ? t('update.uptodate' as any) :
+                                 updateStatus === 'error' ? 'Error' :
+                                 'Check for Update'}
+                              </button>
+
+                              <AnimatePresence>
+                                {updateStatus === 'error' && errorMsg && (
+                                  <motion.p 
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    className="mt-2 text-[10px] text-red-400 font-medium leading-relaxed bg-red-400/5 p-2 rounded-lg border border-red-400/10"
+                                  >
+                                    {errorMsg}
+                                  </motion.p>
+                                )}
+                              </AnimatePresence>
+
+                              <AnimatePresence>
+                                {downloadProgress !== null && (
+                                  <motion.div 
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="mt-4 space-y-2"
+                                  >
+                                    <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-muted">
+                                      <span>{t('update.downloading' as any)}</span>
+                                      <span className="text-accent">{Math.round(downloadProgress)}%</span>
+                                    </div>
+                                    <div className="h-1.5 w-full bg-foreground/5 rounded-full overflow-hidden">
+                                      <motion.div 
+                                        className="h-full bg-accent shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)]"
+                                        initial={{ width: 0 }}
+                                        animate={{ width: `${downloadProgress}%` }}
+                                        transition={{ type: "spring", damping: 20, stiffness: 100 }}
+                                      />
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                          </div>
+
                           <div className="py-4 flex items-center justify-between group">
                             <div className="flex items-center gap-4">
                               <div className="w-10 h-10 rounded-xl bg-foreground/[0.03] border border-border-subtle flex items-center justify-center text-muted group-hover:text-red-400 group-hover:bg-red-400/5 transition-all"><Trash2 size={18} /></div>

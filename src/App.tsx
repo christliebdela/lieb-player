@@ -13,7 +13,9 @@ import { useTranslation } from './i18n';
 import { listen } from '@tauri-apps/api/event';
 import { command, setProperty } from 'tauri-plugin-mpv-api';
 import { getCurrentWindow } from '@tauri-apps/api/window';
-import { Volume2, VolumeX, Volume1 } from 'lucide-react';
+import { Volume2, VolumeX, Volume1, Download } from 'lucide-react';
+import { check } from '@tauri-apps/plugin-updater';
+import { relaunch } from '@tauri-apps/plugin-process';
 
 // ── Lightweight shell for secondary windows (no MPV, no player hooks) ──
 function SettingsWindow() {
@@ -202,6 +204,58 @@ function MainPlayer() {
   
   useKeyboardShortcuts();
   const timeoutRef = useRef<number | null>(null);
+
+  const { 
+    autoUpdateCheck, autoUpdateDownload, autoUpdateInstall, 
+    setHasUpdate, setDownloadProgress,
+    hasUpdate, setSettingsActiveTab, setSettingsOpen
+  } = usePlayerStore();
+
+  // FOR PREVIEW: Force hasUpdate to true if you want to see it now
+  const isUpdateAvailable = hasUpdate || true; 
+
+  useEffect(() => {
+    if (!autoUpdateCheck) return;
+
+    const performBackgroundCheck = async () => {
+      try {
+        const update = await check();
+        if (update) {
+          setHasUpdate(true);
+          window.console.log('>>> [Update] New version available:', update.version);
+
+          if (autoUpdateDownload) {
+            window.console.log('>>> [Update] Starting auto-download...');
+            let downloaded = 0;
+            let total = 0;
+            await update.downloadAndInstall((event) => {
+              switch (event.event) {
+                case 'Started':
+                  total = event.data.contentLength || 0;
+                  break;
+                case 'Progress':
+                  downloaded += event.data.chunkLength;
+                  if (total > 0) {
+                    setDownloadProgress((downloaded / total) * 100);
+                  }
+                  break;
+              }
+            });
+            window.console.log('>>> [Update] Download finished.');
+            
+            if (autoUpdateInstall) {
+              window.console.log('>>> [Update] Auto-relaunching...');
+              await relaunch();
+            }
+          }
+        }
+      } catch (err) {
+        window.console.error('>>> [Update] Background check failed:', err);
+      }
+    };
+
+    performBackgroundCheck();
+  }, [autoUpdateCheck]);
 
   useEffect(() => {
     if (!isEngineReady) return;
@@ -424,14 +478,41 @@ function MainPlayer() {
         showControls ? 'opacity-100' : 'opacity-0'
       }`}>
         <header 
-          className="p-1 flex justify-between items-center pointer-events-auto"
+          className={`p-1 flex justify-between items-center transition-all duration-500 ${
+            showControls ? 'pointer-events-auto' : 'pointer-events-none'
+          }`}
           data-tauri-drag-region={!isFullscreen ? "true" : undefined}
         >
           <div className="flex items-center gap-2.5 px-3 py-1.5 opacity-40 hover:opacity-100 transition-opacity pointer-events-none">
-            <img src="/lieb-player-icon.png" alt="Logo" className="w-3.5 h-3.5 object-contain" />
-            <span className="text-foreground text-[10px] tracking-[0.15em] font-bold uppercase">
-              Lieb
-            </span>
+            <div className="flex items-center gap-2.5">
+              <img src="/lieb-player-icon.png" alt="Logo" className="w-3.5 h-3.5 object-contain" />
+              <span className="text-foreground text-[10px] tracking-[0.15em] font-bold uppercase">
+                Lieb
+              </span>
+            </div>
+
+            <AnimatePresence>
+              {isUpdateAvailable && (
+                <motion.button
+                  initial={{ opacity: 0, x: -10, scale: 0.8 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  exit={{ opacity: 0, x: -10, scale: 0.8 }}
+                  onClick={() => {
+                    setSettingsActiveTab('maintenance');
+                    setSettingsOpen(true);
+                  }}
+                  className="ml-2 flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-accent/10 border border-accent/20 text-accent hover:bg-accent hover:text-white transition-all cursor-pointer group shadow-[0_0_15px_rgba(var(--accent-rgb),0.1)] pointer-events-auto"
+                >
+                  <motion.div
+                    animate={{ y: [0, 2, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  >
+                    <Download size={10} strokeWidth={3} />
+                  </motion.div>
+                  <span className="text-[8px] font-black uppercase tracking-wider">Update</span>
+                </motion.button>
+              )}
+            </AnimatePresence>
           </div>
           <WindowControls />
         </header>

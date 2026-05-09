@@ -47,6 +47,12 @@ interface PlayerState {
   isBlocking: boolean;
   seekInterval: number;
   hasSubtitles: boolean;
+  autoUpdateCheck: boolean;
+  autoUpdateDownload: boolean;
+  autoUpdateInstall: boolean;
+  downloadProgress: number | null;
+  hasUpdate: boolean;
+  settingsActiveTab: string;
   
   // Actions
   setBlocking: (blocking: boolean) => void;
@@ -93,7 +99,13 @@ interface PlayerState {
   removeCustomPreset: (color: string) => void;
   isBuffering: boolean;
   setBuffering: (buffering: boolean) => void;
+  setSettingsActiveTab: (tab: string) => void;
   updatePlaylistTitle: (path: string, title: string) => void;
+  setAutoUpdateCheck: (check: boolean) => void;
+  setAutoUpdateDownload: (download: boolean) => void;
+  setAutoUpdateInstall: (install: boolean) => void;
+  setDownloadProgress: (progress: number | null) => void;
+  setHasUpdate: (has: boolean) => void;
 }
 
 export const usePlayerStore = create<PlayerState>()(
@@ -133,6 +145,14 @@ export const usePlayerStore = create<PlayerState>()(
       persistLibrary: true,
       thumbnailCacheDays: 30,
       aspectRatio: 16/9,
+      autoUpdateCheck: true,
+      autoUpdateDownload: false,
+      autoUpdateInstall: false,
+      downloadProgress: null,
+      hasUpdate: false,
+      settingsActiveTab: 'general',
+
+      setSettingsActiveTab: (tab) => set({ settingsActiveTab: tab }),
       customPresets: [],
       isBlocking: false,
       seekInterval: 10,
@@ -228,6 +248,11 @@ export const usePlayerStore = create<PlayerState>()(
           item.path === path ? { ...item, title } : item
         )
       })),
+      setAutoUpdateCheck: (autoUpdateCheck) => set({ autoUpdateCheck }),
+      setAutoUpdateDownload: (autoUpdateDownload) => set({ autoUpdateDownload }),
+      setAutoUpdateInstall: (autoUpdateInstall) => set({ autoUpdateInstall }),
+      setDownloadProgress: (downloadProgress) => set({ downloadProgress }),
+      setHasUpdate: (hasUpdate) => set({ hasUpdate }),
     }),
     {
       name: 'lieb-player-storage',

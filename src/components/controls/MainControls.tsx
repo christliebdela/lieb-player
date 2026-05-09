@@ -55,7 +55,8 @@ export const MainControls: React.FC = () => {
     aspectRatio,
     subsEnabled, setSubsEnabled,
     seekInterval,
-    controlBarLayout
+    controlBarLayout,
+    hasUpdate
   } = usePlayerStore();
   const { t } = useTranslation();
 
@@ -462,12 +463,15 @@ export const MainControls: React.FC = () => {
 
   const renderGlobalUtilities = () => (
     <div className={`flex items-center ${isSmall ? 'gap-3' : 'gap-6'}`}>
-      <Tooltip content="Settings (S)" align="right">
+      <Tooltip content={hasUpdate ? 'Update Available!' : 'Settings (S)'} align="right">
         <button 
           onClick={() => openWindow('settings', 'Settings', 800, 560)}
-          className="text-muted hover:text-accent transition-all cursor-pointer group"
+          className="text-muted hover:text-accent transition-all cursor-pointer group relative"
         >
           <Settings size={18} className="group-hover:scale-110 group-hover:rotate-45 transition-all duration-300" />
+          {hasUpdate && (
+            <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-accent rounded-full border border-surface shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)]" />
+          )}
         </button>
       </Tooltip>
 
@@ -562,7 +566,9 @@ export const MainControls: React.FC = () => {
       className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none"
       onWheel={handleWheel}
     >
-      <div className="w-full pointer-events-auto relative bg-surface/30 backdrop-blur-3xl border-t border-border-subtle shadow-[0_8px_30px_rgba(0,0,0,0.08)]">
+      <div className={`w-full relative bg-surface/30 backdrop-blur-3xl border-t border-border-subtle shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all duration-500 ${
+        showControls ? 'pointer-events-auto' : 'pointer-events-none'
+      }`}>
         <div 
           ref={progressRef}
           className={`absolute top-0 left-4 right-4 h-1 z-20 group -translate-y-[1px] ${hasMedia ? 'cursor-pointer' : 'cursor-default opacity-0 pointer-events-none'}`}
