@@ -186,6 +186,7 @@ function MainPlayer() {
             console.log(' Lieb Player: Loading media:', media.length, 'files');
             setPlaylist(media);
             await command('loadfile', [media[0], 'replace']);
+            usePlayerStore.getState().setCurrentTrack(media[0]);
             for (let i = 1; i < media.length; i++) {
               await command('loadfile', [media[i], 'append']);
             }

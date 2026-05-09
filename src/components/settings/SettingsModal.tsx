@@ -108,6 +108,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
     autoPlay, setAutoPlay,
     renderingBackend, setRenderingBackend,
     interpolation, setInterpolation,
+    persistLibrary, setPersistLibrary,
     deband, setDeband,
     appLanguage, setAppLanguage,
     theme, setTheme
@@ -277,6 +278,12 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                               options={['English', 'French', 'Spanish']}
                               value={appLanguage}
                               onChange={(v) => setAppLanguage(v as 'English' | 'French' | 'Spanish')}
+                            />
+                          </SettingCard>
+                          <SettingCard label={t('persist.library')} description={t('persist.library.desc')}>
+                            <Toggle 
+                              checked={persistLibrary} 
+                              onChange={setPersistLibrary} 
                             />
                           </SettingCard>
                         </div>

@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
 import { usePlayerStore } from '../../store/usePlayerStore';
-import { command, init, observeProperties } from 'tauri-plugin-mpv-api';
+import { command, init, observeProperties, setProperty } from 'tauri-plugin-mpv-api';
 import { getCurrentWindow, PhysicalSize, currentMonitor } from '@tauri-apps/api/window';
 import { showActionOSD } from '../../utils/osd';
 import { useTranslation } from '../../i18n';
 
 const OBSERVED_PROPERTIES = [
-  'pause', 'time-pos', 'duration', 'volume', 'mute', 'filename', 
+  'pause', 'time-pos', 'duration', 'volume', 'mute', 'filename', 'path',
   'video-params/w', 'video-params/h', 'dwidth', 'dheight'
 ] as const;
 
@@ -149,6 +149,13 @@ export const VideoCanvas: React.FC = () => {
         
         console.log(' Lieb Player: Engine Initialized Successfully');
 
+        // If we have a current track in store, load it (paused)
+        const track = usePlayerStore.getState().currentTrack;
+        if (track) {
+          await command('loadfile', [track, 'replace']);
+          await setProperty('pause', true);
+        }
+
         const unlisten = await observeProperties(
           OBSERVED_PROPERTIES,
           ({ name, data }) => {
@@ -175,6 +182,11 @@ export const VideoCanvas: React.FC = () => {
               case 'filename':
                 if (data) {
                   setMetadata({ title: String(data) });
+                }
+                break;
+              case 'path':
+                if (data) {
+                  usePlayerStore.getState().setCurrentTrack(String(data));
                 }
                 break;
               case 'video-params/w':

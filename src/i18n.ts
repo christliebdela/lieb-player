@@ -20,6 +20,8 @@ const translations = {
     'scroll.wheel.desc': 'What the scroll wheel controls',
     'app.language': 'App Language',
     'app.language.desc': 'Interface language',
+    'persist.library': 'Remember Library',
+    'persist.library.desc': 'Keep your playlist when the app restarts',
     
     // Interface
     'theme': 'Theme',
@@ -106,6 +108,8 @@ const translations = {
     'scroll.wheel.desc': 'Contrôle de la molette',
     'app.language': 'Langue',
     'app.language.desc': 'Langue de l\'interface',
+    'persist.library': 'Mémoriser la bibliothèque',
+    'persist.library.desc': 'Garder la liste de lecture au redémarrage',
     
     'theme': 'Thème',
     'theme.desc': 'Apparence de l\'application',
@@ -185,6 +189,8 @@ const translations = {
     'scroll.wheel.desc': 'Control de la rueda',
     'app.language': 'Idioma',
     'app.language.desc': 'Idioma de la interfaz',
+    'persist.library': 'Recordar biblioteca',
+    'persist.library.desc': 'Mantener la lista de reproducción al reiniciar',
     
     'theme': 'Tema',
     'theme.desc': 'Apariencia de la aplicación',

@@ -9,7 +9,11 @@ import { getCurrentWindow } from '@tauri-apps/api/window';
 import { useTranslation } from '../../i18n';
 
 export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone }) => {
-  const { isLibraryOpen, setLibraryOpen, playlist, addToPlaylist, removeFromPlaylist, clearPlaylist } = usePlayerStore();
+  const { 
+    isLibraryOpen, setLibraryOpen, 
+    playlist, addToPlaylist, removeFromPlaylist, clearPlaylist,
+    currentTrack, setCurrentTrack 
+  } = usePlayerStore();
   const { t } = useTranslation();
 
   React.useEffect(() => {
@@ -37,8 +41,9 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
 
   const handlePlayEpisode = async (path: string) => {
     try {
-      await command('loadfile', [path]);
+      await command('loadfile', [path, 'replace']);
       await setProperty('pause', false);
+      setCurrentTrack(path);
       setLibraryOpen(false);
     } catch (err) {
       console.error('Failed to load episode:', err);
@@ -105,7 +110,11 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.03 }}
-                      className="group flex items-center gap-4 p-3.5 rounded-xl bg-transparent hover:bg-foreground/[0.04] transition-all border border-transparent hover:border-border-subtle"
+                      className={`group flex items-center gap-4 p-3.5 rounded-xl transition-all border ${
+                        currentTrack === path 
+                        ? 'bg-accent/5 border-accent/20' 
+                        : 'bg-transparent border-transparent hover:bg-foreground/[0.04] hover:border-border-subtle'
+                      }`}
                     >
                       <button 
                         onClick={() => handlePlayEpisode(path)}

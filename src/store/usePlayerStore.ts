@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { command } from 'tauri-plugin-mpv-api';
 
 interface Metadata {
   title: string;
@@ -38,6 +39,7 @@ interface PlayerState {
   appLanguage: 'English' | 'French' | 'Spanish';
   metadata: Metadata;
   theme: 'dark' | 'light';
+  persistLibrary: boolean;
   
   // Actions
   setPlaying: (playing: boolean) => void;
@@ -71,6 +73,7 @@ interface PlayerState {
   setDeband: (enabled: boolean) => void;
   setAppLanguage: (lang: 'English' | 'French' | 'Spanish') => void;
   setMetadata: (metadata: Partial<Metadata>) => void;
+  setPersistLibrary: (persist: boolean) => void;
   aspectRatio: number;
   setAspectRatio: (ratio: number) => void;
   setTheme: (theme: 'dark' | 'light') => void;
@@ -107,6 +110,7 @@ export const usePlayerStore = create<PlayerState>()(
       deband: true,
       appLanguage: 'English',
       theme: 'dark',
+      persistLibrary: true,
       aspectRatio: 16/9,
       metadata: {
         title: '',
@@ -123,10 +127,27 @@ export const usePlayerStore = create<PlayerState>()(
       setCurrentTrack: (track) => set({ currentTrack: track }),
       setPlaylist: (playlist) => set({ playlist }),
       addToPlaylist: (track) => set((state) => ({ playlist: [...state.playlist, track] })),
-      removeFromPlaylist: (track) => set((state) => ({ 
-        playlist: state.playlist.filter((t) => t !== track) 
-      })),
-      clearPlaylist: () => set({ playlist: [] }),
+      removeFromPlaylist: (track) => {
+        const state = get();
+        const newPlaylist = state.playlist.filter((t) => t !== track);
+        
+        // If we remove the current track, stop playback or skip?
+        // User says "still keeps it playing", so let's stop it if it's the current one.
+        if (state.currentTrack === track) {
+          command('stop');
+          set({ currentTrack: null, duration: 0, currentTime: 0, isPlaying: false });
+        }
+        
+        set({ playlist: newPlaylist });
+      },
+      clearPlaylist: () => {
+        const state = get();
+        if (state.currentTrack) {
+          command('stop');
+          set({ currentTrack: null, duration: 0, currentTime: 0, isPlaying: false });
+        }
+        set({ playlist: [] });
+      },
       setSettingsOpen: (open) => set({ isSettingsOpen: open }),
       setLibraryOpen: (open) => set({ isLibraryOpen: open }),
       setFullscreen: (full) => set({ isFullscreen: full }),
@@ -150,13 +171,15 @@ export const usePlayerStore = create<PlayerState>()(
       setAppLanguage: (lang) => set({ appLanguage: lang }),
       setMetadata: (metadata) => set({ metadata: { ...get().metadata, ...metadata } }),
       setTheme: (theme) => set({ theme }),
+      setPersistLibrary: (persist) => set({ persistLibrary: persist }),
     }),
     {
       name: 'lieb-player-storage',
       partialize: (state) => ({
         volume: state.volume,
         isMuted: state.isMuted,
-        playlist: state.playlist,
+        currentTrack: state.currentTrack,
+        playlist: state.persistLibrary ? state.playlist : [],
         loopMode: state.loopMode,
         equalizer: state.equalizer,
         accentColor: state.accentColor,
@@ -171,6 +194,7 @@ export const usePlayerStore = create<PlayerState>()(
         deband: state.deband,
         appLanguage: state.appLanguage,
         theme: state.theme,
+        persistLibrary: state.persistLibrary,
       }),
     }
   )
