@@ -12,7 +12,7 @@ import { emit } from '@tauri-apps/api/event';
 import { showActionOSD } from '../../utils/osd';
 import { useTranslation } from '../../i18n';
 
-const Tooltip: React.FC<{ children: React.ReactNode; content: string }> = ({ children, content }) => {
+const Tooltip: React.FC<{ children: React.ReactNode; content: string; align?: 'center' | 'right' }> = ({ children, content, align = 'center' }) => {
   const [show, setShow] = useState(false);
   return (
     <div className="relative flex flex-col items-center group" onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
@@ -24,10 +24,14 @@ const Tooltip: React.FC<{ children: React.ReactNode; content: string }> = ({ chi
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ type: "spring", damping: 20, stiffness: 300 }}
-            className="absolute bottom-full mb-2 px-2 py-1 bg-black/90 backdrop-blur-xl border border-white/5 rounded-md shadow-2xl pointer-events-none whitespace-nowrap z-[100] flex items-center justify-center"
+            className={`absolute bottom-full mb-2 px-2 py-1 bg-black/90 backdrop-blur-xl border border-white/5 rounded-md shadow-2xl pointer-events-none whitespace-nowrap z-[100] flex items-center justify-center ${
+              align === 'right' ? 'right-0' : 'left-1/2 -translate-x-1/2'
+            }`}
           >
             <span className="text-[8px] font-medium uppercase tracking-[0.2em] text-accent leading-none">{content}</span>
-            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-black/90" />
+            <div className={`absolute top-full border-4 border-transparent border-t-black/90 ${
+              align === 'right' ? 'right-2' : 'left-1/2 -translate-x-1/2'
+            }`} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -116,15 +120,15 @@ export const MainControls: React.FC = () => {
 
   const handleLoopCycle = async () => {
     if (loopMode === 'off') {
-      setLoopMode('one');
-      await setProperty('loop-file' as any, 'inf');
-      await setProperty('loop-playlist' as any, 'no');
-      showActionOSD(t('loop.one'), 'repeat-1');
-    } else if (loopMode === 'one') {
       setLoopMode('all');
       await setProperty('loop-file' as any, 'no');
       await setProperty('loop-playlist' as any, 'inf');
       showActionOSD(t('loop.all'), 'repeat');
+    } else if (loopMode === 'all') {
+      setLoopMode('one');
+      await setProperty('loop-file' as any, 'inf');
+      await setProperty('loop-playlist' as any, 'no');
+      showActionOSD(t('loop.one'), 'repeat-1');
     } else {
       setLoopMode('off');
       await setProperty('loop-file' as any, 'no');
@@ -409,7 +413,7 @@ export const MainControls: React.FC = () => {
               </>
             )}
             
-            <Tooltip content="Settings (S)">
+            <Tooltip content="Settings (S)" align="right">
               <button 
                 onClick={() => openWindow('settings', 'Settings', 800, 560)}
                 className="text-muted hover:text-accent transition-all cursor-pointer group"
@@ -418,7 +422,7 @@ export const MainControls: React.FC = () => {
               </button>
             </Tooltip>
 
-            <Tooltip content={isPinned ? 'Unpin (Always on Top)' : 'Pin (Always on Top)'}>
+            <Tooltip content={isPinned ? 'Unpin (Always on Top)' : 'Pin (Always on Top)'} align="right">
               <button 
                 onClick={async () => {
                   const next = !isPinned;
@@ -452,7 +456,7 @@ export const MainControls: React.FC = () => {
               </button>
             </Tooltip>
 
-            <Tooltip content={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen (F)'}>
+            <Tooltip content={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen (F)'} align="right">
               <button 
                 onClick={handleFullscreen}
                 className={`transition-all cursor-pointer group ${isFullscreen ? 'text-accent' : 'text-muted hover:text-accent'}`}

@@ -37,7 +37,7 @@ export const WindowControls: React.FC = () => {
       initial={false}
       animate={{ 
         y: showControls ? 0 : -20,
-        opacity: showControls ? 0.6 : 0,
+        opacity: showControls ? 0.9 : 0,
         scale: showControls ? 1 : 0.95
       }}
       transition={{ 
@@ -48,24 +48,24 @@ export const WindowControls: React.FC = () => {
       }}
       className="flex items-center gap-1 z-50 pointer-events-auto hover:opacity-100 transition-opacity"
     >
-      <div className="flex gap-2 p-1.5 rounded-full">
+      <div className="flex gap-0.5 p-1">
         <button 
           onClick={handleMinimize}
-          className="p-1.5 border border-transparent hover:border-border-subtle rounded-lg transition-all text-muted hover:text-foreground cursor-pointer"
+          className="p-1.5 rounded-lg transition-all text-foreground/80 hover:text-foreground hover:bg-white/10 cursor-pointer"
         >
-          <Minus size={16} strokeWidth={2.5} />
+          <Minus size={14} strokeWidth={2.5} />
         </button>
         <button 
           onClick={handleToggleMaximize}
-          className="p-1.5 border border-transparent hover:border-border-subtle rounded-lg transition-all text-muted hover:text-foreground cursor-pointer"
+          className="p-1.5 rounded-lg transition-all text-foreground/80 hover:text-foreground hover:bg-white/10 cursor-pointer"
         >
-          {isMaximized ? <Copy size={14} strokeWidth={2.5} /> : <Square size={14} strokeWidth={2.5} />}
+          {isMaximized ? <Copy size={13} strokeWidth={2.5} /> : <Square size={13} strokeWidth={2.5} />}
         </button>
         <button 
           onClick={handleClose}
-          className="p-1.5 border border-transparent hover:border-red-500/30 hover:bg-red-500/5 rounded-lg transition-all text-muted hover:text-red-500 cursor-pointer"
+          className="p-1.5 rounded-lg transition-all text-foreground/80 hover:text-white hover:bg-red-500 cursor-pointer"
         >
-          <X size={16} strokeWidth={2.5} />
+          <X size={14} strokeWidth={2.5} />
         </button>
       </div>
     </motion.div>

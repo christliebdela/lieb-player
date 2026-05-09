@@ -400,9 +400,9 @@ function MainPlayer() {
           className="p-1 flex justify-between items-center pointer-events-auto"
           data-tauri-drag-region={!isFullscreen ? "true" : undefined}
         >
-          <div className="flex items-center gap-2 px-3 py-1.5 opacity-20 hover:opacity-100 transition-opacity pointer-events-none">
-            <img src="/lieb-player-icon.png" alt="Logo" className="w-3.5 h-3.5 object-contain grayscale" />
-            <span className="text-foreground text-[10px] tracking-[0.2em] font-bold uppercase">
+          <div className="flex items-center gap-2.5 px-3 py-1.5 opacity-40 hover:opacity-100 transition-opacity pointer-events-none">
+            <img src="/lieb-player-icon.png" alt="Logo" className="w-3.5 h-3.5 object-contain" />
+            <span className="text-foreground text-[10px] tracking-[0.15em] font-bold uppercase">
               Lieb
             </span>
           </div>
