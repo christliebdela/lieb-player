@@ -75,42 +75,48 @@ const ResizeGrip: React.FC<{ position: 'tl' | 'tr' | 'bl' | 'br', show: boolean 
         const scaleFactor = await appWindow.scaleFactor();
         const ratio = usePlayerStore.getState().aspectRatio || 16 / 9;
 
-        const onMove = async (ev: PointerEvent) => {
-          const dx = ev.screenX - startX;
-          const dy = ev.screenY - startY;
+        let rafId: number | null = null;
+        const onMove = (ev: PointerEvent) => {
+          if (rafId) return;
+          rafId = requestAnimationFrame(async () => {
+            const dx = ev.screenX - startX;
+            const dy = ev.screenY - startY;
 
-          let delta = 0;
-          if (position === 'br') delta = dx > dy * ratio ? dx : dy * ratio;
-          else if (position === 'bl') delta = -dx > dy * ratio ? -dx : dy * ratio;
-          else if (position === 'tr') delta = dx > -dy * ratio ? dx : -dy * ratio;
-          else if (position === 'tl') delta = -dx > -dy * ratio ? -dx : -dy * ratio;
+            let delta = 0;
+            if (position === 'br') delta = dx > dy * ratio ? dx : dy * ratio;
+            else if (position === 'bl') delta = -dx > dy * ratio ? -dx : dy * ratio;
+            else if (position === 'tr') delta = dx > -dy * ratio ? dx : -dy * ratio;
+            else if (position === 'tl') delta = -dx > -dy * ratio ? -dx : -dy * ratio;
 
-          const newW = Math.max(640, startSize.width / scaleFactor + delta);
-          const newH = Math.round(newW / ratio);
+            const newW = Math.max(640, startSize.width / scaleFactor + delta);
+            const newH = Math.round(newW / ratio);
 
-          const { PhysicalSize, PhysicalPosition } = await import('@tauri-apps/api/window');
-          
-          let newX = startPos.x;
-          let newY = startPos.y;
+            const { PhysicalSize, PhysicalPosition } = await import('@tauri-apps/api/window');
+            
+            let newX = startPos.x;
+            let newY = startPos.y;
 
-          if (position === 'tl' || position === 'bl') {
-            newX = startPos.x + (startSize.width - newW * scaleFactor);
-          }
-          if (position === 'tl' || position === 'tr') {
-            newY = startPos.y + (startSize.height - newH * scaleFactor);
-          }
+            if (position === 'tl' || position === 'bl') {
+              newX = startPos.x + (startSize.width - newW * scaleFactor);
+            }
+            if (position === 'tl' || position === 'tr') {
+              newY = startPos.y + (startSize.height - newH * scaleFactor);
+            }
 
-          // If dragging from top/left, we must adjust position to anchor the opposite corner
-          if (position !== 'br') {
-            await appWindow.setPosition(new PhysicalPosition(
-              Math.round(newX), 
-              Math.round(newY)
-            ));
-          }
-          await appWindow.setSize(new PhysicalSize(
-            Math.round(newW * scaleFactor),
-            Math.round(newH * scaleFactor)
-          ));
+            // Fire and forget to avoid blocking the UI thread
+            if (position !== 'br') {
+              appWindow.setPosition(new PhysicalPosition(
+                Math.round(newX), 
+                Math.round(newY)
+              )).catch(() => {});
+            }
+            appWindow.setSize(new PhysicalSize(
+              Math.round(newW * scaleFactor),
+              Math.round(newH * scaleFactor)
+            )).catch(() => {});
+
+            rafId = null;
+          });
         };
 
         const onUp = () => {
