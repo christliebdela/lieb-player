@@ -19,11 +19,21 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
   React.useEffect(() => {
     if (!standalone) return;
 
-    const unlisten = listen('tauri://drag-drop', (event: any) => {
+    const unlisten = listen('tauri://drag-drop', async (event: any) => {
       const paths = event.payload.paths || event.payload;
       if (paths && paths.length > 0) {
-        // Simple add for drop-on-library-window
+        const state = usePlayerStore.getState();
+        const firstPath = paths[0];
+        
+        // Add all to playlist
         paths.forEach((path: string) => addToPlaylist(path));
+
+        // If nothing is playing, play the first one dropped
+        if (!state.currentTrack || state.duration === 0) {
+          await emit('lieb-play', { path: firstPath, subs: [] });
+          state.setCurrentTrack(firstPath);
+          state.setPlaying(true);
+        }
       }
     });
 

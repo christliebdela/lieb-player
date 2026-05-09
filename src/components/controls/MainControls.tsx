@@ -219,7 +219,7 @@ export const MainControls: React.FC = () => {
                 await command('cycle', ['pause']);
                 showActionOSD(!isPlaying ? t('play') : t('pause'), !isPlaying ? 'play' : 'pause');
               }}
-              className={`transition-all duration-300 transform active:scale-95 cursor-pointer group ${hasMedia ? 'text-foreground hover:text-accent drop-shadow-md' : 'text-muted/40 cursor-default'}`}
+              className={`transition-all duration-300 transform active:scale-95 cursor-pointer group ${hasMedia ? 'text-muted hover:text-accent drop-shadow-md' : 'text-muted/40 cursor-default'}`}
             >
               <div className="group-hover:scale-110 transition-transform flex items-center justify-center">
                 {isPlaying ? (
@@ -324,7 +324,7 @@ export const MainControls: React.FC = () => {
 
             {!isTiny && (
               <div className="flex items-center gap-2 tabular-nums text-[10px] font-bold tracking-tight">
-                <span className="text-foreground">{formatTime(currentTime)}</span>
+                <span className="text-muted/80">{formatTime(currentTime)}</span>
                 <span className="text-muted/40">/</span>
                 <span className="text-muted">{formatTime(duration)}</span>
               </div>

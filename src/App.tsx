@@ -143,7 +143,7 @@ function MainPlayer() {
     metadata, duration, setPlaylist, volume, isMuted, 
     showVolumeOSD, accentColor, crossfade, crossfadeDuration,
     isFullscreen, setFullscreen, setPlaying, setShowControls, isPlaying, showControls,
-    isBlocking
+    isBlocking, setCurrentTrack
   } = usePlayerStore();
   const { t } = useTranslation();
   const hasMedia = duration > 0;
@@ -261,26 +261,20 @@ function MainPlayer() {
             setPlaylist(pairedPlaylist);
             
             const firstTrack = pairedPlaylist[0];
-            await command('loadfile', [firstTrack.path, 'replace']);
-            
-            // Load its subs with 'select' flag
-            for (const sub of firstTrack.subs) {
-              await command('sub-add', [sub, 'select']);
+            try {
+              await command('loadfile', [firstTrack.path, 'replace']);
+              await command('set', ['pause', 'no']);
+              currentState.setCurrentTrack(firstTrack.path);
+              currentState.setPlaying(true);
+            } catch (err) {
+              console.error(' Lieb: Load failed:', err);
             }
-
-            currentState.setCurrentTrack(firstTrack.path);
             
             for (let i = 1; i < pairedPlaylist.length; i++) {
               await command('loadfile', [pairedPlaylist[i].path, 'append']);
             }
 
-            if (currentState.autoPlay) {
-              await setProperty('pause', false);
-              setPlaying(true);
-            } else {
-              await setProperty('pause', true);
-              setPlaying(false);
-            }
+            setShowControls(true);
           } else if (subs.length > 0 && currentState.duration > 0) {
             // Hot-load subtitles into currently playing media
             console.log(' Lieb: Hot-loading', subs.length, 'subtitles');
@@ -304,16 +298,11 @@ function MainPlayer() {
         setPlaylist([{ path: filePath, subs: [] }]);
         try {
           await command('loadfile', [filePath, 'replace']);
-          if (usePlayerStore.getState().autoPlay) {
-            await setProperty('pause', false);
-            setPlaying(true);
-          } else {
-            await setProperty('pause', true);
-            setPlaying(false);
-          }
-          setShowControls(true);
+          await command('set', ['pause', 'no']);
+          setCurrentTrack(filePath);
+          setPlaying(true);
         } catch (err) {
-          console.error(' Lieb Player: Failed to open file:', err);
+          console.error(' Lieb: Failed to open file:', err);
         }
       }
     });
