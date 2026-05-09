@@ -132,7 +132,8 @@ function MainPlayer() {
   const { 
     metadata, duration, setPlaylist, volume, isMuted, 
     showVolumeOSD, accentColor, crossfade, crossfadeDuration,
-    isFullscreen, setFullscreen, setPlaying, setShowControls, isPlaying, showControls
+    isFullscreen, setFullscreen, setPlaying, setShowControls, isPlaying, showControls,
+    isBlocking
   } = usePlayerStore();
   const { t } = useTranslation();
   const hasMedia = duration > 0;
@@ -418,8 +419,13 @@ function MainPlayer() {
       </div>
 
       {/* Resize Grips (Bottom Corners Only) */}
-      <ResizeGrip position="bl" show={showControls} />
-      <ResizeGrip position="br" show={showControls} />
+      <ResizeGrip position="bl" show={showControls && !isBlocking} />
+      <ResizeGrip position="br" show={showControls && !isBlocking} />
+
+      {/* Input Blocker for Modals */}
+      {isBlocking && (
+        <div className="fixed inset-0 z-[100] bg-black/5 backdrop-blur-[1px] pointer-events-auto" />
+      )}
     </div>
   );
 }

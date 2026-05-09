@@ -110,6 +110,8 @@ export const MainControls: React.FC = () => {
   };
 
   const openWindow = async (label: string, title: string, width: number, height: number) => {
+    const { setBlocking } = usePlayerStore.getState();
+
     try {
       const { WebviewWindow } = await import('@tauri-apps/api/webviewWindow');
       const existing = await WebviewWindow.getByLabel(label);
@@ -127,7 +129,7 @@ export const MainControls: React.FC = () => {
       const centerX = (outerPos.x + (outerSize.width / 2)) / scaleFactor - (width / 2);
       const centerY = (outerPos.y + (outerSize.height / 2)) / scaleFactor - (height / 2);
 
-      new WebviewWindow(label, {
+      const win = new WebviewWindow(label, {
         url: '/',
         title,
         width,
@@ -136,8 +138,22 @@ export const MainControls: React.FC = () => {
         y: centerY,
         decorations: false,
         transparent: true,
-        alwaysOnTop: isPinned,
+        alwaysOnTop: true,
       });
+
+      // Show blocking overlay on main window
+      setBlocking(true);
+
+      // Re-enable when closed
+      win.once('tauri://destroyed', () => {
+        setBlocking(false);
+        mainWin.setFocus();
+      });
+
+      win.once('tauri://error', () => {
+        setBlocking(false);
+      });
+
     } catch (err) {
       console.error(`Failed to open ${label} window:`, err);
     }

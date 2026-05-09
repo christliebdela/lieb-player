@@ -42,8 +42,10 @@ interface PlayerState {
   persistLibrary: boolean;
   thumbnailCacheDays: number;
   customPresets: string[];
+  isBlocking: boolean;
   
   // Actions
+  setBlocking: (blocking: boolean) => void;
   setPlaying: (playing: boolean) => void;
   setVolume: (volume: number) => void;
   setDuration: (duration: number) => void;
@@ -118,6 +120,7 @@ export const usePlayerStore = create<PlayerState>()(
       thumbnailCacheDays: 30,
       aspectRatio: 16/9,
       customPresets: [],
+      isBlocking: false,
       metadata: {
         title: '',
         description: '',
@@ -196,6 +199,7 @@ export const usePlayerStore = create<PlayerState>()(
       removeCustomPreset: (color) => {
         set({ customPresets: get().customPresets.filter(p => p !== color) });
       },
+      setBlocking: (blocking) => set({ isBlocking: blocking }),
       setPersistLibrary: (persist) => set({ persistLibrary: persist }),
     }),
     {

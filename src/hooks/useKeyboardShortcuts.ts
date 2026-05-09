@@ -24,7 +24,7 @@ const openWindow = async (label: string, title: string, width: number, height: n
     const centerX = (outerPos.x + (outerSize.width / 2)) / scaleFactor - (width / 2);
     const centerY = (outerPos.y + (outerSize.height / 2)) / scaleFactor - (height / 2);
 
-    new WebviewWindow(label, {
+    const win = new WebviewWindow(label, {
       url: '/',
       title,
       width,
@@ -34,6 +34,19 @@ const openWindow = async (label: string, title: string, width: number, height: n
       decorations: false,
       transparent: true,
       alwaysOnTop: true,
+    });
+
+    // Show blocking overlay on main window
+    usePlayerStore.getState().setBlocking(true);
+
+    // Re-enable when closed
+    win.once('tauri://destroyed', () => {
+      usePlayerStore.getState().setBlocking(false);
+      mainWin.setFocus();
+    });
+
+    win.once('tauri://error', () => {
+      usePlayerStore.getState().setBlocking(false);
     });
   } catch (err) {
     console.error(`Failed to open ${label} window:`, err);
