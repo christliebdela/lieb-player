@@ -61,7 +61,7 @@ const translations = {
     'reset': 'Reset',
     
     // About
-    'designer': 'Designer',
+    'designer': 'Developer',
     'repository': 'Repository',
     'feedback': 'Feedback',
     'source': 'Source',
@@ -163,7 +163,7 @@ const translations = {
     
     'reset': 'Réinitialiser',
     
-    'designer': 'Concepteur',
+    'designer': 'Développeur',
     'repository': 'Dépôt',
     'feedback': 'Commentaires',
     'source': 'Source',
@@ -262,7 +262,7 @@ const translations = {
     
     'reset': 'Reiniciar',
     
-    'designer': 'Diseñador',
+    'designer': 'Desarrollador',
     'repository': 'Repositorio',
     'feedback': 'Comentarios',
     'source': 'Fuente',

@@ -248,7 +248,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                 </button>
               </header>
 
-              <div className="flex-1 overflow-y-auto px-6 py-5 custom-scrollbar relative">
+              <div className="flex-1 overflow-y-auto px-6 pb-6 custom-scrollbar relative">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={activeTab}
@@ -259,7 +259,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                     className="h-full"
                   >
                     {activeTab === 'general' && (
-                      <div className="space-y-8">
+                      <div className="space-y-8 pt-2">
                         <div className="divide-y divide-white/[0.04]">
                           <SettingCard label={t('hardware.accel')} description={t('hardware.accel.desc')}>
                             <Toggle checked={hwAcceleration} onChange={(v) => {
@@ -313,7 +313,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                     )}
 
                     {activeTab === 'interface' && (
-                      <div className="space-y-8">
+                      <div className="space-y-8 pt-2">
                         <div className="divide-y divide-white/[0.04]">
                            <div className="py-4">
                              <div className="flex items-center gap-2 mb-4">
@@ -529,7 +529,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                     )}
 
                     {activeTab === 'video' && (
-                      <div className="space-y-8">
+                      <div className="space-y-8 pt-2">
                         <div className="divide-y divide-border-subtle/30">
                           <SettingCard label={t('rendering.backend')} description={t('rendering.backend.desc')}>
                             <SegmentedControl 
@@ -585,7 +585,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
 
 
                     {activeTab === 'equalizer' && (
-                      <div className="space-y-8">
+                      <div className="space-y-8 pt-[18px]">
                         <div className="flex flex-wrap gap-1.5">
                           {EQ_PRESETS.map((preset) => {
                             const isActive = JSON.stringify(equalizer) === JSON.stringify(preset.bands);
@@ -643,7 +643,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                     )}
 
                     {activeTab === 'shortcuts' && (
-                      <div className="space-y-8">
+                      <div className="space-y-8 pt-3">
                         <div className="divide-y divide-border-subtle/30">
                         {shortcuts.map((s, idx) => (
                           <div key={idx} className="flex items-center justify-between py-3">
@@ -658,7 +658,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                     )}
 
                     {activeTab === 'about' && (
-                      <div className="space-y-8">
+                      <div className="space-y-8 pt-6">
                         <div className="flex items-start gap-8 mb-8">
                           <div className="w-16 h-16 flex-shrink-0">
                             <img src="/lieb-player-icon.png" alt="Lieb Player" className="w-full h-full object-contain" />
@@ -717,7 +717,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                     )}
 
                     {activeTab === 'maintenance' && (
-                      <div className="space-y-8">
+                      <div className="space-y-8 pt-2">
                         <div className="divide-y divide-white/[0.04]">
                           <div className="py-4 flex items-center justify-between group">
                             <div className="flex items-center gap-4">
