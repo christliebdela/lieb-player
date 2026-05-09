@@ -335,7 +335,7 @@ function MainPlayer() {
   return (
     <div 
       className={`relative w-full h-screen overflow-hidden font-inter select-none ${hasMedia ? 'bg-transparent' : 'bg-background'}`}
-      style={{ cursor: !showControls && hasMedia ? 'none' : 'auto' }}
+      style={{ cursor: !showControls && isPlaying ? 'none' : 'auto' }}
       onMouseMove={handleMouseMove}
       onDoubleClick={handleFullscreenToggle}
     >
