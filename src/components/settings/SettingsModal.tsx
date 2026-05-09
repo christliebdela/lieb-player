@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Sliders, Monitor, Keyboard, Info, Volume2, ExternalLink, Activity, Palette, FastForward } from 'lucide-react';
+import { X, Sliders, Monitor, Keyboard, Info, ExternalLink, Activity, Palette, FastForward } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
+import { useTranslation } from '../../i18n';
 import { motion, AnimatePresence } from 'framer-motion';
 import { setProperty } from 'tauri-plugin-mpv-api';
 import { getCurrentWindow } from '@tauri-apps/api/window';
@@ -105,8 +106,13 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
     hwAcceleration, setHwAcceleration,
     rememberPosition, setRememberPosition,
     autoPlay, setAutoPlay,
+    renderingBackend, setRenderingBackend,
+    interpolation, setInterpolation,
+    deband, setDeband,
+    appLanguage, setAppLanguage,
     theme, setTheme
   } = usePlayerStore();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>('general');
 
   if (!isSettingsOpen && !standalone) return null;
@@ -120,28 +126,27 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
   };
 
   const tabs = [
-    { id: 'general', label: 'General', icon: Sliders },
-    { id: 'interface', label: 'Interface', icon: Palette },
-    { id: 'video', label: 'Video', icon: Monitor },
-    { id: 'audio', label: 'Audio', icon: Volume2 },
-    { id: 'equalizer', label: 'Equalizer', icon: Activity },
-    { id: 'shortcuts', label: 'Shortcuts', icon: Keyboard },
-    { id: 'about', label: 'About', icon: Info },
+    { id: 'general', label: t('general'), icon: Sliders },
+    { id: 'interface', label: t('interface'), icon: Palette },
+    { id: 'video', label: t('video'), icon: Monitor },
+    { id: 'equalizer', label: t('equalizer'), icon: Activity },
+    { id: 'shortcuts', label: t('shortcuts'), icon: Keyboard },
+    { id: 'about', label: t('about'), icon: Info },
   ];
 
   const shortcuts = [
-    { key: 'Space', desc: 'Play / Pause' },
-    { key: 'F', desc: 'Toggle Fullscreen' },
-    { key: 'M', desc: 'Mute / Unmute' },
-    { key: 'L', desc: 'Open Library' },
-    { key: 'S', desc: 'Open Settings' },
-    { key: 'N', desc: 'Next Track' },
-    { key: 'P', desc: 'Previous Track' },
-    { key: '→', desc: 'Seek Forward 10s' },
-    { key: '←', desc: 'Seek Backward 10s' },
-    { key: '↑ / ↓', desc: 'Volume Up / Down' },
-    { key: 'C', desc: 'Toggle Subtitles' },
-    { key: 'Esc', desc: 'Exit Fullscreen / Close' },
+    { key: 'Space', desc: t('sc.play_pause') },
+    { key: 'F', desc: t('sc.fullscreen') },
+    { key: 'M', desc: t('sc.mute') },
+    { key: 'L', desc: t('sc.library') },
+    { key: 'S', desc: t('sc.settings') },
+    { key: 'N', desc: t('sc.next') },
+    { key: 'P', desc: t('sc.prev') },
+    { key: '→', desc: t('sc.seek_fwd') },
+    { key: '←', desc: t('sc.seek_bwd') },
+    { key: '↑ / ↓', desc: t('sc.volume') },
+    { key: 'C', desc: t('sc.subtitles') },
+    { key: 'Esc', desc: t('sc.exit') },
   ];
 
   const updateEqualizer = async (index: number, value: number) => {
@@ -222,7 +227,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
             {/* Content Area */}
             <div className="flex-1 flex flex-col min-w-0">
               <header className="h-12 flex items-center justify-between px-6 border-b border-border-subtle shrink-0" data-tauri-drag-region>
-                <h2 className="text-[13px] font-semibold text-foreground/80 capitalize">{activeTab}</h2>
+                <h2 className="text-[13px] font-semibold text-foreground/80 capitalize">{t(activeTab as any)}</h2>
                 <button 
                   onClick={handleClose}
                   className="w-7 h-7 flex items-center justify-center hover:bg-white/10 rounded-lg transition-colors text-muted hover:text-foreground cursor-pointer"
@@ -245,26 +250,33 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                     {activeTab === 'general' && (
                       <div className="space-y-8">
                         <div className="divide-y divide-white/[0.04]">
-                          <SettingCard label="Hardware Acceleration" description="Use GPU for video decoding">
+                          <SettingCard label={t('hardware.accel')} description={t('hardware.accel.desc')}>
                             <Toggle checked={hwAcceleration} onChange={(v) => {
                               setHwAcceleration(v);
                             }} />
                           </SettingCard>
-                          <SettingCard label="Remember Position" description="Resume from where you left off">
+                          <SettingCard label={t('remember.pos')} description={t('remember.pos.desc')}>
                             <Toggle checked={rememberPosition} onChange={(v) => {
                               setRememberPosition(v);
                             }} />
                           </SettingCard>
-                          <SettingCard label="Auto Play" description="Play immediately when file is opened">
+                          <SettingCard label={t('auto.play')} description={t('auto.play.desc')}>
                             <Toggle checked={autoPlay} onChange={(v) => {
                               setAutoPlay(v);
                             }} />
                           </SettingCard>
-                          <SettingCard label="Scroll Wheel" description="What the scroll wheel controls">
+                          <SettingCard label={t('scroll.wheel')} description={t('scroll.wheel.desc')}>
                             <SegmentedControl 
                               options={['Volume', 'Seek']}
                               value={scrollMode === 'volume' ? 'Volume' : 'Seek'}
                               onChange={(v) => setScrollMode(v.toLowerCase() as 'volume' | 'seek')}
+                            />
+                          </SettingCard>
+                          <SettingCard label={t('app.language')} description={t('app.language.desc')}>
+                            <SegmentedControl 
+                              options={['English', 'French', 'Spanish']}
+                              value={appLanguage}
+                              onChange={(v) => setAppLanguage(v as 'English' | 'French' | 'Spanish')}
                             />
                           </SettingCard>
                         </div>
@@ -275,7 +287,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                     {activeTab === 'interface' && (
                       <div className="space-y-8">
                         <div className="divide-y divide-white/[0.04]">
-                          <SettingCard label="Theme" description="Application appearance">
+                          <SettingCard label={t('theme')} description={t('theme.desc')}>
                             <SegmentedControl 
                               options={['Dark', 'Light']}
                               value={theme === 'light' ? 'Light' : 'Dark'}
@@ -288,7 +300,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                         <div>
                           <div className="flex items-center gap-2 mb-4">
                             <Palette size={13} className="text-muted/60" />
-                            <span className="text-[11px] font-semibold uppercase tracking-widest text-muted">Accent Color</span>
+                            <span className="text-[11px] font-semibold uppercase tracking-widest text-muted">{t('accent.color')}</span>
                           </div>
                           <div className="grid grid-cols-4 gap-2">
                             {PRESET_COLORS.map((preset) => (
@@ -315,7 +327,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                           </div>
                           <div className="flex items-center gap-3 mt-3 p-3 rounded-xl bg-foreground/[0.04] border border-border-subtle">
                             <div className="flex-1">
-                              <span className="text-[11px] font-medium text-muted">Custom</span>
+                              <span className="text-[11px] font-medium text-muted">{t('custom')}</span>
                             </div>
                             <div className="relative w-8 h-8 rounded-lg overflow-hidden cursor-pointer ring-1 ring-border-subtle">
                               <div className="w-full h-full" style={{ backgroundColor: accentColor }} />
@@ -333,18 +345,21 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                     {activeTab === 'video' && (
                       <div className="space-y-8">
                         <div className="divide-y divide-border-subtle/30">
-                          <SettingCard label="Rendering Backend" description="Graphics API for video output">
+                          <SettingCard label={t('rendering.backend')} description={t('rendering.backend.desc')}>
                             <SegmentedControl 
                               options={['GPU-Next', 'D3D11', 'Vulkan']}
-                              value="GPU-Next"
-                              onChange={() => {}}
+                              value={renderingBackend === 'gpu-next' ? 'GPU-Next' : renderingBackend === 'd3d11' ? 'D3D11' : 'Vulkan'}
+                              onChange={(v) => {
+                                const backend = v === 'GPU-Next' ? 'gpu-next' : v === 'D3D11' ? 'd3d11' : 'vulkan';
+                                setRenderingBackend(backend);
+                              }}
                             />
                           </SettingCard>
-                          <SettingCard label="Interpolation" description="Smoother motion on high-refresh displays">
-                            <Toggle checked={true} onChange={() => {}} />
+                          <SettingCard label={t('interpolation')} description={t('interpolation.desc')}>
+                            <Toggle checked={interpolation} onChange={setInterpolation} />
                           </SettingCard>
-                          <SettingCard label="Deband" description="Reduce color banding in gradients">
-                            <Toggle checked={true} onChange={() => {}} />
+                          <SettingCard label={t('deband')} description={t('deband.desc')}>
+                            <Toggle checked={deband} onChange={setDeband} />
                           </SettingCard>
                         </div>
 
@@ -353,8 +368,8 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                             <div className="flex items-center gap-2.5">
                               <FastForward size={14} className="text-accent" />
                               <div>
-                                <h4 className="text-[13px] font-medium text-foreground">Crossfade</h4>
-                                <p className="text-[10px] text-muted mt-0.5">Smooth audio transitions between tracks</p>
+                                <h4 className="text-[13px] font-medium text-foreground">{t('crossfade')}</h4>
+                                <p className="text-[10px] text-muted mt-0.5">{t('crossfade.desc')}</p>
                               </div>
                             </div>
                             <Toggle checked={crossfade} onChange={setCrossfade} />
@@ -367,7 +382,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                               className="pt-3 border-t border-border-subtle space-y-3"
                             >
                               <div className="flex items-center justify-between text-[11px]">
-                                <span className="text-muted font-medium">Duration</span>
+                                <span className="text-muted font-medium">{t('duration')}</span>
                                 <span className="text-accent font-semibold font-mono">{crossfadeDuration}s</span>
                               </div>
                               <input 
@@ -382,23 +397,6 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                       </div>
                     )}
 
-                    {activeTab === 'audio' && (
-                      <div className="divide-y divide-border-subtle/30">
-                        <SettingCard label="Normalization" description="Balance volume across different files">
-                          <Toggle checked={false} onChange={() => {}} />
-                        </SettingCard>
-                        <SettingCard label="Preferred Language" description="Default audio track language">
-                          <SegmentedControl 
-                            options={['English', 'Japanese', 'French']}
-                            value="English"
-                            onChange={() => {}}
-                          />
-                        </SettingCard>
-                        <SettingCard label="Audio Delay" description="Adjust sync offset in milliseconds">
-                          <span className="text-[11px] font-mono text-muted bg-foreground/[0.04] px-3 py-1.5 rounded-lg border border-border-subtle">0 ms</span>
-                        </SettingCard>
-                      </div>
-                    )}
 
                     {activeTab === 'equalizer' && (
                       <div className="h-full flex flex-col gap-5">
@@ -423,7 +421,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                             onClick={resetEqualizer}
                             className="px-3 py-1.5 rounded-lg text-[11px] font-medium text-muted hover:text-foreground transition-colors cursor-pointer ml-auto"
                           >
-                            Reset
+                            {t('reset')}
                           </button>
                         </div>
 
@@ -472,52 +470,58 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                     )}
 
                     {activeTab === 'about' && (
-                      <div className="h-full flex flex-col justify-center max-w-sm mx-auto">
-                        <div className="flex flex-col items-center text-center gap-4 mb-8">
-                          <div className="relative">
-                            <div className="absolute inset-0 bg-accent/20 blur-2xl rounded-full" />
-                            <div className="w-24 h-24 bg-background rounded-3xl flex items-center justify-center border border-border-subtle shadow-2xl overflow-hidden p-2 relative z-10">
-                              <img src="/lieb-player-icon.png" alt="Lieb Player" className="w-full h-full object-contain drop-shadow-xl" />
-                            </div>
+                      <div className="h-full flex flex-col justify-center">
+                        <div className="flex items-start gap-8 mb-8">
+                          <div className="w-16 h-16 flex-shrink-0">
+                            <img src="/lieb-player-icon.png" alt="Lieb Player" className="w-full h-full object-contain" />
                           </div>
-                          <div>
-                            <h2 className="text-xl font-bold text-foreground tracking-tight flex items-center justify-center gap-2">
-                              Lieb Player
-                              <span className="px-2 py-0.5 rounded-full bg-accent/10 text-accent text-[9px] font-black tracking-widest border border-accent/20">ALPHA</span>
-                            </h2>
-                            <p className="text-[11px] text-muted mt-1.5 font-medium tracking-wide">Version 0.1.0 · Modern Media Experience</p>
+                          <div className="flex-1 pt-1">
+                            <div className="flex items-center gap-3 mb-1">
+                              <h2 className="text-xl font-black text-foreground tracking-tighter uppercase">
+                                Lieb Player
+                              </h2>
+                              <span className="px-1.5 py-0.5 rounded-[2px] bg-foreground text-background text-[8px] font-black tracking-[0.2em] uppercase">
+                                Alpha 0.1
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-muted font-bold uppercase tracking-[0.3em]">{t('about.subtitle')}</p>
                           </div>
                         </div>
 
-                        <div className="text-center mb-8 px-2">
-                          <p className="text-[12px] text-muted leading-relaxed font-medium">
-                            I built Lieb Player because I wanted more control and deep customization 
-                            options that most other players simply don't provide. It's a project born 
-                            from the need for a truly personal media experience that looks as good 
-                            as it performs.
+                        <div className="mb-10 space-y-6">
+                          <p className="text-[13px] text-foreground/80 leading-[1.8] font-medium max-w-xl">
+                            {t('about.story')}
+                          </p>
+                          <p className="text-[12px] text-muted leading-[1.8] font-medium max-w-xl">
+                            {t('about.tech')}
                           </p>
                         </div>
 
-                        <div className="flex items-center justify-between pt-5 border-t border-border-subtle">
+                        <div className="grid grid-cols-3 gap-8 pt-6 border-t border-white/[0.04]">
                           <div>
-                            <p className="text-[10px] text-muted font-medium uppercase tracking-widest mb-1">Created by</p>
-                            <p className="text-[13px] font-bold text-foreground">Christlieb Dela</p>
+                            <p className="text-[9px] text-muted font-black uppercase tracking-[0.2em] mb-2">{t('designer')}</p>
+                            <p className="text-[11px] font-bold text-foreground">Christlieb Dela</p>
                           </div>
-                          <div className="flex gap-2">
+                          
+                          <div>
+                            <p className="text-[9px] text-muted font-black uppercase tracking-[0.2em] mb-2">{t('repository')}</p>
                             <a 
                               href="https://github.com/christliebdela/lieb-player" 
                               target="_blank" 
-                              className="w-8 h-8 rounded-lg bg-foreground/[0.04] hover:bg-foreground/[0.08] border border-border-subtle flex items-center justify-center text-muted hover:text-foreground transition-all cursor-pointer"
-                              title="Source Code"
+                              className="text-[11px] font-bold text-foreground hover:text-accent transition-colors flex items-center gap-1.5"
                             >
-                              <ExternalLink size={14} />
+                              {t('source')} <ExternalLink size={10} strokeWidth={3} />
                             </a>
+                          </div>
+
+                          <div>
+                            <p className="text-[9px] text-muted font-black uppercase tracking-[0.2em] mb-2">{t('feedback')}</p>
                             <a 
                               href="https://github.com/christliebdela/lieb-player/issues" 
                               target="_blank" 
-                              className="px-3 py-1.5 rounded-lg bg-accent/10 hover:bg-accent/20 border border-accent/20 flex items-center gap-1.5 text-accent text-[11px] font-bold transition-all cursor-pointer"
+                              className="text-[11px] font-bold text-accent hover:underline decoration-2 underline-offset-4"
                             >
-                              Report Bug
+                              {t('report.issue')}
                             </a>
                           </div>
                         </div>

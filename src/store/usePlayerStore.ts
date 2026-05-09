@@ -32,6 +32,10 @@ interface PlayerState {
   hwAcceleration: boolean;
   rememberPosition: boolean;
   autoPlay: boolean;
+  renderingBackend: 'gpu-next' | 'd3d11' | 'vulkan';
+  interpolation: boolean;
+  deband: boolean;
+  appLanguage: 'English' | 'French' | 'Spanish';
   metadata: Metadata;
   theme: 'dark' | 'light';
   
@@ -62,6 +66,10 @@ interface PlayerState {
   setHwAcceleration: (enabled: boolean) => void;
   setRememberPosition: (enabled: boolean) => void;
   setAutoPlay: (enabled: boolean) => void;
+  setRenderingBackend: (backend: 'gpu-next' | 'd3d11' | 'vulkan') => void;
+  setInterpolation: (enabled: boolean) => void;
+  setDeband: (enabled: boolean) => void;
+  setAppLanguage: (lang: 'English' | 'French' | 'Spanish') => void;
   setMetadata: (metadata: Partial<Metadata>) => void;
   aspectRatio: number;
   setAspectRatio: (ratio: number) => void;
@@ -94,6 +102,10 @@ export const usePlayerStore = create<PlayerState>()(
       hwAcceleration: true,
       rememberPosition: true,
       autoPlay: true,
+      renderingBackend: 'gpu-next',
+      interpolation: true,
+      deband: true,
+      appLanguage: 'English',
       theme: 'dark',
       aspectRatio: 16/9,
       metadata: {
@@ -132,6 +144,10 @@ export const usePlayerStore = create<PlayerState>()(
       setHwAcceleration: (enabled) => set({ hwAcceleration: enabled }),
       setRememberPosition: (enabled) => set({ rememberPosition: enabled }),
       setAutoPlay: (enabled) => set({ autoPlay: enabled }),
+      setRenderingBackend: (backend) => set({ renderingBackend: backend }),
+      setInterpolation: (enabled) => set({ interpolation: enabled }),
+      setDeband: (enabled) => set({ deband: enabled }),
+      setAppLanguage: (lang) => set({ appLanguage: lang }),
       setMetadata: (metadata) => set({ metadata: { ...get().metadata, ...metadata } }),
       setTheme: (theme) => set({ theme }),
     }),
@@ -150,6 +166,10 @@ export const usePlayerStore = create<PlayerState>()(
         hwAcceleration: state.hwAcceleration,
         rememberPosition: state.rememberPosition,
         autoPlay: state.autoPlay,
+        renderingBackend: state.renderingBackend,
+        interpolation: state.interpolation,
+        deband: state.deband,
+        appLanguage: state.appLanguage,
         theme: state.theme,
       }),
     }

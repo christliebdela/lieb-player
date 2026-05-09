@@ -110,27 +110,37 @@ export const VideoCanvas: React.FC = () => {
     const setupEngine = async () => {
       try {
         const state = usePlayerStore.getState();
+        
+        const args = [
+          state.hwAcceleration ? '--hwdec=auto-safe' : '--hwdec=no',
+          state.rememberPosition ? '--save-position-on-quit=yes' : '--save-position-on-quit=no',
+          state.renderingBackend === 'gpu-next' ? '--vo=gpu-next' : '--vo=gpu',
+          state.interpolation ? '--interpolation=yes' : '--interpolation=no',
+          state.interpolation ? '--video-sync=display-resample' : '--video-sync=audio',
+          state.deband ? '--deband=yes' : '--deband=no',
+          '--keep-open=yes',
+          '--no-osc',
+          '--osd-level=0',
+          '--no-osd-bar',
+          '--osd-playing-msg=',
+          '--osd-msg1=',
+          '--osd-msg2=',
+          '--osd-msg3=',
+          '--script-opts=osc-visibility=never',
+          '--no-input-default-bindings',
+          '--idle=yes',
+          '--title=',
+          '--no-terminal',
+          '--load-scripts=no',
+          '--pause=yes',
+        ];
+
+        if (state.renderingBackend !== 'gpu-next') {
+          args.push(`--gpu-api=${state.renderingBackend}`);
+        }
+
         await init({
-          args: [
-            state.hwAcceleration ? '--hwdec=auto-safe' : '--hwdec=no',
-            state.rememberPosition ? '--save-position-on-quit=yes' : '--save-position-on-quit=no',
-            '--vo=gpu-next',
-            '--keep-open=yes',
-            '--no-osc',
-            '--osd-level=0',
-            '--no-osd-bar',
-            '--osd-playing-msg=',
-            '--osd-msg1=',
-            '--osd-msg2=',
-            '--osd-msg3=',
-            '--script-opts=osc-visibility=never',
-            '--no-input-default-bindings',
-            '--idle=yes',
-            '--title=',
-            '--no-terminal',
-            '--load-scripts=no',
-            '--pause=yes',
-          ],
+          args,
           observedProperties: OBSERVED_PROPERTIES,
         });
         

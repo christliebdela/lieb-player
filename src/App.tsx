@@ -8,10 +8,10 @@ import { LibraryModal } from './components/library/LibraryModal';
 import { ActionOSD } from './components/player/ActionOSD';
 import { usePlayerStore } from './store/usePlayerStore';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
+import { useTranslation } from './i18n';
 import { listen } from '@tauri-apps/api/event';
 import { command, setProperty } from 'tauri-plugin-mpv-api';
 import { getCurrentWindow } from '@tauri-apps/api/window';
-import { getAllWebviewWindows } from '@tauri-apps/api/webviewWindow';
 import { Volume2, VolumeX, Volume1 } from 'lucide-react';
 
 // ── Lightweight shell for secondary windows (no MPV, no player hooks) ──
@@ -134,6 +134,7 @@ function MainPlayer() {
     showVolumeOSD, accentColor, crossfade, crossfadeDuration,
     isFullscreen, setPlaying, setShowControls, isPlaying, showControls
   } = usePlayerStore();
+  const { t } = useTranslation();
   const hasMedia = duration > 0;
 
   useEffect(() => {
@@ -302,7 +303,7 @@ function MainPlayer() {
               Lieb Player
             </h1>
             <p className="mt-3 text-[9px] text-muted font-bold uppercase tracking-[0.3em]">
-              Drop media to play
+              {t('drop.media')}
             </p>
           </div>
         </div>
