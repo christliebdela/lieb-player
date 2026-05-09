@@ -6,6 +6,7 @@ import { WindowControls } from './components/layout/WindowControls';
 import { SettingsModal } from './components/settings/SettingsModal';
 import { LibraryModal } from './components/library/LibraryModal';
 import { ActionOSD } from './components/player/ActionOSD';
+import { SubtitleSearchModal } from './components/settings/SubtitleSearchModal';
 import { usePlayerStore } from './store/usePlayerStore';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useTranslation } from './i18n';
@@ -13,7 +14,6 @@ import { listen } from '@tauri-apps/api/event';
 import { command, setProperty } from 'tauri-plugin-mpv-api';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { Volume2, VolumeX, Volume1 } from 'lucide-react';
-import { showActionOSD } from './utils/osd';
 
 // ── Lightweight shell for secondary windows (no MPV, no player hooks) ──
 function SettingsWindow() {
@@ -30,6 +30,14 @@ function LibraryWindow() {
     document.documentElement.style.setProperty('--accent', accentColor);
   }, [accentColor]);
   return <LibraryModal standalone />;
+}
+
+function SubtitleSearchWindow() {
+  const { accentColor } = usePlayerStore();
+  useEffect(() => {
+    document.documentElement.style.setProperty('--accent', accentColor);
+  }, [accentColor]);
+  return <SubtitleSearchModal standalone />;
 }
 
 // ── Proportional Resize Grip (All Corners) ──
@@ -155,7 +163,6 @@ function MainPlayer() {
   // Handle transparency for video to show through
   useEffect(() => {
     if (hasMedia) {
-      // Delay transparency slightly to avoid flicker during window resize/initial paint
       const timer = setTimeout(() => {
         document.documentElement.style.setProperty('--body-bg', 'transparent');
       }, 500);
@@ -165,8 +172,6 @@ function MainPlayer() {
     }
   }, [hasMedia]);
 
-
-  
   const subsEnabled = usePlayerStore(s => s.subsEnabled);
   useEffect(() => {
     setProperty('sub-visibility', subsEnabled ? 'yes' : 'no');
@@ -200,25 +205,15 @@ function MainPlayer() {
 
   useEffect(() => {
     setProperty('load-scripts', 'yes');
-    
-    // Initial window center
     getCurrentWindow().center();
 
     const handleContextMenu = (e: MouseEvent) => e.preventDefault();
     document.addEventListener('contextmenu', handleContextMenu);
 
-    // Listen for the main window close button (handled by system/controls)
-    // We'll use a simpler cleanup in useEffect return instead of intercepting
-    // onCloseRequested which can block in some Tauri versions.
-
-
-    
-    // Listen for cross-window MPV commands
     const unlistenPlay = listen('lieb-play', async (event: any) => {
       const { path, subs } = event.payload;
       if (path) {
         await command('loadfile', [path, 'replace']);
-        // Load associated subtitles
         if (subs && subs.length > 0) {
           for (const sub of subs) {
             await command('sub-add', [sub, 'select']);
@@ -242,11 +237,7 @@ function MainPlayer() {
 
         try {
           const currentState = usePlayerStore.getState();
-          
           if (media.length > 0) {
-
-            
-            // Smart Pairing
             const pairedPlaylist = media.map((m: string) => {
               const base = m.split(/[\\/]/).pop()?.split('.').slice(0, -1).join('.') || '';
               const attachedSubs = subs.filter((s: string) => {
@@ -257,38 +248,22 @@ function MainPlayer() {
             });
 
             setPlaylist(pairedPlaylist);
-            
             const firstTrack = pairedPlaylist[0];
-            try {
-              await command('loadfile', [firstTrack.path, 'replace']);
-              // Load associated subtitles for the first track
-              if (firstTrack.subs && firstTrack.subs.length > 0) {
-                for (const sub of firstTrack.subs) {
-                  await command('sub-add', [sub, 'select']);
-                }
+            await command('loadfile', [firstTrack.path, 'replace']);
+            if (firstTrack.subs && firstTrack.subs.length > 0) {
+              for (const sub of firstTrack.subs) {
+                await command('sub-add', [sub, 'select']);
               }
-              await command('set', ['pause', 'no']);
-              currentState.setCurrentTrack(firstTrack.path);
-              currentState.setPlaying(true);
-            } catch (err) {
-              console.error(' Lieb: Load failed:', err);
             }
+            await command('set', ['pause', 'no']);
+            currentState.setCurrentTrack(firstTrack.path);
+            currentState.setPlaying(true);
             
             for (let i = 1; i < pairedPlaylist.length; i++) {
               await command('loadfile', [pairedPlaylist[i].path, 'append']);
             }
-
             setShowControls(true);
-          } else if (subs.length > 0 && currentState.duration > 0) {
-            // Hot-load subtitles into currently playing media
-
-            for (const sub of subs) {
-              await command('sub-add', [sub, 'select']);
-            }
-            showActionOSD(t('captions.on'), 'subtitles');
           }
-
-          setShowControls(true);
         } catch (err) {
           console.error(' Lieb Player: Drag-drop error:', err);
         }
@@ -298,7 +273,6 @@ function MainPlayer() {
     const unlistenOpenFile = listen('open-file', async (event: any) => {
       const filePath = event.payload as string;
       if (filePath) {
-
         setPlaylist([{ path: filePath, subs: [] }]);
         try {
           await command('loadfile', [filePath, 'replace']);
@@ -348,10 +322,7 @@ function MainPlayer() {
       onDoubleClick={handleFullscreenToggle}
     >
       <VideoCanvas onToggleFullscreen={handleFullscreenToggle} />
-      
       <ActionOSD />
-
-      {/* Modern Vertical Volume OSD (Right Aligned) */}
       <AnimatePresence>
         {showVolumeOSD && (
           <motion.div
@@ -365,7 +336,6 @@ function MainPlayer() {
               <div className="mb-4 text-white/40">
                 {isMuted || volume === 0 ? <VolumeX size={18} /> : volume < 50 ? <Volume1 size={18} /> : <Volume2 size={18} />}
               </div>
-              
               <div className="flex-1 w-1 bg-white/5 rounded-full relative overflow-hidden">
                 <motion.div 
                   className="absolute bottom-0 w-full bg-accent rounded-full shadow-[0_0_15px_rgba(var(--accent-rgb),0.5)]"
@@ -374,7 +344,6 @@ function MainPlayer() {
                   transition={{ type: "spring", damping: 25, stiffness: 200 }}
                 />
               </div>
-
               <div className="mt-4 text-[11px] font-semibold tabular-nums text-white/90">
                 {isMuted ? '0' : Math.round(volume)}
               </div>
@@ -383,7 +352,6 @@ function MainPlayer() {
         )}
       </AnimatePresence>
 
-      {/* Center Logo Overlay (No Media) */}
       {!hasMedia && (
         <div className="absolute inset-0 flex flex-col items-center justify-center z-0 pointer-events-none">
           <img 
@@ -405,7 +373,6 @@ function MainPlayer() {
       <div className={`relative z-10 h-full w-full flex flex-col pointer-events-none transition-opacity duration-500 ${
         showControls ? 'opacity-100' : 'opacity-0'
       }`}>
-        {/* Header - Transparent and Draggable */}
         <header 
           className="p-1 flex justify-between items-center pointer-events-auto"
           data-tauri-drag-region={!isFullscreen ? "true" : undefined}
@@ -416,16 +383,12 @@ function MainPlayer() {
               Lieb
             </span>
           </div>
-
           <WindowControls />
         </header>
 
-        {/* Draggable spacer area */}
         <div className="flex-1 w-full" data-tauri-drag-region={!isFullscreen ? "true" : undefined} />
 
-        {/* Bottom Area: Metadata & Controls */}
         <div className="p-12 flex items-end justify-between pointer-events-none relative flex-1">
-          {/* Metadata Overlay (Bottom Left) */}
           <div className="max-w-md pb-4">
             {!isPlaying && duration > 0 && (
               <motion.div
@@ -452,16 +415,11 @@ function MainPlayer() {
             )}
           </div>
         </div>
-
-        {/* Cinematic Controls Overlay */}
         <MainControls />
       </div>
 
-      {/* Resize Grips (Bottom Corners Only) */}
       <ResizeGrip position="bl" show={showControls && !isBlocking} />
       <ResizeGrip position="br" show={showControls && !isBlocking} />
-
-      {/* Input Blocker for Modals */}
       {isBlocking && (
         <div className="fixed inset-0 z-[100] bg-transparent pointer-events-auto" />
       )}
@@ -469,14 +427,12 @@ function MainPlayer() {
   );
 }
 
-// ── App Router: picks the right component based on window label ──
 function App() {
   const label = getCurrentWindow().label;
   const { theme } = usePlayerStore();
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-    // Show window only when ready
     const timer = setTimeout(() => {
       getCurrentWindow().show();
     }, 100);
@@ -485,6 +441,7 @@ function App() {
 
   if (label === 'settings') return <SettingsWindow />;
   if (label === 'library') return <LibraryWindow />;
+  if (label === 'subtitle-search') return <SubtitleSearchWindow />;
   return <MainPlayer />;
 }
 

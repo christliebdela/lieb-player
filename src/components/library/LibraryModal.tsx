@@ -1,7 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Play, Film, Library, Trash2, ListMusic, ChevronRight, FilePlus, FolderPlus } from 'lucide-react';
+import { X, Play, Film, Library, Trash2, ListMusic, ChevronRight, FilePlus, FolderPlus, Globe, Link as LinkIcon } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { listen, emit } from '@tauri-apps/api/event';
 import { showActionOSD } from '../../utils/osd';
@@ -17,6 +17,9 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
     currentTrack, setCurrentTrack, setPlaying 
   } = usePlayerStore();
   const { t } = useTranslation();
+  
+  const [urlInput, setUrlInput] = React.useState('');
+  const [showUrlInput, setShowUrlInput] = React.useState(false);
 
   const handleAddFiles = async () => {
     try {
@@ -119,6 +122,22 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
     }
   };
 
+  const handlePlayUrl = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!urlInput.trim()) return;
+    try {
+      await emit('lieb-play', { path: urlInput.trim(), subs: [] });
+      setCurrentTrack(urlInput.trim());
+      setPlaying(true);
+      showActionOSD('Streaming URL', 'globe');
+      setUrlInput('');
+      setShowUrlInput(false);
+      handleClose();
+    } catch (err) {
+      console.error('Failed to stream URL:', err);
+    }
+  };
+
   React.useEffect(() => {
     if (!standalone) return;
 
@@ -213,6 +232,42 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+              {/* Top Search & Stream Bar (Toggleable) */}
+              <AnimatePresence>
+                {showUrlInput && (
+                  <motion.div 
+                    initial={{ height: 0, opacity: 0, marginBottom: 0 }}
+                    animate={{ height: 'auto', opacity: 1, marginBottom: 24 }}
+                    exit={{ height: 0, opacity: 0, marginBottom: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <form 
+                      onSubmit={handlePlayUrl}
+                      className="flex items-center gap-3 bg-foreground/[0.03] border border-accent/30 rounded-xl px-4 py-2.5 transition-all group focus-within:ring-1 focus-within:ring-accent/20"
+                    >
+                      <Globe size={16} className="text-accent" />
+                      <input 
+                        autoFocus
+                        value={urlInput}
+                        onChange={(e) => setUrlInput(e.target.value)}
+                        placeholder="Paste YouTube/Twitch URL or Search..."
+                        className="bg-transparent border-none outline-none text-[12px] text-foreground w-full placeholder:text-muted/30"
+                      />
+                      <div className="flex items-center gap-2">
+                        {urlInput.trim() && (
+                          <button type="submit" className="text-accent hover:text-accent-hover font-bold text-[10px] uppercase tracking-widest px-2">
+                            Play
+                          </button>
+                        )}
+                        <button type="button" onClick={() => setShowUrlInput(false)} className="text-muted hover:text-foreground p-1">
+                          <X size={14} />
+                        </button>
+                      </div>
+                    </form>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               <div className="flex flex-col gap-1.5">
                 {playlist.length > 0 ? (
                   playlist.map((track, index) => (
@@ -295,34 +350,48 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
                  Lieb Media Engine
                </div>
                <div className="flex items-center gap-2">
-                 <button 
-                   onClick={handleAddFiles}
-                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-foreground/[0.03] hover:bg-foreground/[0.06] text-muted hover:text-accent text-[9px] font-bold uppercase tracking-widest transition-all cursor-pointer border border-border-subtle/50 hover:border-accent/30"
-                 >
-                   <FilePlus size={12} />
-                   <span>{t('library.add.file')}</span>
-                 </button>
-                 <button 
-                   onClick={handleAddFolder}
-                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-foreground/[0.03] hover:bg-foreground/[0.06] text-muted hover:text-accent text-[9px] font-bold uppercase tracking-widest transition-all cursor-pointer border border-border-subtle/50 hover:border-accent/30"
-                 >
-                   <FolderPlus size={12} />
-                   <span>{t('library.add.folder')}</span>
-                 </button>
+                  <button 
+                    onClick={() => setShowUrlInput(!showUrlInput)}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all cursor-pointer border ${
+                      showUrlInput 
+                        ? 'bg-accent/10 border-accent/40 text-accent' 
+                        : 'bg-accent/5 border-accent/10 text-accent/80 hover:text-accent hover:border-accent/20'
+                    } text-[9px] font-bold uppercase tracking-widest`}
+                  >
+                    <Globe size={12} />
+                    <span>Stream URL</span>
+                  </button>
 
-                 {playlist.length > 0 && (
-                   <>
-                    <div className="w-[1px] h-4 bg-border-subtle mx-1" />
-                    <button 
-                      onClick={clearPlaylist}
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/5 hover:bg-red-500/10 text-red-500/60 hover:text-red-500 text-[9px] font-bold uppercase tracking-widest transition-all cursor-pointer border border-red-500/10 hover:border-red-500/20"
-                    >
-                      <Trash2 size={12} />
-                      {t('library.clear')}
-                    </button>
-                   </>
-                 )}
-               </div>
+                  <div className="w-[1px] h-4 bg-border-subtle mx-1" />
+
+                  <button 
+                    onClick={handleAddFiles}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-foreground/[0.03] hover:bg-foreground/[0.06] text-muted hover:text-accent text-[9px] font-bold uppercase tracking-widest transition-all cursor-pointer border border-border-subtle/50 hover:border-accent/30"
+                  >
+                    <FilePlus size={12} />
+                    <span>{t('library.add.file')}</span>
+                  </button>
+                  <button 
+                    onClick={handleAddFolder}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-foreground/[0.03] hover:bg-foreground/[0.06] text-muted hover:text-accent text-[9px] font-bold uppercase tracking-widest transition-all cursor-pointer border border-border-subtle/50 hover:border-accent/30"
+                  >
+                    <FolderPlus size={12} />
+                    <span>{t('library.add.folder')}</span>
+                  </button>
+ 
+                  {playlist.length > 0 && (
+                    <>
+                     <div className="w-[1px] h-4 bg-border-subtle mx-1" />
+                     <button 
+                       onClick={clearPlaylist}
+                       className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/5 hover:bg-red-500/10 text-red-500/60 hover:text-red-500 text-[9px] font-bold uppercase tracking-widest transition-all cursor-pointer border border-red-500/10 hover:border-red-500/20"
+                     >
+                       <Trash2 size={12} />
+                       {t('library.clear')}
+                     </button>
+                    </>
+                  )}
+                </div>
             </footer>
     </div>
   );

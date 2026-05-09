@@ -1,3 +1,43 @@
+#[tauri::command]
+async fn generate_thumbnail(path: String, time: f64) -> Result<String, String> {
+    use std::process::Command;
+    use std::os::windows::process::CommandExt;
+
+    let temp_dir = std::env::temp_dir();
+    let thumb_name = format!("lieb_thumb_{}", (time * 10.0) as u64);
+    let thumb_path = temp_dir.join(format!("{}.jpg", thumb_name));
+
+    // If it exists, return it immediately (caching)
+    if thumb_path.exists() {
+        return Ok(thumb_path.to_str().unwrap().to_string());
+    }
+
+    // Run MPV in "one-shot" mode to extract a frame
+    let output = Command::new("mpv")
+        .args(&[
+            &path,
+            "--no-audio",
+            "--vo=image",
+            "--frames=1",
+            &format!("--start={}", time),
+            "--image-format=jpg",
+            "--image-jpg-quality=50",
+            "--image-out=yes",
+            &format!("--screenshot-template={}", thumb_name),
+            &format!("--screenshot-directory={}", temp_dir.to_str().unwrap()),
+            "--no-config",
+            "--osc=no",
+        ])
+        .creation_flags(0x08000000) // CREATE_NO_WINDOW
+        .output();
+
+    match output {
+        Ok(out) if out.status.success() => Ok(thumb_path.to_str().unwrap().to_string()),
+        Ok(out) => Err(String::from_utf8_lossy(&out.stderr).to_string()),
+        Err(e) => Err(e.to_string()),
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     use tauri::Emitter;
@@ -33,6 +73,7 @@ pub fn run() {
             }
             Ok(())
         })
+        .invoke_handler(tauri::generate_handler![generate_thumbnail])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

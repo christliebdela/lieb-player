@@ -2,11 +2,13 @@ import React, { useRef, useState, useEffect } from 'react';
 import { 
   Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, 
   Maximize, Minimize, Settings, FolderOpen, Subtitles,
-  Rewind, FastForward, Repeat, Repeat1, PictureInPicture2
+  Rewind, FastForward, Repeat, Repeat1, PictureInPicture2,
+  Camera, Film
 } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getCurrentWindow, PhysicalSize, PhysicalPosition, currentMonitor } from '@tauri-apps/api/window';
+import { invoke, convertFileSrc } from '@tauri-apps/api/core';
 import { command, setProperty } from 'tauri-plugin-mpv-api';
 import { emit } from '@tauri-apps/api/event';
 import { showActionOSD } from '../../utils/osd';
@@ -62,6 +64,9 @@ export const MainControls: React.FC = () => {
   const hasPlaylist = playlist.length > 1;
   const [isSeeking, setIsSeeking] = useState(false);
   const [isPinned, setIsPinned] = useState(false);
+  const [hoverTime, setHoverTime] = useState<number | null>(null);
+  const [hoverPos, setHoverPos] = useState(0);
+  const [thumbUrl, setThumbUrl] = useState<string | null>(null);
   const progressRef = useRef<HTMLDivElement>(null);
 
   const handleFullscreen = async () => {
@@ -97,13 +102,24 @@ export const MainControls: React.FC = () => {
     await seekFromEvent(e);
   };
 
-  const handlePointerMove = async (e: React.PointerEvent) => {
-    if (!isSeeking) return;
-    await seekFromEvent(e);
-  };
+
 
   const handlePointerUp = () => {
     setIsSeeking(false);
+  };
+
+  const handlePointerMoveProgress = (e: React.PointerEvent) => {
+    if (!progressRef.current || !hasMedia) return;
+    const rect = progressRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const progress = Math.max(0, Math.min(1, x / rect.width));
+    setHoverTime(progress * duration);
+    setHoverPos(x);
+    if (isSeeking) seekFromEvent(e);
+  };
+
+  const handlePointerLeaveProgress = () => {
+    setHoverTime(null);
   };
 
   const handleWheel = async (e: React.WheelEvent) => {
@@ -202,6 +218,28 @@ export const MainControls: React.FC = () => {
     const unlisten = appWindow.onResized(updateWidth);
     return () => { unlisten.then(f => f?.()); };
   }, []);
+
+  useEffect(() => {
+    if (hoverTime === null || !currentTrack || !hasMedia) {
+      setThumbUrl(null);
+      return;
+    }
+
+    // Debounce to avoid slamming the generator while moving mouse fast
+    const timer = setTimeout(async () => {
+      try {
+        const path = await invoke<string>('generate_thumbnail', { 
+          path: currentTrack, 
+          time: hoverTime 
+        });
+        setThumbUrl(convertFileSrc(path));
+      } catch (err) {
+        // Silently fail, we just won't show a thumb
+      }
+    }, 150);
+
+    return () => clearTimeout(timer);
+  }, [hoverTime, currentTrack, hasMedia]);
 
   const isSmall = winWidth < 650;
   const isTiny = winWidth < 450;
@@ -370,23 +408,51 @@ export const MainControls: React.FC = () => {
         </button>
       </Tooltip>
 
-      <Tooltip content={subsEnabled ? "Disable Subtitles" : "Enable Subtitles"}>
+      <Tooltip content="Screenshot">
         <button 
           disabled={!hasMedia}
           onClick={async () => {
-            const state = usePlayerStore.getState();
-            if (!state.hasSubtitles) {
-              showActionOSD(t('no.captions'), 'subtitles');
-              return;
+            try {
+              await command('screenshot');
+              showActionOSD('Screenshot Saved', 'camera');
+            } catch (err) {
+              console.error('Screenshot failed:', err);
             }
-            const next = !subsEnabled;
-            setSubsEnabled(next);
-            showActionOSD(next ? t('captions.on') : t('captions.off'), 'subtitles');
           }}
-          className={`transition-all cursor-pointer group ${subsEnabled ? 'text-accent' : hasMedia ? 'text-muted hover:text-accent' : 'text-muted/40 cursor-default'}`}
+          className={`transition-all cursor-pointer group ${hasMedia ? 'text-muted hover:text-accent' : 'text-muted/40 cursor-default'}`}
         >
-          <Subtitles size={18} className="group-hover:scale-110 transition-transform" />
+          <Camera size={18} className="group-hover:scale-110 transition-transform" />
         </button>
+      </Tooltip>
+
+      <Tooltip content={subsEnabled ? "Disable Subtitles" : "Enable Subtitles"}>
+        <div className="flex items-center">
+          <button 
+            disabled={!hasMedia}
+            onClick={async () => {
+              const state = usePlayerStore.getState();
+              if (!state.hasSubtitles) {
+                showActionOSD(t('no.captions'), 'subtitles');
+                return;
+              }
+              const next = !subsEnabled;
+              setSubsEnabled(next);
+              showActionOSD(next ? t('captions.on') : t('captions.off'), 'subtitles');
+            }}
+            className={`transition-all cursor-pointer group ${subsEnabled ? 'text-accent' : hasMedia ? 'text-muted hover:text-accent' : 'text-muted/40 cursor-default'}`}
+          >
+            <Subtitles size={18} className="group-hover:scale-110 transition-transform" />
+          </button>
+          
+          {hasMedia && (
+            <button 
+              onClick={() => openWindow('subtitle-search', 'Online Subtitles', 600, 500)}
+              className="ml-2 text-[8px] font-black uppercase tracking-tighter text-muted hover:text-accent transition-colors cursor-pointer border border-white/5 px-1 rounded"
+            >
+              Search
+            </button>
+          )}
+        </div>
       </Tooltip>
     </div>
   );
@@ -511,9 +577,38 @@ export const MainControls: React.FC = () => {
           <div 
             className="absolute -top-2 left-0 right-0 h-6 z-10"
             onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
+            onPointerMove={handlePointerMoveProgress}
             onPointerUp={handlePointerUp}
+            onPointerLeave={handlePointerLeaveProgress}
           />
+
+          <AnimatePresence>
+            {hoverTime !== null && (
+              <motion.div
+                initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                className="absolute bottom-full mb-4 pointer-events-none"
+                style={{ left: hoverPos, x: '-50%' }}
+              >
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-32 h-20 bg-black/80 backdrop-blur-xl border border-white/10 rounded-lg overflow-hidden shadow-2xl flex items-center justify-center relative">
+                    {thumbUrl ? (
+                      <img src={thumbUrl} alt="Preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center opacity-20">
+                        <Film size={24} className="text-accent" />
+                      </div>
+                    )}
+                    <div className="absolute bottom-1 right-1 px-1 py-0.5 bg-black/60 rounded text-[8px] font-black tabular-nums text-white/90">
+                      {formatTime(hoverTime)}
+                    </div>
+                  </div>
+                  <div className="w-1 h-1 bg-accent rounded-full shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)]" />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         <div className="px-4 py-5">
