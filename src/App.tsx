@@ -102,7 +102,10 @@ const ResizeGrip: React.FC<{ position: 'tl' | 'tr' | 'bl' | 'br', show: boolean 
 
           // If dragging from top/left, we must adjust position to anchor the opposite corner
           if (position !== 'br') {
-            await appWindow.setPosition(new PhysicalPosition(newX, newY));
+            await appWindow.setPosition(new PhysicalPosition(
+              Math.round(newX), 
+              Math.round(newY)
+            ));
           }
           await appWindow.setSize(new PhysicalSize(
             Math.round(newW * scaleFactor),
