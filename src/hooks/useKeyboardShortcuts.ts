@@ -3,6 +3,7 @@ import { usePlayerStore } from '../store/usePlayerStore';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { command, setProperty } from 'tauri-plugin-mpv-api';
+import { emit } from '@tauri-apps/api/event';
 import { showActionOSD } from '../utils/osd';
 import { useTranslation } from '../i18n';
 
@@ -105,12 +106,26 @@ export const useKeyboardShortcuts = () => {
         case 'KeyS':
           openWindow('settings', 'Settings', 800, 560);
           break;
-        case 'KeyN':
-          if (hasMedia) await command('playlist_next');
+        case 'KeyN': {
+          const { playlist, currentTrack, setCurrentTrack } = usePlayerStore.getState();
+          const idx = playlist.findIndex(t => t.path === currentTrack);
+          if (idx !== -1 && idx < playlist.length - 1) {
+            const next = playlist[idx + 1];
+            await emit('lieb-play', { path: next.path, subs: next.subs });
+            setCurrentTrack(next.path);
+          }
           break;
-        case 'KeyP':
-          if (hasMedia) await command('playlist_prev');
+        }
+        case 'KeyP': {
+          const { playlist, currentTrack, setCurrentTrack } = usePlayerStore.getState();
+          const idx = playlist.findIndex(t => t.path === currentTrack);
+          if (idx > 0) {
+            const prev = playlist[idx - 1];
+            await emit('lieb-play', { path: prev.path, subs: prev.subs });
+            setCurrentTrack(prev.path);
+          }
           break;
+        }
         case 'ArrowRight':
           if (hasMedia) {
             await command('seek', [10, 'relative']);

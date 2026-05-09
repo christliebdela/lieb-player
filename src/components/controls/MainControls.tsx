@@ -8,6 +8,7 @@ import { usePlayerStore } from '../../store/usePlayerStore';
 import { motion } from 'framer-motion';
 import { getCurrentWindow, PhysicalSize, PhysicalPosition, currentMonitor } from '@tauri-apps/api/window';
 import { command, setProperty } from 'tauri-plugin-mpv-api';
+import { emit } from '@tauri-apps/api/event';
 import { showActionOSD } from '../../utils/osd';
 import { useTranslation } from '../../i18n';
 
@@ -20,7 +21,7 @@ export const MainControls: React.FC = () => {
     isFullscreen, setFullscreen,
     showControls,
     loopMode, setLoopMode,
-    playlist,
+    playlist, currentTrack, setCurrentTrack,
     scrollMode,
     aspectRatio,
     subsEnabled, setSubsEnabled
@@ -214,15 +215,29 @@ export const MainControls: React.FC = () => {
             {hasPlaylist && (
               <div className={`flex items-center ${isSmall ? 'gap-2' : 'gap-4'}`}>
                 <button 
-                  onClick={() => command('playlist_prev')}
-                  className="text-muted hover:text-accent transition-all cursor-pointer group/btn"
+                  onClick={async () => {
+                    const idx = playlist.findIndex(t => t.path === currentTrack);
+                    if (idx > 0) {
+                      const prev = playlist[idx - 1];
+                      await emit('lieb-play', { path: prev.path, subs: prev.subs });
+                      setCurrentTrack(prev.path);
+                    }
+                  }}
+                  className={`text-muted hover:text-accent transition-all cursor-pointer group/btn ${playlist.findIndex(t => t.path === currentTrack) <= 0 ? 'opacity-30 cursor-default pointer-events-none' : ''}`}
                   title="Previous (P)"
                 >
                   <SkipBack size={18} className="group-hover/btn:scale-110 transition-transform" />
                 </button>
                 <button 
-                  onClick={() => command('playlist_next')}
-                  className="text-muted hover:text-accent transition-all cursor-pointer group/btn"
+                  onClick={async () => {
+                    const idx = playlist.findIndex(t => t.path === currentTrack);
+                    if (idx !== -1 && idx < playlist.length - 1) {
+                      const next = playlist[idx + 1];
+                      await emit('lieb-play', { path: next.path, subs: next.subs });
+                      setCurrentTrack(next.path);
+                    }
+                  }}
+                  className={`text-muted hover:text-accent transition-all cursor-pointer group/btn ${playlist.findIndex(t => t.path === currentTrack) >= playlist.length - 1 ? 'opacity-30 cursor-default pointer-events-none' : ''}`}
                   title="Next (N)"
                 >
                   <SkipForward size={18} className="group-hover/btn:scale-110 transition-transform" />
