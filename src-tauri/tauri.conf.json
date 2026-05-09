@@ -32,7 +32,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": ["nsis"],
     "publisher": "Lieb",
     "shortDescription": "Modern media player built with Tauri and mpv",
     "resources": [
