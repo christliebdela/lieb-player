@@ -1,0 +1,11 @@
+{
+  "version": "0.1.0",
+  "notes": "Initial Alpha Release of Lieb Player. \n- Unified Maintenance Tab\n- Automated Update System\n- Responsive UI Scaling",
+  "pub_date": "2026-05-09T21:36:00Z",
+  "platforms": {
+    "windows-x86_64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRNERDZjMrZFFiTWxmaE0rLzBqQW0rdW5raWVRQUdKRmZlSE12L1BpRmswdXMydWg0TjdVOUVkdkp6YWxON21zWWlFOHJLN1F5UDM5ZHN3Yy8xRzBhNmNXbDRCUEtrQXdJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4MzYyNDI2CWZpbGU6TGllYl8wLjEuMF94NjRfZW4tVVMubXNpCkJoRnRCbktJSWxYQ2FKYk5NTm85aVR3ZTBhM0hsc3lBRmZScGU0V1NhQktNOTF6MVJZL3A1WFlrcXpuQVlYT3ZIVHpaZ2g4SWo3d1NjMmdndDI1VkFRPT0K",
+      "url": "https://github.com/christliebdela/lieb-player/releases/download/v0.1.0-alpha/Lieb_0.1.0_x64_en-US.msi"
+    }
+  }
+}
