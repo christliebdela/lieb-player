@@ -5,6 +5,7 @@ import { MainControls } from './components/controls/MainControls';
 import { WindowControls } from './components/layout/WindowControls';
 import { SettingsModal } from './components/settings/SettingsModal';
 import { LibraryModal } from './components/library/LibraryModal';
+import { ActionOSD } from './components/player/ActionOSD';
 import { usePlayerStore } from './store/usePlayerStore';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { listen } from '@tauri-apps/api/event';
@@ -166,33 +167,46 @@ function MainPlayer() {
     const handleContextMenu = (e: MouseEvent) => e.preventDefault();
     document.addEventListener('contextmenu', handleContextMenu);
 
-    // Cascading close: when main closes, close everything
-    const unlistenClose = getCurrentWindow().onCloseRequested(async () => {
-      if (getCurrentWindow().label === 'main') {
-        const windows = await getAllWebviewWindows();
-        for (const win of windows) {
-          if (win.label !== 'main') await win.close();
-        }
-      }
-    });
+    // Listen for the main window close button (handled by system/controls)
+    // We'll use a simpler cleanup in useEffect return instead of intercepting
+    // onCloseRequested which can block in some Tauri versions.
 
     console.log(' Lieb Player: App Mounted and Listening...');
     
     const unlisten = listen('tauri://drag-drop', async (event: any) => {
       const paths = event.payload.paths || event.payload;
       if (paths && paths.length > 0) {
-        setPlaylist(paths);
+        const SUB_EXTS = ['srt', 'ass', 'sub', 'vtt', 'ssa'];
+        const subs = paths.filter((p: string) => SUB_EXTS.some(ext => p.toLowerCase().endsWith(`.${ext}`)));
+        const media = paths.filter((p: string) => !SUB_EXTS.some(ext => p.toLowerCase().endsWith(`.${ext}`)));
+
         try {
-          console.log(' Lieb Player: Loading playlist:', paths.length, 'files');
-          await command('loadfile', [paths[0], 'replace']);
-          for (let i = 1; i < paths.length; i++) {
-            await command('loadfile', [paths[i], 'append']);
+          if (media.length > 0) {
+            console.log(' Lieb Player: Loading media:', media.length, 'files');
+            setPlaylist(media);
+            await command('loadfile', [media[0], 'replace']);
+            for (let i = 1; i < media.length; i++) {
+              await command('loadfile', [media[i], 'append']);
+            }
+            if (usePlayerStore.getState().autoPlay) {
+              await setProperty('pause', false);
+              setPlaying(true);
+            } else {
+              await setProperty('pause', true);
+              setPlaying(false);
+            }
           }
-          await setProperty('pause', false);
-          setPlaying(true);
+
+          if (subs.length > 0) {
+            for (const sub of subs) {
+              console.log(' Lieb Player: Injecting subtitle:', sub);
+              await command('sub-add', [sub]);
+            }
+          }
+
           setShowControls(true);
         } catch (err) {
-          console.error(' Lieb Player: Critical load error:', err);
+          console.error(' Lieb Player: Drag-drop error:', err);
         }
       }
     });
@@ -204,8 +218,13 @@ function MainPlayer() {
         setPlaylist([filePath]);
         try {
           await command('loadfile', [filePath, 'replace']);
-          await setProperty('pause', false);
-          setPlaying(true);
+          if (usePlayerStore.getState().autoPlay) {
+            await setProperty('pause', false);
+            setPlaying(true);
+          } else {
+            await setProperty('pause', true);
+            setPlaying(false);
+          }
           setShowControls(true);
         } catch (err) {
           console.error(' Lieb Player: Failed to open file:', err);
@@ -215,7 +234,6 @@ function MainPlayer() {
 
     return () => {
       document.removeEventListener('contextmenu', handleContextMenu);
-      unlistenClose.then(u => u());
       unlisten.then(u => u());
       unlistenOpenFile.then(u => u());
     };
@@ -236,6 +254,8 @@ function MainPlayer() {
       onMouseMove={handleMouseMove}
     >
       <VideoCanvas />
+      
+      <ActionOSD />
 
       {/* Modern Vertical Volume OSD (Right Aligned) */}
       <AnimatePresence>
@@ -261,7 +281,7 @@ function MainPlayer() {
                 />
               </div>
 
-              <div className="mt-4 text-[11px] font-black tabular-nums text-white/90">
+              <div className="mt-4 text-[11px] font-semibold tabular-nums text-white/90">
                 {isMuted ? '0' : Math.round(volume)}
               </div>
             </div>
@@ -275,13 +295,13 @@ function MainPlayer() {
           <img 
             src="/lieb-player-icon.png" 
             alt="Lieb Player" 
-            className="w-[clamp(64px,9vw,110px)] h-auto object-contain opacity-20 grayscale"
+            className="w-[clamp(48px,6vw,80px)] h-auto object-contain opacity-15 grayscale"
           />
-          <div className="mt-[clamp(16px,3vw,28px)] text-center">
-            <h1 className="text-[clamp(11px,1.2vw,16px)] font-black text-foreground tracking-[0.4em] uppercase opacity-10">
+          <div className="mt-8 text-center">
+            <h1 className="text-[11px] font-black text-foreground tracking-[0.5em] uppercase opacity-[0.08]">
               Lieb Player
             </h1>
-            <p className="mt-[clamp(8px,1vw,14px)] text-[clamp(8px,0.9vw,11px)] text-foreground/10 font-bold uppercase tracking-[0.3em]">
+            <p className="mt-3 text-[9px] text-muted font-bold uppercase tracking-[0.3em]">
               Drop media to play
             </p>
           </div>

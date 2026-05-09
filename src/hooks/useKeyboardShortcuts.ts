@@ -3,6 +3,7 @@ import { usePlayerStore } from '../store/usePlayerStore';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { command, setProperty } from 'tauri-plugin-mpv-api';
+import { showActionOSD } from '../utils/osd';
 
 const openWindow = async (label: string, title: string, width: number, height: number) => {
   try {
@@ -61,7 +62,8 @@ export const useKeyboardShortcuts = () => {
     isFullscreen, setFullscreen,
     duration,
     scrollMode,
-    volume
+    volume,
+    subsEnabled, setSubsEnabled
   } = usePlayerStore();
 
   useEffect(() => {
@@ -81,14 +83,17 @@ export const useKeyboardShortcuts = () => {
               await command('seek', [0, 'absolute']);
             }
             await command('cycle', ['pause']);
+            showActionOSD(!state.isPlaying ? 'Play' : 'Pause', !state.isPlaying ? 'play' : 'pause');
           }
           break;
-        case 'KeyF':
+        case 'KeyF': {
           const appWindow = getCurrentWindow();
           const nextFullscreen = !isFullscreen;
           await appWindow.setFullscreen(nextFullscreen);
           setFullscreen(nextFullscreen);
+          showActionOSD(nextFullscreen ? 'Fullscreen On' : 'Fullscreen Off', 'maximize');
           break;
+        }
         case 'KeyM':
           if (hasMedia) await setProperty('mute', !isMuted);
           break;
@@ -105,10 +110,16 @@ export const useKeyboardShortcuts = () => {
           if (hasMedia) await command('playlist_prev');
           break;
         case 'ArrowRight':
-          if (hasMedia) await command('seek', [10, 'relative']);
+          if (hasMedia) {
+            await command('seek', [10, 'relative']);
+            showActionOSD('+10 Seconds', 'forward');
+          }
           break;
         case 'ArrowLeft':
-          if (hasMedia) await command('seek', [-10, 'relative']);
+          if (hasMedia) {
+            await command('seek', [-10, 'relative']);
+            showActionOSD('-10 Seconds', 'rewind');
+          }
           break;
         case 'ArrowUp': {
           e.preventDefault();
@@ -134,6 +145,14 @@ export const useKeyboardShortcuts = () => {
           }
           closeWindow('settings');
           closeWindow('library');
+          break;
+        case 'KeyC':
+          if (hasMedia) {
+            const next = !subsEnabled;
+            await setProperty('sub-visibility', next);
+            setSubsEnabled(next);
+            showActionOSD(next ? 'Captions On' : 'Captions Off', 'subtitles');
+          }
           break;
       }
     };
@@ -162,6 +181,6 @@ export const useKeyboardShortcuts = () => {
     };
   }, [
     isPlaying, isMuted, isFullscreen, duration, setFullscreen,
-    scrollMode, volume
+    scrollMode, volume, subsEnabled, setSubsEnabled
   ]);
 };

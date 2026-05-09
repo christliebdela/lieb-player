@@ -19,14 +19,19 @@ interface PlayerState {
   isSettingsOpen: boolean;
   isLibraryOpen: boolean;
   isFullscreen: boolean;
+  subsEnabled: boolean;
   loopMode: 'off' | 'one' | 'all';
   showControls: boolean;
   showVolumeOSD: boolean;
+  actionOSD: { message: string; icon: string } | null;
   equalizer: number[]; // 10 bands: 31, 62, 125, 250, 500, 1k, 2k, 4k, 8k, 16k
   accentColor: string;
   crossfade: boolean;
   crossfadeDuration: number;
   scrollMode: 'volume' | 'seek';
+  hwAcceleration: boolean;
+  rememberPosition: boolean;
+  autoPlay: boolean;
   metadata: Metadata;
   theme: 'dark' | 'light';
   
@@ -44,14 +49,19 @@ interface PlayerState {
   setSettingsOpen: (open: boolean) => void;
   setLibraryOpen: (open: boolean) => void;
   setFullscreen: (full: boolean) => void;
+  setSubsEnabled: (enabled: boolean) => void;
   setLoopMode: (mode: 'off' | 'one' | 'all') => void;
   setShowControls: (show: boolean) => void;
   setShowVolumeOSD: (show: boolean) => void;
+  setActionOSD: (osd: { message: string; icon: string } | null) => void;
   setEqualizer: (bands: number[]) => void;
   setAccentColor: (color: string) => void;
   setCrossfade: (enabled: boolean) => void;
   setCrossfadeDuration: (duration: number) => void;
   setScrollMode: (mode: 'volume' | 'seek') => void;
+  setHwAcceleration: (enabled: boolean) => void;
+  setRememberPosition: (enabled: boolean) => void;
+  setAutoPlay: (enabled: boolean) => void;
   setMetadata: (metadata: Partial<Metadata>) => void;
   aspectRatio: number;
   setAspectRatio: (ratio: number) => void;
@@ -71,14 +81,19 @@ export const usePlayerStore = create<PlayerState>()(
       isSettingsOpen: false,
       isLibraryOpen: false,
       isFullscreen: false,
+      subsEnabled: true,
       loopMode: 'off',
       showControls: true,
       showVolumeOSD: false,
+      actionOSD: null,
       equalizer: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       accentColor: '#6366f1',
       crossfade: true,
       crossfadeDuration: 2,
       scrollMode: 'volume',
+      hwAcceleration: true,
+      rememberPosition: true,
+      autoPlay: true,
       theme: 'dark',
       aspectRatio: 16/9,
       metadata: {
@@ -103,15 +118,20 @@ export const usePlayerStore = create<PlayerState>()(
       setSettingsOpen: (open) => set({ isSettingsOpen: open }),
       setLibraryOpen: (open) => set({ isLibraryOpen: open }),
       setFullscreen: (full) => set({ isFullscreen: full }),
+      setSubsEnabled: (enabled) => set({ subsEnabled: enabled }),
       setLoopMode: (mode) => set({ loopMode: mode }),
       setAspectRatio: (ratio) => set({ aspectRatio: ratio }),
       setShowControls: (show) => set({ showControls: show }),
       setShowVolumeOSD: (show) => set({ showVolumeOSD: show }),
+      setActionOSD: (osd) => set({ actionOSD: osd }),
       setEqualizer: (bands) => set({ equalizer: bands }),
       setAccentColor: (color) => set({ accentColor: color }),
       setCrossfade: (enabled) => set({ crossfade: enabled }),
       setCrossfadeDuration: (duration) => set({ crossfadeDuration: duration }),
       setScrollMode: (mode) => set({ scrollMode: mode }),
+      setHwAcceleration: (enabled) => set({ hwAcceleration: enabled }),
+      setRememberPosition: (enabled) => set({ rememberPosition: enabled }),
+      setAutoPlay: (enabled) => set({ autoPlay: enabled }),
       setMetadata: (metadata) => set({ metadata: { ...get().metadata, ...metadata } }),
       setTheme: (theme) => set({ theme }),
     }),
@@ -127,6 +147,9 @@ export const usePlayerStore = create<PlayerState>()(
         crossfade: state.crossfade,
         crossfadeDuration: state.crossfadeDuration,
         scrollMode: state.scrollMode,
+        hwAcceleration: state.hwAcceleration,
+        rememberPosition: state.rememberPosition,
+        autoPlay: state.autoPlay,
         theme: state.theme,
       }),
     }

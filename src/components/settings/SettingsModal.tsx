@@ -61,11 +61,7 @@ const SegmentedControl = ({ options, value, onChange }: {
         }`}
       >
         {value === opt && (
-          <motion.div
-            layoutId="segment-active"
-            className="absolute inset-0 bg-accent rounded-md shadow-sm"
-            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-          />
+          <div className="absolute inset-0 bg-accent rounded-md shadow-sm" />
         )}
         <span className="relative z-10">{opt}</span>
       </button>
@@ -79,10 +75,8 @@ const Toggle = ({ checked, onChange }: { checked: boolean; onChange: (v: boolean
     onClick={() => onChange(!checked)}
     className={`relative w-10 h-[22px] rounded-full transition-colors cursor-pointer ${checked ? 'bg-accent' : 'bg-foreground/[0.08] hover:bg-foreground/[0.12]'}`}
   >
-    <motion.div
-      className="absolute top-[3px] w-4 h-4 bg-white rounded-full shadow-md"
-      animate={{ left: checked ? 22 : 3 }}
-      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+    <div
+      className={`absolute top-[3px] w-4 h-4 bg-white rounded-full shadow-md transition-all duration-200 ${checked ? 'left-[22px]' : 'left-[3px]'}`}
     />
   </button>
 );
@@ -108,6 +102,9 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
     crossfade, setCrossfade,
     crossfadeDuration, setCrossfadeDuration,
     scrollMode, setScrollMode,
+    hwAcceleration, setHwAcceleration,
+    rememberPosition, setRememberPosition,
+    autoPlay, setAutoPlay,
     theme, setTheme
   } = usePlayerStore();
   const [activeTab, setActiveTab] = useState<Tab>('general');
@@ -143,6 +140,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
     { key: '→', desc: 'Seek Forward 10s' },
     { key: '←', desc: 'Seek Backward 10s' },
     { key: '↑ / ↓', desc: 'Volume Up / Down' },
+    { key: 'C', desc: 'Toggle Subtitles' },
     { key: 'Esc', desc: 'Exit Fullscreen / Close' },
   ];
 
@@ -237,9 +235,9 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={activeTab}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
                     transition={{ duration: 0.15 }}
                     className="h-full"
                   >
@@ -248,10 +246,19 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                       <div className="space-y-8">
                         <div className="divide-y divide-white/[0.04]">
                           <SettingCard label="Hardware Acceleration" description="Use GPU for video decoding">
-                            <Toggle checked={true} onChange={() => {}} />
+                            <Toggle checked={hwAcceleration} onChange={(v) => {
+                              setHwAcceleration(v);
+                            }} />
                           </SettingCard>
                           <SettingCard label="Remember Position" description="Resume from where you left off">
-                            <Toggle checked={true} onChange={() => {}} />
+                            <Toggle checked={rememberPosition} onChange={(v) => {
+                              setRememberPosition(v);
+                            }} />
+                          </SettingCard>
+                          <SettingCard label="Auto Play" description="Play immediately when file is opened">
+                            <Toggle checked={autoPlay} onChange={(v) => {
+                              setAutoPlay(v);
+                            }} />
                           </SettingCard>
                           <SettingCard label="Scroll Wheel" description="What the scroll wheel controls">
                             <SegmentedControl 

@@ -109,9 +109,11 @@ export const VideoCanvas: React.FC = () => {
 
     const setupEngine = async () => {
       try {
+        const state = usePlayerStore.getState();
         await init({
           args: [
-            '--hwdec=auto-safe',
+            state.hwAcceleration ? '--hwdec=auto-safe' : '--hwdec=no',
+            state.rememberPosition ? '--save-position-on-quit=yes' : '--save-position-on-quit=no',
             '--vo=gpu-next',
             '--keep-open=yes',
             '--no-osc',

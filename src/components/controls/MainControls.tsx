@@ -8,6 +8,7 @@ import { usePlayerStore } from '../../store/usePlayerStore';
 import { motion } from 'framer-motion';
 import { getCurrentWindow, PhysicalSize, PhysicalPosition, currentMonitor } from '@tauri-apps/api/window';
 import { command, setProperty } from 'tauri-plugin-mpv-api';
+import { showActionOSD } from '../../utils/osd';
 
 export const MainControls: React.FC = () => {
   const { 
@@ -20,7 +21,8 @@ export const MainControls: React.FC = () => {
     loopMode, setLoopMode,
     playlist,
     scrollMode,
-    aspectRatio
+    aspectRatio,
+    subsEnabled, setSubsEnabled
   } = usePlayerStore();
 
   const appWindow = getCurrentWindow();
@@ -35,6 +37,7 @@ export const MainControls: React.FC = () => {
       const next = !isFullscreen;
       await appWindow.setFullscreen(next);
       setFullscreen(next);
+      showActionOSD(next ? 'Fullscreen On' : 'Fullscreen Off', 'maximize');
     } catch (err) {
       console.error('Fullscreen error:', err);
     }
@@ -89,14 +92,17 @@ export const MainControls: React.FC = () => {
       setLoopMode('one');
       await setProperty('loop-file' as any, 'inf');
       await setProperty('loop-playlist' as any, 'no');
+      showActionOSD('Loop One', 'repeat-1');
     } else if (loopMode === 'one') {
       setLoopMode('all');
       await setProperty('loop-file' as any, 'no');
       await setProperty('loop-playlist' as any, 'inf');
+      showActionOSD('Loop All', 'repeat');
     } else {
       setLoopMode('off');
       await setProperty('loop-file' as any, 'no');
       await setProperty('loop-playlist' as any, 'no');
+      showActionOSD('Loop Off', 'repeat');
     }
   };
 
@@ -190,6 +196,7 @@ export const MainControls: React.FC = () => {
                   await command('seek', [0, 'absolute']);
                 }
                 await command('cycle', ['pause']);
+                showActionOSD(!isPlaying ? 'Play' : 'Pause', !isPlaying ? 'play' : 'pause');
               }}
               className={`transition-all duration-300 transform active:scale-95 cursor-pointer group ${hasMedia ? 'text-foreground hover:text-accent drop-shadow-md' : 'text-muted/40 cursor-default'}`}
             >
@@ -223,7 +230,10 @@ export const MainControls: React.FC = () => {
             
             <div className={`flex items-center ${isSmall ? 'gap-3' : 'gap-6'} ${!hasMedia ? 'opacity-20 pointer-events-none' : ''}`}>
               <button 
-                onClick={() => command('seek', [-10, 'relative'])}
+                onClick={() => {
+                  command('seek', [-10, 'relative']);
+                  showActionOSD('-10 Seconds', 'rewind');
+                }}
                 className="text-muted hover:text-accent transition-all cursor-pointer relative group/btn"
               >
                 <RotateCcw size={isSmall ? 18 : 22} className="group-hover/btn:scale-110 transition-transform" />
@@ -231,7 +241,10 @@ export const MainControls: React.FC = () => {
               </button>
 
               <button 
-                onClick={() => command('seek', [10, 'relative'])}
+                onClick={() => {
+                  command('seek', [10, 'relative']);
+                  showActionOSD('+10 Seconds', 'forward');
+                }}
                 className="text-muted hover:text-accent transition-all cursor-pointer relative group/btn"
               >
                 <RotateCw size={isSmall ? 18 : 22} className="group-hover/btn:scale-110 transition-transform" />
@@ -252,7 +265,7 @@ export const MainControls: React.FC = () => {
               </button>
               {!isTiny && (
                 <div className={`${isSmall ? 'w-16' : 'w-24'} relative flex items-center gap-2`}>
-                  <div className="relative flex-1 h-1.5 bg-foreground/10 rounded-full overflow-hidden">
+                  <div className="relative flex-1 h-1 bg-foreground/10 rounded-full overflow-hidden">
                     <motion.div 
                       className="absolute top-0 left-0 h-full bg-accent"
                       initial={false}
@@ -309,8 +322,14 @@ export const MainControls: React.FC = () => {
 
                 <button 
                   disabled={!hasMedia}
-                  className={`transition-all cursor-pointer group ${hasMedia ? 'text-muted hover:text-accent' : 'text-muted cursor-default'}`}
-                  title="Subtitles"
+                  onClick={async () => {
+                    const next = !subsEnabled;
+                    await setProperty('sub-visibility', next);
+                    setSubsEnabled(next);
+                    showActionOSD(next ? 'Captions On' : 'Captions Off', 'subtitles');
+                  }}
+                  className={`transition-all cursor-pointer group ${subsEnabled ? 'text-accent' : hasMedia ? 'text-muted hover:text-accent' : 'text-muted/40 cursor-default'}`}
+                  title={subsEnabled ? "Disable Subtitles" : "Enable Subtitles"}
                 >
                   <Subtitles size={18} className="group-hover:scale-110 transition-transform" />
                 </button>
@@ -330,6 +349,7 @@ export const MainControls: React.FC = () => {
                 const next = !isPinned;
                 await appWindow.setAlwaysOnTop(next);
                 setIsPinned(next);
+                showActionOSD(next ? 'PiP Mode On' : 'PiP Mode Off', 'pip');
 
                 if (next) {
                   try {

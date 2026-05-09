@@ -35,7 +35,7 @@ export const WindowControls: React.FC = () => {
       initial={false}
       animate={{ 
         y: showControls ? 0 : -20,
-        opacity: showControls ? 0.3 : 0,
+        opacity: showControls ? 0.6 : 0,
         scale: showControls ? 1 : 0.95
       }}
       transition={{ 
@@ -49,19 +49,19 @@ export const WindowControls: React.FC = () => {
       <div className="flex gap-2 p-1.5 rounded-full">
         <button 
           onClick={handleMinimize}
-          className="p-1.5 hover:bg-black/10 dark:hover:bg-white/10 rounded-full transition-colors text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white cursor-pointer"
+          className="p-1.5 border border-transparent hover:border-border-subtle rounded-lg transition-all text-muted hover:text-foreground cursor-pointer"
         >
           <Minus size={16} strokeWidth={2.5} />
         </button>
         <button 
           onClick={handleToggleMaximize}
-          className="p-1.5 hover:bg-black/10 dark:hover:bg-white/10 rounded-full transition-colors text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white cursor-pointer"
+          className="p-1.5 border border-transparent hover:border-border-subtle rounded-lg transition-all text-muted hover:text-foreground cursor-pointer"
         >
           {isMaximized ? <Copy size={14} strokeWidth={2.5} /> : <Square size={14} strokeWidth={2.5} />}
         </button>
         <button 
-          onClick={handleClose}
-          className="p-1.5 hover:bg-red-500/20 hover:text-red-500 rounded-full transition-all text-black/40 dark:text-white/40 cursor-pointer"
+          onClick={() => appWindow.close()}
+          className="p-1.5 border border-transparent hover:border-red-500/30 hover:bg-red-500/5 rounded-lg transition-all text-muted hover:text-red-500 cursor-pointer"
         >
           <X size={16} strokeWidth={2.5} />
         </button>
