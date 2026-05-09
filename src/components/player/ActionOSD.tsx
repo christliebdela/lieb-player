@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { 
   Subtitles, Maximize, PictureInPicture2, 
-  RotateCcw, RotateCw, Repeat, Repeat1, Play, Pause
+  Rewind, FastForward, Repeat, Repeat1, Play, Pause
 } from 'lucide-react';
 
 const getIcon = (iconName: string) => {
@@ -12,8 +12,8 @@ const getIcon = (iconName: string) => {
     case 'subtitles': return <Subtitles size={size} strokeWidth={2} />;
     case 'maximize': return <Maximize size={size} strokeWidth={2} />;
     case 'pip': return <PictureInPicture2 size={size} strokeWidth={2} />;
-    case 'rewind': return <RotateCcw size={size} strokeWidth={2} />;
-    case 'forward': return <RotateCw size={size} strokeWidth={2} />;
+    case 'rewind': return <Rewind size={size} strokeWidth={2} />;
+    case 'forward': return <FastForward size={size} strokeWidth={2} />;
     case 'repeat': return <Repeat size={size} strokeWidth={2} />;
     case 'repeat-1': return <Repeat1 size={size} strokeWidth={2} />;
     case 'play': return <Play size={size} strokeWidth={2} fill="currentColor" />;
