@@ -438,7 +438,7 @@ function MainPlayer() {
 
         <div className="flex-1 w-full" data-tauri-drag-region={!isFullscreen ? "true" : undefined} />
 
-        <div className="p-12 flex items-end justify-between pointer-events-none relative flex-1">
+        <div className="px-4 pb-12 flex items-end justify-between pointer-events-none relative flex-1">
           <div className="max-w-md pb-4">
             {!isPlaying && duration > 0 && (
               <motion.div
