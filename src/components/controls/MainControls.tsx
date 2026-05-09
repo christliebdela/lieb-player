@@ -52,7 +52,8 @@ export const MainControls: React.FC = () => {
     scrollMode,
     aspectRatio,
     subsEnabled, setSubsEnabled,
-    seekInterval
+    seekInterval,
+    controlBarLayout
   } = usePlayerStore();
   const { t } = useTranslation();
 
@@ -205,6 +206,286 @@ export const MainControls: React.FC = () => {
   const isSmall = winWidth < 650;
   const isTiny = winWidth < 450;
 
+  const renderPlaybackGroup = (isCenteredLayout = false) => (
+    <div className={`flex items-center ${isSmall ? 'gap-3' : 'gap-6'}`}>
+      <div className={`flex items-center ${isSmall ? 'gap-2' : 'gap-4'}`}>
+        {hasPlaylist && (
+          <Tooltip content="Previous (P)">
+            <button 
+              onClick={async () => {
+                const idx = playlist.findIndex(t => t.path === currentTrack);
+                if (idx > 0) {
+                  const prev = playlist[idx - 1];
+                  await emit('lieb-play', { path: prev.path, subs: prev.subs });
+                  setCurrentTrack(prev.path);
+                }
+              }}
+              className={`text-muted hover:text-accent transition-all cursor-pointer group/btn ${playlist.findIndex(t => t.path === currentTrack) <= 0 ? 'opacity-30 cursor-default pointer-events-none' : ''}`}
+            >
+              <SkipBack size={18} className="group-hover/btn:scale-110 transition-transform" />
+            </button>
+          </Tooltip>
+        )}
+        
+        <div className={`flex items-center ${isSmall ? 'gap-3' : 'gap-6'} ${!hasMedia ? 'opacity-20 pointer-events-none' : ''}`}>
+          <Tooltip content="Rewind">
+            <button 
+              onClick={() => {
+                command('seek', [-seekInterval, 'relative']);
+                showActionOSD(`${seekInterval}s`, 'rewind');
+              }}
+              className="text-muted hover:text-accent transition-all cursor-pointer relative group/btn"
+            >
+              <Rewind size={isSmall ? 18 : 22} className="group-hover/btn:scale-110 transition-transform" />
+            </button>
+          </Tooltip>
+        </div>
+      </div>
+
+      <Tooltip content={isPlaying ? t('pause') : t('play')}>
+        <button 
+          disabled={!hasMedia}
+          onClick={async () => {
+            if (duration > 0 && currentTime >= duration - 0.2) {
+              await command('seek', [0, 'absolute']);
+            }
+            await command('cycle', ['pause']);
+            showActionOSD(!isPlaying ? t('play') : t('pause'), !isPlaying ? 'play' : 'pause');
+          }}
+          className={`transition-all duration-300 transform active:scale-95 cursor-pointer group ${hasMedia ? 'text-muted hover:text-accent drop-shadow-md' : 'text-muted/40 cursor-default'}`}
+        >
+          <div className="group-hover:scale-110 transition-transform flex items-center justify-center">
+            {isPlaying ? (
+              <Pause size={isCenteredLayout ? (isSmall ? 22 : 28) : (isSmall ? 20 : 24)} strokeWidth={1.5} fill="currentColor" />
+            ) : (
+              <Play size={isCenteredLayout ? (isSmall ? 22 : 28) : (isSmall ? 20 : 24)} strokeWidth={1.5} fill="currentColor" className="ml-0.5" />
+            )}
+          </div>
+        </button>
+      </Tooltip>
+
+      <div className={`flex items-center ${isSmall ? 'gap-2' : 'gap-4'}`}>
+        <div className={`flex items-center ${isSmall ? 'gap-3' : 'gap-6'} ${!hasMedia ? 'opacity-20 pointer-events-none' : ''}`}>
+          <Tooltip content="Forward">
+            <button 
+              onClick={() => {
+                command('seek', [seekInterval, 'relative']);
+                showActionOSD(`${seekInterval}s`, 'forward');
+              }}
+              className="text-muted hover:text-accent transition-all cursor-pointer relative group/btn"
+            >
+              <FastForward size={isSmall ? 18 : 22} className="group-hover/btn:scale-110 transition-transform" />
+            </button>
+          </Tooltip>
+        </div>
+
+        {hasPlaylist && (
+          <Tooltip content="Next (N)">
+            <button 
+              onClick={async () => {
+                const idx = playlist.findIndex(t => t.path === currentTrack);
+                if (idx !== -1 && idx < playlist.length - 1) {
+                  const next = playlist[idx + 1];
+                  await emit('lieb-play', { path: next.path, subs: next.subs });
+                  setCurrentTrack(next.path);
+                }
+              }}
+              className={`text-muted hover:text-accent transition-all cursor-pointer group/btn ${playlist.findIndex(t => t.path === currentTrack) >= playlist.length - 1 ? 'opacity-30 cursor-default pointer-events-none' : ''}`}
+            >
+              <SkipForward size={18} className="group-hover/btn:scale-110 transition-transform" />
+            </button>
+          </Tooltip>
+        )}
+      </div>
+    </div>
+  );
+
+  const renderVolumeGroup = () => (
+    <div className={`flex items-center ${isSmall ? 'gap-2' : 'gap-4'} group/volume relative ${!hasMedia ? 'opacity-20 pointer-events-none' : ''}`}>
+      <Tooltip content={isMuted ? 'Unmute (M)' : 'Mute (M)'}>
+        <button 
+          onClick={() => setProperty('mute', !isMuted)}
+          className="text-muted hover:text-accent transition-all cursor-pointer group"
+        >
+          <div className="group-hover:scale-110 transition-transform">
+            {isMuted || volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
+          </div>
+        </button>
+      </Tooltip>
+      {!isTiny && (
+        <div className={`${isSmall ? 'w-16' : 'w-24'} relative flex items-center gap-2`}>
+          <div className="relative flex-1 h-1 bg-foreground/10 rounded-full overflow-hidden">
+            <motion.div 
+              className="absolute top-0 left-0 h-full bg-accent"
+              initial={false}
+              animate={{ width: `${isMuted ? 0 : volume}%` }}
+            />
+          </div>
+          <span className="text-[10px] font-bold tabular-nums text-muted min-w-[20px]">
+            {isMuted ? '0' : Math.round(volume)}
+          </span>
+          <input 
+            type="range"
+            min="0"
+            max="100"
+            value={volume}
+            onChange={(e) => setProperty('volume', Number(e.target.value))}
+            className="absolute inset-0 opacity-0 cursor-pointer appearance-none"
+          />
+        </div>
+      )}
+    </div>
+  );
+
+  const renderTimeGroup = () => !isTiny && (
+    <div className="flex items-center gap-2 tabular-nums text-[10px] font-bold tracking-tight">
+      <span className="text-muted/80">{formatTime(currentTime)}</span>
+      <span className="text-muted/40">/</span>
+      <span className="text-muted">{formatTime(duration)}</span>
+    </div>
+  );
+
+  const renderSecondaryUtilities = () => (
+    <div className={`flex items-center ${isSmall ? 'gap-3' : 'gap-6'}`}>
+      <Tooltip content={`Loop: ${loopMode}`}>
+        <button 
+          disabled={!hasMedia}
+          onClick={handleLoopCycle}
+          className={`transition-all cursor-pointer relative group ${
+            loopMode !== 'off' ? 'text-accent' : hasMedia ? 'text-muted hover:text-accent' : 'text-muted/40 cursor-default'
+          }`}
+        >
+          <div className="group-hover:scale-110 transition-transform">
+            {loopMode === 'one' ? <Repeat1 size={18} /> : <Repeat size={18} />}
+          </div>
+        </button>
+      </Tooltip>
+      
+      <Tooltip content="Library (L)">
+        <button 
+          onClick={() => openWindow('library', 'Library', 800, 600)}
+          className="text-muted hover:text-accent transition-all cursor-pointer group"
+        >
+          <FolderOpen size={18} className="group-hover:scale-110 transition-transform" />
+        </button>
+      </Tooltip>
+
+      <Tooltip content={subsEnabled ? "Disable Subtitles" : "Enable Subtitles"}>
+        <button 
+          disabled={!hasMedia}
+          onClick={async () => {
+            const state = usePlayerStore.getState();
+            if (!state.hasSubtitles) {
+              showActionOSD(t('no.captions'), 'subtitles');
+              return;
+            }
+            const next = !subsEnabled;
+            setSubsEnabled(next);
+            showActionOSD(next ? t('captions.on') : t('captions.off'), 'subtitles');
+          }}
+          className={`transition-all cursor-pointer group ${subsEnabled ? 'text-accent' : hasMedia ? 'text-muted hover:text-accent' : 'text-muted/40 cursor-default'}`}
+        >
+          <Subtitles size={18} className="group-hover:scale-110 transition-transform" />
+        </button>
+      </Tooltip>
+    </div>
+  );
+
+  const renderGlobalUtilities = () => (
+    <div className={`flex items-center ${isSmall ? 'gap-3' : 'gap-6'}`}>
+      <Tooltip content="Settings (S)" align="right">
+        <button 
+          onClick={() => openWindow('settings', 'Settings', 800, 560)}
+          className="text-muted hover:text-accent transition-all cursor-pointer group"
+        >
+          <Settings size={18} className="group-hover:scale-110 group-hover:rotate-45 transition-all duration-300" />
+        </button>
+      </Tooltip>
+
+      <Tooltip content={isPinned ? 'Unpin (Always on Top)' : 'Pin (Always on Top)'} align="right">
+        <button 
+          onClick={async () => {
+            const next = !isPinned;
+            await appWindow.setAlwaysOnTop(next);
+            setIsPinned(next);
+            showActionOSD(next ? 'PiP Mode On' : 'PiP Mode Off', 'pip');
+
+            if (next) {
+              try {
+                const monitor = await currentMonitor();
+                if (monitor) {
+                  const scaleFactor = await appWindow.scaleFactor();
+                  const targetW = Math.round((monitor.size.width / scaleFactor) * 0.3);
+                  const targetH = Math.round(targetW / aspectRatio);
+                  await appWindow.setSize(new PhysicalSize(Math.round(targetW * scaleFactor), Math.round(targetH * scaleFactor)));
+                  await new Promise(r => setTimeout(r, 100));
+                  const posX = monitor.size.width - Math.round(targetW * scaleFactor) - Math.round(20 * scaleFactor);
+                  const posY = Math.round(20 * scaleFactor);
+                  await appWindow.setPosition(new PhysicalPosition(posX, posY));
+                }
+              } catch (err) {
+                console.error(' Lieb Player: Failed to snap window:', err);
+              }
+            }
+          }}
+          className={`transition-all cursor-pointer group ${isPinned ? 'text-accent scale-110' : 'text-muted hover:text-accent'}`}
+        >
+          <div className="group-hover:scale-110 transition-transform">
+            <PictureInPicture2 size={18} strokeWidth={1.5} />
+          </div>
+        </button>
+      </Tooltip>
+
+      <Tooltip content={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen (F)'} align="right">
+        <button 
+          onClick={handleFullscreen}
+          className={`transition-all cursor-pointer group ${isFullscreen ? 'text-accent' : 'text-muted hover:text-accent'}`}
+        >
+          <div className="group-hover:scale-110 transition-transform">
+            {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
+          </div>
+        </button>
+      </Tooltip>
+    </div>
+  );
+
+  const renderPlayPauseOnly = () => (
+    <Tooltip content={isPlaying ? t('pause') : t('play')}>
+      <button 
+        disabled={!hasMedia}
+        onClick={async () => {
+          if (duration > 0 && currentTime >= duration - 0.2) {
+            await command('seek', [0, 'absolute']);
+          }
+          await command('cycle', ['pause']);
+          showActionOSD(!isPlaying ? t('play') : t('pause'), !isPlaying ? 'play' : 'pause');
+        }}
+        className={`transition-all duration-300 transform active:scale-95 cursor-pointer group ${hasMedia ? 'text-muted hover:text-accent drop-shadow-md' : 'text-muted/40 cursor-default'}`}
+      >
+        <div className="group-hover:scale-110 transition-transform flex items-center justify-center">
+          {isPlaying ? (
+            <Pause size={24} strokeWidth={1.5} fill="currentColor" />
+          ) : (
+            <Play size={24} strokeWidth={1.5} fill="currentColor" className="ml-0.5" />
+          )}
+        </div>
+      </button>
+    </Tooltip>
+  );
+
+  const renderFullscreenOnly = () => (
+    <Tooltip content={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen (F)'} align="right">
+      <button 
+        onClick={handleFullscreen}
+        className={`transition-all cursor-pointer group ${isFullscreen ? 'text-accent' : 'text-muted hover:text-accent'}`}
+      >
+        <div className="group-hover:scale-110 transition-transform">
+          {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
+        </div>
+      </button>
+    </Tooltip>
+  );
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
@@ -235,238 +516,86 @@ export const MainControls: React.FC = () => {
           />
         </div>
 
-        <div className="px-4 py-5 flex items-center justify-between">
-          <div className={`flex items-center ${isSmall ? 'gap-3' : 'gap-6'}`}>
-            <Tooltip content={isPlaying ? t('pause') : t('play')}>
-              <button 
-                disabled={!hasMedia}
-                onClick={async () => {
-                  if (duration > 0 && currentTime >= duration - 0.2) {
-                    await command('seek', [0, 'absolute']);
-                  }
-                  await command('cycle', ['pause']);
-                  showActionOSD(!isPlaying ? t('play') : t('pause'), !isPlaying ? 'play' : 'pause');
-                }}
-                className={`transition-all duration-300 transform active:scale-95 cursor-pointer group ${hasMedia ? 'text-muted hover:text-accent drop-shadow-md' : 'text-muted/40 cursor-default'}`}
-              >
-                <div className="group-hover:scale-110 transition-transform flex items-center justify-center">
-                  {isPlaying ? (
-                    <Pause size={isSmall ? 20 : 24} strokeWidth={1.5} fill="currentColor" />
-                  ) : (
-                    <Play size={isSmall ? 20 : 24} strokeWidth={1.5} fill="currentColor" className="ml-0.5" />
-                  )}
-                </div>
-              </button>
-            </Tooltip>
-
-            {hasPlaylist && (
-              <div className={`flex items-center ${isSmall ? 'gap-2' : 'gap-4'}`}>
-                <Tooltip content="Previous (P)">
-                  <button 
-                    onClick={async () => {
-                      const idx = playlist.findIndex(t => t.path === currentTrack);
-                      if (idx > 0) {
-                        const prev = playlist[idx - 1];
-                        await emit('lieb-play', { path: prev.path, subs: prev.subs });
-                        setCurrentTrack(prev.path);
-                      }
-                    }}
-                    className={`text-muted hover:text-accent transition-all cursor-pointer group/btn ${playlist.findIndex(t => t.path === currentTrack) <= 0 ? 'opacity-30 cursor-default pointer-events-none' : ''}`}
-                  >
-                    <SkipBack size={18} className="group-hover/btn:scale-110 transition-transform" />
-                  </button>
-                </Tooltip>
-                <Tooltip content="Next (N)">
-                  <button 
-                    onClick={async () => {
-                      const idx = playlist.findIndex(t => t.path === currentTrack);
-                      if (idx !== -1 && idx < playlist.length - 1) {
-                        const next = playlist[idx + 1];
-                        await emit('lieb-play', { path: next.path, subs: next.subs });
-                        setCurrentTrack(next.path);
-                      }
-                    }}
-                    className={`text-muted hover:text-accent transition-all cursor-pointer group/btn ${playlist.findIndex(t => t.path === currentTrack) >= playlist.length - 1 ? 'opacity-30 cursor-default pointer-events-none' : ''}`}
-                  >
-                    <SkipForward size={18} className="group-hover/btn:scale-110 transition-transform" />
-                  </button>
-                </Tooltip>
+        <div className="px-4 py-5">
+          {controlBarLayout === 'default' && (
+            <div className="flex items-center justify-between">
+              {/* Left Group: Playback & Volume */}
+              <div className={`flex items-center ${isSmall ? 'gap-3' : 'gap-6'}`}>
+                {renderPlaybackGroup()}
+                {!isSmall && <div className="h-5 w-[1px] bg-border-subtle mx-1" />}
+                {renderVolumeGroup()}
+                {renderTimeGroup()}
               </div>
-            )}
-            
-            <div className={`flex items-center ${isSmall ? 'gap-3' : 'gap-6'} ${!hasMedia ? 'opacity-20 pointer-events-none' : ''}`}>
-              <Tooltip content="Rewind">
-                <button 
-                  onClick={() => {
-                    command('seek', [-seekInterval, 'relative']);
-                    showActionOSD(`${seekInterval}s`, 'rewind');
-                  }}
-                  className="text-muted hover:text-accent transition-all cursor-pointer relative group/btn"
-                >
-                  <Rewind size={isSmall ? 18 : 22} className="group-hover/btn:scale-110 transition-transform" />
-                </button>
-              </Tooltip>
 
-              <Tooltip content="Forward">
-                <button 
-                  onClick={() => {
-                    command('seek', [seekInterval, 'relative']);
-                    showActionOSD(`${seekInterval}s`, 'forward');
-                  }}
-                  className="text-muted hover:text-accent transition-all cursor-pointer relative group/btn"
-                >
-                  <FastForward size={isSmall ? 18 : 22} className="group-hover/btn:scale-110 transition-transform" />
-                </button>
-              </Tooltip>
-            </div>
-
-            {!isSmall && <div className="h-5 w-[1px] bg-border-subtle mx-1" />}
-
-            <div className={`flex items-center ${isSmall ? 'gap-2' : 'gap-4'} group/volume relative ${!hasMedia ? 'opacity-20 pointer-events-none' : ''}`}>
-              <Tooltip content={isMuted ? 'Unmute (M)' : 'Mute (M)'}>
-                <button 
-                  onClick={() => setProperty('mute', !isMuted)}
-                  className="text-muted hover:text-accent transition-all cursor-pointer group"
-                >
-                  <div className="group-hover:scale-110 transition-transform">
-                    {isMuted || volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
-                  </div>
-                </button>
-              </Tooltip>
-              {!isTiny && (
-                <div className={`${isSmall ? 'w-16' : 'w-24'} relative flex items-center gap-2`}>
-                  <div className="relative flex-1 h-1 bg-foreground/10 rounded-full overflow-hidden">
-                    <motion.div 
-                      className="absolute top-0 left-0 h-full bg-accent"
-                      initial={false}
-                      animate={{ width: `${isMuted ? 0 : volume}%` }}
-                    />
-                  </div>
-                  <span className="text-[10px] font-bold tabular-nums text-muted min-w-[20px]">
-                    {isMuted ? '0' : Math.round(volume)}
-                  </span>
-                  <input 
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={volume}
-                    onChange={(e) => setProperty('volume', Number(e.target.value))}
-                    className="absolute inset-0 opacity-0 cursor-pointer appearance-none"
-                  />
-                </div>
-              )}
-            </div>
-
-            {!isTiny && (
-              <div className="flex items-center gap-2 tabular-nums text-[10px] font-bold tracking-tight">
-                <span className="text-muted/80">{formatTime(currentTime)}</span>
-                <span className="text-muted/40">/</span>
-                <span className="text-muted">{formatTime(duration)}</span>
+              {/* Right Group: Utilities */}
+              <div className={`flex items-center ${isSmall ? 'gap-3' : 'gap-6'}`}>
+                {!isSmall && renderSecondaryUtilities()}
+                {renderGlobalUtilities()}
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
-          <div className={`flex items-center ${isSmall ? 'gap-3' : 'gap-6'}`}>
-            {!isSmall && (
-              <>
-                <Tooltip content={`Loop: ${loopMode}`}>
-                  <button 
-                    disabled={!hasMedia}
-                    onClick={handleLoopCycle}
-                    className={`transition-all cursor-pointer relative group ${
-                      loopMode !== 'off' ? 'text-accent' : hasMedia ? 'text-muted hover:text-accent' : 'text-muted/40 cursor-default'
-                    }`}
-                  >
-                    <div className="group-hover:scale-110 transition-transform">
-                      {loopMode === 'one' ? <Repeat1 size={18} /> : <Repeat size={18} />}
-                    </div>
-                  </button>
-                </Tooltip>
-                
-                <Tooltip content="Library (L)">
-                  <button 
-                    onClick={() => openWindow('library', 'Library', 800, 600)}
-                    className="text-muted hover:text-accent transition-all cursor-pointer group"
-                  >
-                    <FolderOpen size={18} className="group-hover:scale-110 transition-transform" />
-                  </button>
-                </Tooltip>
+          {controlBarLayout === 'centered' && (
+            <div className="flex items-center justify-between">
+              {/* Left: Volume & Time */}
+              <div className="flex-1 flex items-center gap-6">
+                {renderVolumeGroup()}
+                {renderTimeGroup()}
+              </div>
 
-                <Tooltip content={subsEnabled ? "Disable Subtitles" : "Enable Subtitles"}>
-                  <button 
-                    disabled={!hasMedia}
-                    onClick={async () => {
-                      const state = usePlayerStore.getState();
-                      if (!state.hasSubtitles) {
-                        showActionOSD(t('no.captions'), 'subtitles');
-                        return;
-                      }
-                      const next = !subsEnabled;
-                      setSubsEnabled(next);
-                      showActionOSD(next ? t('captions.on') : t('captions.off'), 'subtitles');
-                    }}
-                    className={`transition-all cursor-pointer group ${subsEnabled ? 'text-accent' : hasMedia ? 'text-muted hover:text-accent' : 'text-muted/40 cursor-default'}`}
-                  >
-                    <Subtitles size={18} className="group-hover:scale-110 transition-transform" />
-                  </button>
-                </Tooltip>
-              </>
-            )}
-            
-            <Tooltip content="Settings (S)" align="right">
-              <button 
-                onClick={() => openWindow('settings', 'Settings', 800, 560)}
-                className="text-muted hover:text-accent transition-all cursor-pointer group"
-              >
-                <Settings size={18} className="group-hover:scale-110 group-hover:rotate-45 transition-all duration-300" />
-              </button>
-            </Tooltip>
+              {/* Center: Playback */}
+              <div className="flex items-center">
+                {renderPlaybackGroup(true)}
+              </div>
 
-            <Tooltip content={isPinned ? 'Unpin (Always on Top)' : 'Pin (Always on Top)'} align="right">
-              <button 
-                onClick={async () => {
-                  const next = !isPinned;
-                  await appWindow.setAlwaysOnTop(next);
-                  setIsPinned(next);
-                  showActionOSD(next ? 'PiP Mode On' : 'PiP Mode Off', 'pip');
+              {/* Right: Utilities */}
+              <div className="flex-1 flex items-center justify-end gap-6">
+                {!isSmall && renderSecondaryUtilities()}
+                {renderGlobalUtilities()}
+              </div>
+            </div>
+          )}
 
-                  if (next) {
-                    try {
-                      const monitor = await currentMonitor();
-                      if (monitor) {
-                        const scaleFactor = await appWindow.scaleFactor();
-                        const targetW = Math.round((monitor.size.width / scaleFactor) * 0.3);
-                        const targetH = Math.round(targetW / aspectRatio);
-                        await appWindow.setSize(new PhysicalSize(Math.round(targetW * scaleFactor), Math.round(targetH * scaleFactor)));
-                        await new Promise(r => setTimeout(r, 100));
-                        const posX = monitor.size.width - Math.round(targetW * scaleFactor) - Math.round(20 * scaleFactor);
-                        const posY = Math.round(20 * scaleFactor);
-                        await appWindow.setPosition(new PhysicalPosition(posX, posY));
-                      }
-                    } catch (err) {
-                      console.error(' Lieb Player: Failed to snap window:', err);
-                    }
-                  }
-                }}
-                className={`transition-all cursor-pointer group ${isPinned ? 'text-accent scale-110' : 'text-muted hover:text-accent'}`}
-              >
-                <div className="group-hover:scale-110 transition-transform">
-                  <PictureInPicture2 size={18} strokeWidth={1.5} />
-                </div>
-              </button>
-            </Tooltip>
+          {controlBarLayout === 'compact' && (
+            <div className="flex items-center justify-between">
+              {/* Left: Everything essential grouped */}
+              <div className="flex items-center gap-4">
+                {renderPlaybackGroup()}
+                <div className="h-4 w-[1px] bg-border-subtle mx-1" />
+                {renderVolumeGroup()}
+              </div>
 
-            <Tooltip content={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen (F)'} align="right">
-              <button 
-                onClick={handleFullscreen}
-                className={`transition-all cursor-pointer group ${isFullscreen ? 'text-accent' : 'text-muted hover:text-accent'}`}
-              >
-                <div className="group-hover:scale-110 transition-transform">
-                  {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
-                </div>
-              </button>
-            </Tooltip>
-          </div>
+              {/* Center: Time */}
+              <div className="absolute left-1/2 -translate-x-1/2">
+                {renderTimeGroup()}
+              </div>
+
+              {/* Right: Essential Utilities */}
+              <div className="flex items-center gap-4">
+                {renderGlobalUtilities()}
+              </div>
+            </div>
+          )}
+
+          {controlBarLayout === 'minimal' && (
+            <div className="flex items-center justify-between">
+              {/* Left: Play/Pause only */}
+              <div className="flex items-center">
+                {renderPlayPauseOnly()}
+              </div>
+
+              {/* Center: Time */}
+              <div className="absolute left-1/2 -translate-x-1/2">
+                {renderTimeGroup()}
+              </div>
+
+              {/* Right: Volume & Fullscreen */}
+              <div className="flex items-center gap-6">
+                {renderVolumeGroup()}
+                {renderFullscreenOnly()}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </motion.div>

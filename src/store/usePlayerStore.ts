@@ -25,6 +25,7 @@ interface PlayerState {
   showControls: boolean;
   showVolumeOSD: boolean;
   actionOSD: { message: string; icon: string } | null;
+  controlBarLayout: 'default' | 'centered' | 'compact' | 'minimal';
   equalizer: number[]; // 10 bands: 31, 62, 125, 250, 500, 1k, 2k, 4k, 8k, 16k
   accentColor: string;
   scrollMode: 'volume' | 'seek';
@@ -65,6 +66,7 @@ interface PlayerState {
   setShowControls: (show: boolean) => void;
   setShowVolumeOSD: (show: boolean) => void;
   setActionOSD: (osd: { message: string; icon: string } | null) => void;
+  setControlBarLayout: (layout: 'default' | 'centered' | 'compact' | 'minimal') => void;
   setEqualizer: (bands: number[]) => void;
   setAccentColor: (color: string) => void;
   setScrollMode: (mode: 'volume' | 'seek') => void;
@@ -103,6 +105,7 @@ export const usePlayerStore = create<PlayerState>()(
       showControls: true,
       showVolumeOSD: false,
       actionOSD: null,
+      controlBarLayout: 'default',
       equalizer: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       accentColor: '#6366f1',
       scrollMode: 'volume',
@@ -168,6 +171,7 @@ export const usePlayerStore = create<PlayerState>()(
       setShowControls: (show) => set({ showControls: show }),
       setShowVolumeOSD: (show) => set({ showVolumeOSD: show }),
       setActionOSD: (osd) => set({ actionOSD: osd }),
+      setControlBarLayout: (layout) => set({ controlBarLayout: layout }),
       setEqualizer: (bands) => set({ equalizer: bands }),
       setAccentColor: (color) => set({ accentColor: color }),
       setScrollMode: (mode) => set({ scrollMode: mode }),
@@ -211,6 +215,7 @@ export const usePlayerStore = create<PlayerState>()(
         playlist: state.persistLibrary ? state.playlist : [],
         loopMode: state.loopMode,
         equalizer: state.equalizer,
+        controlBarLayout: state.controlBarLayout,
         accentColor: state.accentColor,
         scrollMode: state.scrollMode,
         hwAcceleration: state.hwAcceleration,
