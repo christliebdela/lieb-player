@@ -132,7 +132,7 @@ function MainPlayer() {
   const { 
     metadata, duration, setPlaylist, volume, isMuted, 
     showVolumeOSD, accentColor, crossfade, crossfadeDuration,
-    isFullscreen, setPlaying, setShowControls, isPlaying, showControls
+    isFullscreen, setFullscreen, setPlaying, setShowControls, isPlaying, showControls
   } = usePlayerStore();
   const { t } = useTranslation();
   const hasMedia = duration > 0;
@@ -305,6 +305,7 @@ function MainPlayer() {
       className={`relative w-full h-screen overflow-hidden font-inter select-none ${hasMedia ? 'bg-transparent' : 'bg-background'}`}
       style={{ cursor: !showControls && hasMedia ? 'none' : 'auto' }}
       onMouseMove={handleMouseMove}
+      onDoubleClick={() => setFullscreen(!isFullscreen)}
     >
       <VideoCanvas />
       
@@ -372,7 +373,7 @@ function MainPlayer() {
           <div className="flex items-center gap-2 px-3 py-1.5 opacity-20 hover:opacity-100 transition-opacity pointer-events-none">
             <img src="/lieb-player-icon.png" alt="Logo" className="w-3.5 h-3.5 object-contain grayscale" />
             <span className="text-foreground text-[10px] tracking-[0.2em] font-bold uppercase">
-              lieb player
+              Lieb Player
             </span>
           </div>
 

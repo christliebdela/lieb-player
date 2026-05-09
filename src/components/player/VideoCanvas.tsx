@@ -7,14 +7,14 @@ import { useTranslation } from '../../i18n';
 
 const OBSERVED_PROPERTIES = [
   'pause', 'time-pos', 'duration', 'volume', 'mute', 'filename', 'path',
-  'video-params/w', 'video-params/h', 'dwidth', 'dheight'
+  'video-params/w', 'video-params/h', 'dwidth', 'dheight', 'eof-reached'
 ] as const;
 
 export const VideoCanvas: React.FC = () => {
   const { 
     setDuration, setCurrentTime, setPlaying, 
     setMetadata, setVolume, setMuted, 
-    setAspectRatio, isFullscreen 
+    setAspectRatio, isFullscreen, setFullscreen 
   } = usePlayerStore();
   const { t } = useTranslation();
   const initialized = useRef(false);
@@ -171,6 +171,15 @@ export const VideoCanvas: React.FC = () => {
                   if (pendingW > 0) resizeWindowToVideo(pendingW, pendingH);
                 }
                 break;
+              case 'eof-reached':
+                if (data === true) {
+                  const state = usePlayerStore.getState();
+                  if (state.loopMode === 'off') {
+                    command('seek', [0, 'absolute']);
+                    setProperty('pause', true);
+                  }
+                }
+                break;
             }
           }
         );
@@ -200,6 +209,7 @@ export const VideoCanvas: React.FC = () => {
     <div 
       className="absolute inset-0 bg-transparent pointer-events-auto"
       onContextMenu={handleRightClick}
+      onDoubleClick={() => setFullscreen(!isFullscreen)}
       data-tauri-drag-region={!isFullscreen ? "true" : undefined}
     >
       <video-player 

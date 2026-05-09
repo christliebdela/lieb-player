@@ -28,6 +28,9 @@ const translations = {
     'theme.desc': 'Application appearance',
     'accent.color': 'Accent Color',
     'custom': 'Custom',
+    'mixer': 'Mixer',
+    'preset': 'Preset',
+    'color.mixer': 'Color Mixer',
     
     // Video
     'rendering.backend': 'Rendering Backend',
@@ -115,6 +118,9 @@ const translations = {
     'theme.desc': 'Apparence de l\'application',
     'accent.color': 'Couleur d\'accentuation',
     'custom': 'Personnalisée',
+    'mixer': 'Mixeur',
+    'preset': 'Préréglage',
+    'color.mixer': 'Mixeur de couleurs',
     
     'rendering.backend': 'Moteur de rendu',
     'rendering.backend.desc': 'API graphique vidéo',
@@ -196,6 +202,9 @@ const translations = {
     'theme.desc': 'Apariencia de la aplicación',
     'accent.color': 'Color de acento',
     'custom': 'Personalizado',
+    'mixer': 'Mezclador',
+    'preset': 'Preajuste',
+    'color.mixer': 'Mezclador de colores',
     
     'rendering.backend': 'Motor de renderizado',
     'rendering.backend.desc': 'API gráfica para vídeo',

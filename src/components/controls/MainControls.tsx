@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { 
   Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, 
-  Maximize, Minimize, Settings, Library, Subtitles,
+  Maximize, Minimize, Settings, LayoutGrid, Subtitles,
   RotateCcw, RotateCw, Repeat, Repeat1, PictureInPicture2
 } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
@@ -334,7 +334,7 @@ export const MainControls: React.FC = () => {
                   className="text-muted hover:text-accent transition-all cursor-pointer group"
                   title="Library (L)"
                 >
-                  <Library size={18} className="group-hover:scale-110 transition-transform" />
+                  <LayoutGrid size={18} className="group-hover:scale-110 transition-transform" />
                 </button>
 
                 <button 

@@ -38,8 +38,10 @@ interface PlayerState {
   deband: boolean;
   appLanguage: 'English' | 'French' | 'Spanish';
   metadata: Metadata;
-  theme: 'dark' | 'light';
+  theme: 'midnight' | 'daylight' | 'aura' | 'sakura';
   persistLibrary: boolean;
+  thumbnailCacheDays: number;
+  customPresets: string[];
   
   // Actions
   setPlaying: (playing: boolean) => void;
@@ -76,7 +78,9 @@ interface PlayerState {
   setPersistLibrary: (persist: boolean) => void;
   aspectRatio: number;
   setAspectRatio: (ratio: number) => void;
-  setTheme: (theme: 'dark' | 'light') => void;
+  setTheme: (theme: 'midnight' | 'daylight' | 'aura' | 'sakura') => void;
+  addCustomPreset: (color: string) => void;
+  removeCustomPreset: (color: string) => void;
 }
 
 export const usePlayerStore = create<PlayerState>()(
@@ -109,9 +113,11 @@ export const usePlayerStore = create<PlayerState>()(
       interpolation: true,
       deband: true,
       appLanguage: 'English',
-      theme: 'dark',
+      theme: 'midnight',
       persistLibrary: true,
+      thumbnailCacheDays: 30,
       aspectRatio: 16/9,
+      customPresets: [],
       metadata: {
         title: '',
         description: '',
@@ -172,7 +178,24 @@ export const usePlayerStore = create<PlayerState>()(
       setDeband: (enabled) => set({ deband: enabled }),
       setAppLanguage: (lang) => set({ appLanguage: lang }),
       setMetadata: (metadata) => set({ metadata: { ...get().metadata, ...metadata } }),
-      setTheme: (theme) => set({ theme }),
+      setTheme: (theme) => {
+        const defaultAccents = {
+          midnight: '#6366f1',
+          daylight: '#3b82f6',
+          aura: '#a78bfa',
+          sakura: '#f472b6'
+        };
+        set({ theme, accentColor: defaultAccents[theme] });
+      },
+      addCustomPreset: (color) => {
+        const current = get().customPresets;
+        if (!current.includes(color)) {
+          set({ customPresets: [...current, color].slice(-8) }); // Keep last 8
+        }
+      },
+      removeCustomPreset: (color) => {
+        set({ customPresets: get().customPresets.filter(p => p !== color) });
+      },
       setPersistLibrary: (persist) => set({ persistLibrary: persist }),
     }),
     {
@@ -197,6 +220,7 @@ export const usePlayerStore = create<PlayerState>()(
         appLanguage: state.appLanguage,
         theme: state.theme,
         persistLibrary: state.persistLibrary,
+        customPresets: state.customPresets,
       }),
     }
   )
