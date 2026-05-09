@@ -16,7 +16,7 @@ interface PlayerState {
   currentTime: number;
   isMuted: boolean;
   currentTrack: string | null;
-  playlist: { path: string; subs: string[] }[];
+  playlist: { path: string; subs: string[]; title?: string }[];
   isSettingsOpen: boolean;
   isLibraryOpen: boolean;
   isSubSearchOpen: boolean;
@@ -91,6 +91,9 @@ interface PlayerState {
   setTheme: (theme: 'midnight' | 'daylight' | 'aura' | 'sakura') => void;
   addCustomPreset: (color: string) => void;
   removeCustomPreset: (color: string) => void;
+  isBuffering: boolean;
+  setBuffering: (buffering: boolean) => void;
+  updatePlaylistTitle: (path: string, title: string) => void;
 }
 
 export const usePlayerStore = create<PlayerState>()(
@@ -134,6 +137,7 @@ export const usePlayerStore = create<PlayerState>()(
       isBlocking: false,
       seekInterval: 10,
       hasSubtitles: false,
+      isBuffering: false,
       metadata: {
         title: '',
         description: '',
@@ -218,6 +222,12 @@ export const usePlayerStore = create<PlayerState>()(
       setSeekInterval: (interval) => set({ seekInterval: interval }),
       setPersistLibrary: (persist) => set({ persistLibrary: persist }),
       setHasSubtitles: (has) => set({ hasSubtitles: has }),
+      setBuffering: (buffering) => set({ isBuffering: buffering }),
+      updatePlaylistTitle: (path, title) => set((state) => ({
+        playlist: state.playlist.map((item) => 
+          item.path === path ? { ...item, title } : item
+        )
+      })),
     }),
     {
       name: 'lieb-player-storage',

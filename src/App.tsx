@@ -150,7 +150,7 @@ function MainPlayer() {
     metadata, duration, setPlaylist, volume, isMuted, 
     showVolumeOSD, accentColor,
     isFullscreen, setFullscreen, setPlaying, setShowControls, isPlaying, showControls,
-    isBlocking, setCurrentTrack, isEngineReady
+    isBlocking, setCurrentTrack, isEngineReady, isBuffering
   } = usePlayerStore();
   const { t } = useTranslation();
   const hasMedia = duration > 0;
@@ -343,7 +343,7 @@ function MainPlayer() {
       <ActionOSD />
 
       <AnimatePresence>
-        {(!hasMedia && isPlaying) && (
+        {((!hasMedia && isPlaying) || (isBuffering && isPlaying)) && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

@@ -127,8 +127,10 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
     window.console.log('>>> [UI] handlePlayUrl:', urlInput);
     if (!urlInput.trim()) return;
     try {
-      await emit('lieb-play', { path: urlInput.trim(), subs: [] });
-      setCurrentTrack(urlInput.trim());
+      const url = urlInput.trim();
+      await emit('lieb-play', { path: url, subs: [] });
+      addToPlaylist(url, []);
+      setCurrentTrack(url);
       setPlaying(true);
       showActionOSD('Streaming URL', 'globe');
       setUrlInput('');
@@ -190,11 +192,29 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
   };
 
   const getFileName = (path: string) => {
+    // Look for a persistent metadata title first (works for local and web)
+    const item = playlist.find(p => p.path === path);
+    if (item?.title) return item.title;
+
+    if (path.startsWith('http')) {
+      // Fallback: cleaner URL name
+      try {
+        const url = new URL(path);
+        if (url.hostname.includes('youtube.com')) {
+          const v = url.searchParams.get('v');
+          return v ? `YouTube: ${v}` : 'YouTube Video';
+        }
+        return url.hostname;
+      } catch (e) {
+        return path;
+      }
+    }
     const parts = path.split(/[\\/]/);
     return parts[parts.length - 1];
   };
 
   const getFileExtension = (path: string) => {
+    if (path.startsWith('http')) return 'WEB';
     const parts = path.split('.');
     return parts.length > 1 ? parts[parts.length - 1].toUpperCase() : 'FILE';
   };

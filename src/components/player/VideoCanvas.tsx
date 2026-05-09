@@ -8,7 +8,7 @@ import { useTranslation } from '../../i18n';
 const OBSERVED_PROPERTIES = [
   'pause', 'time-pos', 'duration', 'volume', 'mute', 'filename', 'path', 'media-title',
   'video-params/w', 'video-params/h', 'dwidth', 'dheight', 'eof-reached',
-  'track-list'
+  'track-list', 'core-idle', 'buffering-percentage'
 ] as const;
 
 export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onToggleFullscreen }) => {
@@ -185,7 +185,16 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
               case 'pause': setPlaying(!(data as boolean)); break;
               case 'volume': setVolume(data as number); break;
               case 'mute': setMuted(data as boolean); break;
-              case 'media-title': if (data) setMetadata({ title: String(data) }); break;
+              case 'media-title': 
+                if (data) {
+                  const title = String(data);
+                  setMetadata({ title });
+                  const s = usePlayerStore.getState();
+                  if (s.currentTrack) {
+                    s.updatePlaylistTitle(s.currentTrack, title);
+                  }
+                }
+                break;
               case 'filename': 
                 if (data && !usePlayerStore.getState().metadata.title) {
                   setMetadata({ title: String(data) }); 
@@ -234,6 +243,9 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
                     setProperty('pause', true);
                   }
                 }
+                break;
+              case 'core-idle':
+                usePlayerStore.getState().setBuffering(data as boolean);
                 break;
             }
           }
