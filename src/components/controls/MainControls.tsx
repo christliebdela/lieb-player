@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 import { getCurrentWindow, PhysicalSize, PhysicalPosition, currentMonitor } from '@tauri-apps/api/window';
 import { command, setProperty } from 'tauri-plugin-mpv-api';
 import { showActionOSD } from '../../utils/osd';
+import { useTranslation } from '../../i18n';
 
 export const MainControls: React.FC = () => {
   const { 
@@ -24,6 +25,7 @@ export const MainControls: React.FC = () => {
     aspectRatio,
     subsEnabled, setSubsEnabled
   } = usePlayerStore();
+  const { t } = useTranslation();
 
   const appWindow = getCurrentWindow();
   const hasMedia = duration > 0;
@@ -37,7 +39,7 @@ export const MainControls: React.FC = () => {
       const next = !isFullscreen;
       await appWindow.setFullscreen(next);
       setFullscreen(next);
-      showActionOSD(next ? 'Fullscreen On' : 'Fullscreen Off', 'maximize');
+      showActionOSD(next ? t('fullscreen.on') : t('fullscreen.off'), 'maximize');
     } catch (err) {
       console.error('Fullscreen error:', err);
     }
@@ -92,17 +94,17 @@ export const MainControls: React.FC = () => {
       setLoopMode('one');
       await setProperty('loop-file' as any, 'inf');
       await setProperty('loop-playlist' as any, 'no');
-      showActionOSD('Loop One', 'repeat-1');
+      showActionOSD(t('loop.one'), 'repeat-1');
     } else if (loopMode === 'one') {
       setLoopMode('all');
       await setProperty('loop-file' as any, 'no');
       await setProperty('loop-playlist' as any, 'inf');
-      showActionOSD('Loop All', 'repeat');
+      showActionOSD(t('loop.all'), 'repeat');
     } else {
       setLoopMode('off');
       await setProperty('loop-file' as any, 'no');
       await setProperty('loop-playlist' as any, 'no');
-      showActionOSD('Loop Off', 'repeat');
+      showActionOSD(t('loop.off'), 'repeat');
     }
   };
 
@@ -196,7 +198,7 @@ export const MainControls: React.FC = () => {
                   await command('seek', [0, 'absolute']);
                 }
                 await command('cycle', ['pause']);
-                showActionOSD(!isPlaying ? 'Play' : 'Pause', !isPlaying ? 'play' : 'pause');
+                showActionOSD(!isPlaying ? t('play') : t('pause'), !isPlaying ? 'play' : 'pause');
               }}
               className={`transition-all duration-300 transform active:scale-95 cursor-pointer group ${hasMedia ? 'text-foreground hover:text-accent drop-shadow-md' : 'text-muted/40 cursor-default'}`}
             >
@@ -232,7 +234,7 @@ export const MainControls: React.FC = () => {
               <button 
                 onClick={() => {
                   command('seek', [-10, 'relative']);
-                  showActionOSD('-10 Seconds', 'rewind');
+                  showActionOSD(t('seek.bwd'), 'rewind');
                 }}
                 className="text-muted hover:text-accent transition-all cursor-pointer relative group/btn"
               >
@@ -243,7 +245,7 @@ export const MainControls: React.FC = () => {
               <button 
                 onClick={() => {
                   command('seek', [10, 'relative']);
-                  showActionOSD('+10 Seconds', 'forward');
+                  showActionOSD(t('seek.fwd'), 'forward');
                 }}
                 className="text-muted hover:text-accent transition-all cursor-pointer relative group/btn"
               >

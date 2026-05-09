@@ -4,6 +4,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window';
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { command, setProperty } from 'tauri-plugin-mpv-api';
 import { showActionOSD } from '../utils/osd';
+import { useTranslation } from '../i18n';
 
 const openWindow = async (label: string, title: string, width: number, height: number) => {
   try {
@@ -65,6 +66,7 @@ export const useKeyboardShortcuts = () => {
     volume,
     subsEnabled, setSubsEnabled
   } = usePlayerStore();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
@@ -83,7 +85,7 @@ export const useKeyboardShortcuts = () => {
               await command('seek', [0, 'absolute']);
             }
             await command('cycle', ['pause']);
-            showActionOSD(!state.isPlaying ? 'Play' : 'Pause', !state.isPlaying ? 'play' : 'pause');
+            showActionOSD(!state.isPlaying ? t('play') : t('pause'), !state.isPlaying ? 'play' : 'pause');
           }
           break;
         case 'KeyF': {
@@ -91,7 +93,7 @@ export const useKeyboardShortcuts = () => {
           const nextFullscreen = !isFullscreen;
           await appWindow.setFullscreen(nextFullscreen);
           setFullscreen(nextFullscreen);
-          showActionOSD(nextFullscreen ? 'Fullscreen On' : 'Fullscreen Off', 'maximize');
+          showActionOSD(nextFullscreen ? t('fullscreen.on') : t('fullscreen.off'), 'maximize');
           break;
         }
         case 'KeyM':
@@ -112,13 +114,13 @@ export const useKeyboardShortcuts = () => {
         case 'ArrowRight':
           if (hasMedia) {
             await command('seek', [10, 'relative']);
-            showActionOSD('+10 Seconds', 'forward');
+            showActionOSD(t('seek.fwd'), 'forward');
           }
           break;
         case 'ArrowLeft':
           if (hasMedia) {
             await command('seek', [-10, 'relative']);
-            showActionOSD('-10 Seconds', 'rewind');
+            showActionOSD(t('seek.bwd'), 'rewind');
           }
           break;
         case 'ArrowUp': {
@@ -151,7 +153,7 @@ export const useKeyboardShortcuts = () => {
             const next = !subsEnabled;
             await setProperty('sub-visibility', next);
             setSubsEnabled(next);
-            showActionOSD(next ? 'Captions On' : 'Captions Off', 'subtitles');
+            showActionOSD(next ? t('captions.on') : t('captions.off'), 'subtitles');
           }
           break;
       }

@@ -64,7 +64,15 @@ const translations = {
     'sc.volume': 'Volume Up / Down',
     'sc.subtitles': 'Toggle Subtitles',
     'sc.exit': 'Exit Fullscreen / Close',
-    
+
+    // Library
+    'library.title': 'Your Library',
+    'library.empty': 'Your library is empty',
+    'library.empty.desc': 'Drag and drop your favorite media files or folders here to start your collection.',
+    'library.file': 'Media File',
+    'library.files': 'Media Files',
+    'library.clear': 'Clear',
+
     // Actions
     'captions.on': 'Captions On',
     'captions.off': 'Captions Off',
@@ -77,6 +85,8 @@ const translations = {
     'loop.off': 'Loop Off',
     'play': 'Play',
     'pause': 'Pause',
+    'seek.fwd': '+10 Seconds',
+    'seek.bwd': '-10 Seconds',
   },
   French: {
     'drop.media': 'Déposez un média pour jouer',
@@ -135,7 +145,14 @@ const translations = {
     'sc.volume': 'Volume +/-',
     'sc.subtitles': 'Sous-titres',
     'sc.exit': 'Quitter / Fermer',
-    
+
+    'library.title': 'Votre Bibliothèque',
+    'library.empty': 'Votre bibliothèque est vide',
+    'library.empty.desc': 'Glissez-déposez vos fichiers ou dossiers ici pour commencer votre collection.',
+    'library.file': 'Fichier média',
+    'library.files': 'Fichiers média',
+    'library.clear': 'Effacer',
+
     'captions.on': 'Sous-titres activés',
     'captions.off': 'Sous-titres désactivés',
     'fullscreen.on': 'Plein écran activé',
@@ -147,6 +164,8 @@ const translations = {
     'loop.off': 'Boucle : Désactivée',
     'play': 'Lecture',
     'pause': 'Pause',
+    'seek.fwd': '+10 Secondes',
+    'seek.bwd': '-10 Secondes',
   },
   Spanish: {
     'drop.media': 'Suelta un archivo para jugar',
@@ -205,7 +224,14 @@ const translations = {
     'sc.volume': 'Volumen +/-',
     'sc.subtitles': 'Subtítulos',
     'sc.exit': 'Salir / Cerrar',
-    
+
+    'library.title': 'Tu Biblioteca',
+    'library.empty': 'Tu biblioteca está vacía',
+    'library.empty.desc': 'Arrastra y suelta tus archivos multimedia o carpetas aquí para comenzar tu colección.',
+    'library.file': 'Archivo multimedia',
+    'library.files': 'Archivos multimedia',
+    'library.clear': 'Limpiar',
+
     'captions.on': 'Subtítulos activados',
     'captions.off': 'Subtítulos desactivados',
     'fullscreen.on': 'Pantalla completa activada',
@@ -217,6 +243,8 @@ const translations = {
     'loop.off': 'Bucle: Desactivado',
     'play': 'Reproducir',
     'pause': 'Pausa',
+    'seek.fwd': '+10 Segundos',
+    'seek.bwd': '-10 Segundos',
   }
 };
 

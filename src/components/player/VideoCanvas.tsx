@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { command, init, observeProperties } from 'tauri-plugin-mpv-api';
 import { getCurrentWindow, PhysicalSize, currentMonitor } from '@tauri-apps/api/window';
+import { showActionOSD } from '../../utils/osd';
+import { useTranslation } from '../../i18n';
 
 const OBSERVED_PROPERTIES = [
   'pause', 'time-pos', 'duration', 'volume', 'mute', 'filename', 
@@ -10,6 +12,7 @@ const OBSERVED_PROPERTIES = [
 
 export const VideoCanvas: React.FC = () => {
     const { setDuration, setCurrentTime, setPlaying, setMetadata, setVolume, setMuted, setAspectRatio, isFullscreen } = usePlayerStore();
+    const { t } = useTranslation();
 
   useEffect(() => {
     // Crucial: Set background to transparent for MPV to show through
@@ -210,6 +213,9 @@ export const VideoCanvas: React.FC = () => {
   const handleRightClick = (e: React.MouseEvent) => {
     e.preventDefault();
     command('cycle', ['pause']);
+    // Trigger OSD
+    const state = usePlayerStore.getState();
+    showActionOSD(!state.isPlaying ? t('play') : t('pause'), !state.isPlaying ? 'play' : 'pause');
   };
 
   return (

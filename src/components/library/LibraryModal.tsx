@@ -6,9 +6,11 @@ import { usePlayerStore } from '../../store/usePlayerStore';
 import { command, setProperty } from 'tauri-plugin-mpv-api';
 import { listen } from '@tauri-apps/api/event';
 import { getCurrentWindow } from '@tauri-apps/api/window';
+import { useTranslation } from '../../i18n';
 
 export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone }) => {
   const { isLibraryOpen, setLibraryOpen, playlist, addToPlaylist, removeFromPlaylist, clearPlaylist } = usePlayerStore();
+  const { t } = useTranslation();
 
   React.useEffect(() => {
     if (!standalone) return;
@@ -68,9 +70,9 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
                   <ListMusic size={14} />
                 </div>
                 <div className="flex flex-col justify-center">
-                  <h2 className="text-[13px] font-semibold text-foreground leading-tight tracking-tight">Your Library</h2>
+                  <h2 className="text-[13px] font-semibold text-foreground leading-tight tracking-tight">{t('library.title')}</h2>
                   <p className="text-[9px] text-muted font-medium uppercase tracking-[0.15em] mt-[1px]">
-                    {playlist.length} {playlist.length === 1 ? 'Media File' : 'Media Files'}
+                    {playlist.length} {playlist.length === 1 ? t('library.file') : t('library.files')}
                   </p>
                 </div>
               </div>
@@ -81,7 +83,7 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
                     onClick={clearPlaylist}
                     className="px-3 py-1.5 rounded-md bg-foreground/[0.03] hover:bg-red-500/10 text-muted hover:text-red-400 text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer border border-border-subtle hover:border-red-500/20"
                   >
-                    Clear
+                    {t('library.clear')}
                   </button>
                 )}
                 <button 
@@ -151,9 +153,9 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
                     <div className="w-20 h-20 bg-foreground/[0.05] rounded-3xl flex items-center justify-center text-muted mb-6 border border-border-subtle">
                       <Library size={40} strokeWidth={1} />
                     </div>
-                    <h3 className="text-sm font-bold text-muted tracking-tight">Your library is empty</h3>
+                    <h3 className="text-sm font-bold text-muted tracking-tight">{t('library.empty')}</h3>
                     <p className="text-[11px] text-muted leading-relaxed mt-2 max-w-[240px]">
-                      Drag and drop your favorite media files or folders here to start your collection.
+                      {t('library.empty.desc')}
                     </p>
                   </div>
                 )}
