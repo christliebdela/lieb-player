@@ -111,7 +111,6 @@ const ResizeGrip: React.FC<{ position: 'tl' | 'tr' | 'bl' | 'br', show: boolean 
               newY = startPos.y + (startSize.height - newH * scaleFactor);
             }
 
-            // Fire and forget to avoid blocking the UI thread
             if (position !== 'br') {
               appWindow.setPosition(new PhysicalPosition(
                 Math.round(newX), 
@@ -160,7 +159,6 @@ function MainPlayer() {
     document.documentElement.style.setProperty('--accent', accentColor);
   }, [accentColor]);
 
-  // Handle transparency for video to show through
   useEffect(() => {
     if (hasMedia) {
       const timer = setTimeout(() => {
@@ -177,7 +175,6 @@ function MainPlayer() {
     setProperty('sub-visibility', subsEnabled ? 'yes' : 'no');
   }, [subsEnabled]);
   
-  // Sync Equalizer to MPV
   const equalizer = usePlayerStore(s => s.equalizer);
   useEffect(() => {
     const applyEq = async () => {
@@ -323,6 +320,38 @@ function MainPlayer() {
     >
       <VideoCanvas onToggleFullscreen={handleFullscreenToggle} />
       <ActionOSD />
+
+      <AnimatePresence>
+        {(!hasMedia && isPlaying) && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm pointer-events-none"
+          >
+            <div className="flex flex-col items-center">
+              <motion.img 
+                src="/lieb-player-icon.png" 
+                alt="Loading" 
+                className="w-16 h-16 object-contain"
+                animate={{ 
+                  scale: [1, 1.1, 1],
+                  opacity: [0.3, 0.7, 0.3]
+                }}
+                transition={{ 
+                  duration: 2, 
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              />
+              <p className="mt-4 text-[10px] font-bold uppercase tracking-[0.4em] text-accent/60">
+                Initializing Stream
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {showVolumeOSD && (
           <motion.div
@@ -352,7 +381,7 @@ function MainPlayer() {
         )}
       </AnimatePresence>
 
-      {!hasMedia && (
+      {!hasMedia && !isPlaying && (
         <div className="absolute inset-0 flex flex-col items-center justify-center z-0 pointer-events-none">
           <img 
             src="/lieb-player-icon.png" 

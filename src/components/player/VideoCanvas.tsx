@@ -6,7 +6,7 @@ import { showActionOSD } from '../../utils/osd';
 import { useTranslation } from '../../i18n';
 
 const OBSERVED_PROPERTIES = [
-  'pause', 'time-pos', 'duration', 'volume', 'mute', 'filename', 'path',
+  'pause', 'time-pos', 'duration', 'volume', 'mute', 'filename', 'path', 'media-title',
   'video-params/w', 'video-params/h', 'dwidth', 'dheight', 'eof-reached',
   'track-list'
 ] as const;
@@ -142,7 +142,7 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
           '--idle=yes',
           '--title=',
           '--no-terminal',
-          '--load-scripts=no',
+          '--load-scripts=yes',
           '--pause=yes',
           // Windows Audio Stabilization
           '--ao=wasapi',
@@ -174,7 +174,12 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
               case 'pause': setPlaying(!(data as boolean)); break;
               case 'volume': setVolume(data as number); break;
               case 'mute': setMuted(data as boolean); break;
-              case 'filename': if (data) setMetadata({ title: String(data) }); break;
+              case 'media-title': if (data) setMetadata({ title: String(data) }); break;
+              case 'filename': 
+                if (data && !usePlayerStore.getState().metadata.title) {
+                  setMetadata({ title: String(data) }); 
+                }
+                break;
               case 'path': 
                 if (data) {
                   const newPath = String(data);

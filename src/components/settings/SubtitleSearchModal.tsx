@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X, Search, Download, Globe, AlertCircle, Loader2 } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { command } from 'tauri-plugin-mpv-api';
@@ -17,7 +18,7 @@ interface SubtitleResult {
 }
 
 export const SubtitleSearchModal: React.FC<{ standalone?: boolean }> = ({ standalone }) => {
-  const { currentTrack } = usePlayerStore();
+  const { currentTrack, isSubSearchOpen, setSubSearchOpen } = usePlayerStore();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SubtitleResult[]>([]);
   const [loading, setLoading] = useState(false);
@@ -37,10 +38,9 @@ export const SubtitleSearchModal: React.FC<{ standalone?: boolean }> = ({ standa
     setLoading(true);
     setError(null);
     try {
-      // Using OpenSubtitles.com API (Free tier/Guest access)
       const response = await fetch(`https://api.opensubtitles.com/api/v1/subtitles?query=${encodeURIComponent(searchQuery)}`, {
         headers: {
-          'Api-Key': 'YOUR_API_KEY_HERE', // In a real app, this would be in an env var
+          'Api-Key': 'YOUR_API_KEY_HERE',
           'Content-Type': 'application/json',
           'User-Agent': 'LiebPlayer v0.1.0'
         }
@@ -65,7 +65,6 @@ export const SubtitleSearchModal: React.FC<{ standalone?: boolean }> = ({ standa
     try {
       const fileId = result.attributes.files[0].file_id;
       
-      // Request download URL
       const dlResponse = await fetch('https://api.opensubtitles.com/api/v1/download', {
         method: 'POST',
         headers: {
@@ -78,13 +77,9 @@ export const SubtitleSearchModal: React.FC<{ standalone?: boolean }> = ({ standa
       
       const dlData = await dlResponse.json();
       if (dlData.link) {
-        // In a real Tauri app, we'd download to a temp file, but for now
-        // we can tell MPV to load the URL directly as a sub-file!
         await command('sub-add', [dlData.link, 'select']);
         showActionOSD('Subtitle Attached', 'subtitles');
-        if (standalone) {
-          getCurrentWindow().close();
-        }
+        handleClose();
       }
     } catch (err) {
       showActionOSD('Download Failed', 'alert-circle');
@@ -97,11 +92,17 @@ export const SubtitleSearchModal: React.FC<{ standalone?: boolean }> = ({ standa
   const handleClose = () => {
     if (standalone) {
       getCurrentWindow().close();
+    } else {
+      setSubSearchOpen(false);
     }
   };
 
-  return (
-    <div className="w-full h-full bg-background flex flex-col overflow-hidden">
+  const modal = (
+    <div className={`bg-background flex flex-col overflow-hidden ${
+      standalone 
+        ? 'w-full h-full' 
+        : 'w-[520px] h-[480px] rounded-2xl shadow-2xl border border-white/5'
+    }`}>
       <header className="h-14 px-6 flex items-center justify-between border-b border-white/5 shrink-0" data-tauri-drag-region>
         <div className="flex items-center gap-3">
           <Globe className="text-accent" size={18} />
@@ -119,6 +120,7 @@ export const SubtitleSearchModal: React.FC<{ standalone?: boolean }> = ({ standa
         >
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-accent transition-colors" size={18} />
           <input 
+            autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search movie or series title..."
@@ -189,5 +191,32 @@ export const SubtitleSearchModal: React.FC<{ standalone?: boolean }> = ({ standa
         )}
       </div>
     </div>
+  );
+
+  if (standalone) return modal;
+
+  return createPortal(
+    <AnimatePresence>
+      {isSubSearchOpen && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[200] flex items-center justify-center p-8 bg-black/70 backdrop-blur-xl"
+          onClick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
+        >
+          <motion.div 
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            transition={{ type: "spring", damping: 30, stiffness: 350 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {modal}
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>,
+    document.body
   );
 };

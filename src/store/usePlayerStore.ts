@@ -19,6 +19,7 @@ interface PlayerState {
   playlist: { path: string; subs: string[] }[];
   isSettingsOpen: boolean;
   isLibraryOpen: boolean;
+  isSubSearchOpen: boolean;
   isFullscreen: boolean;
   subsEnabled: boolean;
   loopMode: 'off' | 'one' | 'all';
@@ -60,6 +61,7 @@ interface PlayerState {
   clearPlaylist: () => void;
   setSettingsOpen: (open: boolean) => void;
   setLibraryOpen: (open: boolean) => void;
+  setSubSearchOpen: (open: boolean) => void;
   setFullscreen: (full: boolean) => void;
   setSubsEnabled: (enabled: boolean) => void;
   setLoopMode: (mode: 'off' | 'one' | 'all') => void;
@@ -99,6 +101,7 @@ export const usePlayerStore = create<PlayerState>()(
       playlist: [],
       isSettingsOpen: false,
       isLibraryOpen: false,
+      isSubSearchOpen: false,
       isFullscreen: false,
       subsEnabled: true,
       loopMode: 'off',
@@ -164,6 +167,7 @@ export const usePlayerStore = create<PlayerState>()(
       },
       setSettingsOpen: (open) => set({ isSettingsOpen: open }),
       setLibraryOpen: (open) => set({ isLibraryOpen: open }),
+      setSubSearchOpen: (open) => set({ isSubSearchOpen: open }),
       setFullscreen: (full) => set({ isFullscreen: full }),
       setSubsEnabled: (enabled) => set({ subsEnabled: enabled }),
       setLoopMode: (mode) => set({ loopMode: mode }),

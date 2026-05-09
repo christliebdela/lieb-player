@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Sliders, Monitor, Keyboard, Info, ExternalLink, Activity, Palette, Wrench, Trash2, RotateCcw } from 'lucide-react';
+import { X, Sliders, Monitor, Keyboard, Info, ExternalLink, Activity, Palette, Wrench, Trash2, RotateCcw, Globe } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { useTranslation } from '../../i18n';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -100,6 +100,67 @@ const SettingCard = ({ label, description, children }: {
   </div>
 );
 
+/* ─── Quality Slider ─── */
+const QualitySlider = ({ value, onChange }: { value: string, onChange: (v: string) => void }) => {
+  const levels = [
+    { val: '480', label: '480p' },
+    { val: '720', label: '720p' },
+    { val: '1080', label: '1080p' },
+    { val: '1440', label: '2K' },
+    { val: '2160', label: '4K' },
+  ];
+  
+  const currentIndex = levels.findIndex(l => l.val === value);
+  const safeIndex = currentIndex === -1 ? 2 : currentIndex;
+
+  return (
+    <div className="w-full max-w-[280px] pt-4 pb-8 px-4">
+      <div className="relative h-1 bg-foreground/[0.05] rounded-full">
+        {/* Track Highlight */}
+        <div 
+          className="absolute h-full bg-accent rounded-full transition-all duration-500 ease-out"
+          style={{ width: `${(safeIndex / (levels.length - 1)) * 100}%` }}
+        />
+        
+        {/* Snap Points */}
+        <div className="absolute inset-0 flex justify-between">
+          {levels.map((level, idx) => (
+            <button
+              key={level.val}
+              onClick={() => onChange(level.val)}
+              className="relative flex flex-col items-center group"
+              style={{ width: '0' }}
+            >
+              <div className={`w-1.5 h-1.5 rounded-full -translate-y-[1px] transition-all duration-300 ${
+                idx <= safeIndex ? 'bg-accent' : 'bg-foreground/10'
+              } group-hover:scale-150`} />
+              
+              <div className={`absolute -bottom-6 flex flex-col items-center transition-all duration-300 ${
+                idx === safeIndex ? 'text-accent translate-y-0 opacity-100' : 'text-muted/40 translate-y-1 opacity-100'
+              }`}>
+                <span className="text-[9px] font-black uppercase tracking-widest whitespace-nowrap">
+                  {level.label}
+                </span>
+                {idx === safeIndex && (
+                  <motion.div layoutId="quality-dot" className="w-1 h-1 rounded-full bg-accent mt-1" />
+                )}
+              </div>
+            </button>
+          ))}
+        </div>
+
+        {/* Invisible range for dragging */}
+        <input 
+          type="range" min="0" max="4" step="1"
+          value={safeIndex}
+          onChange={(e) => onChange(levels[parseInt(e.target.value)].val)}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+        />
+      </div>
+    </div>
+  );
+};
+
 export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }) => {
   const { 
     isSettingsOpen, setSettingsOpen, 
@@ -180,7 +241,6 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
         .join(',');
       await setProperty('af', filterChain);
     } catch (err) {
-      // MPV not available in standalone windows — settings are saved to store
       if (isMainWindow()) console.error('Lieb Player: EQ Error:', err);
     }
   };
@@ -193,15 +253,12 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
     } catch {}
   };
 
-  // The inner panel that contains sidebar + content
   const panel = (
     <div className={`bg-background overflow-hidden flex relative ${
       standalone 
         ? 'w-full h-screen' 
         : 'w-full max-w-[780px] h-[520px] rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:shadow-[0_0_40px_rgba(0,0,0,0.3)] border border-border-subtle'
     }`}>
-
-            {/* Sidebar */}
             <div className="w-48 bg-white/[0.015] border-r border-border-subtle p-3 flex flex-col">
               <div className="px-3 py-4 mb-2 flex items-center gap-2.5">
                 <img src="/lieb-player-icon.png" alt="Lieb Player" className="w-6 h-6 rounded-lg" />
@@ -235,14 +292,10 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
               </div>
             </div>
 
-            {/* Content Area */}
             <div className="flex-1 flex flex-col min-w-0">
               <header className="h-12 flex items-center justify-between px-6 border-b border-border-subtle shrink-0" data-tauri-drag-region>
                 <h2 className="text-[13px] font-semibold text-foreground/80 capitalize">{t(activeTab as any)}</h2>
-                <button 
-                  onClick={handleClose}
-                  className="w-7 h-7 flex items-center justify-center hover:bg-white/10 rounded-lg transition-colors text-muted hover:text-foreground cursor-pointer"
-                >
+                <button onClick={handleClose} className="w-7 h-7 flex items-center justify-center hover:bg-white/10 rounded-lg transition-colors text-muted hover:text-foreground cursor-pointer">
                   <X size={16} />
                 </button>
               </header>
@@ -251,142 +304,84 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={activeTab}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15 }}
-                    className="h-full"
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
                   >
                     {activeTab === 'general' && (
                       <div className="space-y-8 pt-2">
-                        <div className="divide-y divide-white/[0.04]">
-                          <SettingCard label={t('hardware.accel')} description={t('hardware.accel.desc')}>
-                            <Toggle checked={hwAcceleration} onChange={(v) => {
-                              setHwAcceleration(v);
-                            }} />
-                          </SettingCard>
-                          <SettingCard label={t('remember.pos')} description={t('remember.pos.desc')}>
-                            <Toggle checked={rememberPosition} onChange={(v) => {
-                              setRememberPosition(v);
-                            }} />
-                          </SettingCard>
-                          <SettingCard label={t('auto.play')} description={t('auto.play.desc')}>
-                            <Toggle checked={autoPlay} onChange={(v) => {
-                              setAutoPlay(v);
-                            }} />
-                          </SettingCard>
-                          <SettingCard label={t('scroll.wheel')} description={t('scroll.wheel.desc')}>
-                            <SegmentedControl 
-                              options={['Volume', 'Seek']}
-                              value={scrollMode === 'volume' ? 'Volume' : 'Seek'}
-                              onChange={(v) => setScrollMode(v.toLowerCase() as 'volume' | 'seek')}
-                            />
-                          </SettingCard>
-                          <SettingCard label={t('app.language')} description={t('app.language.desc')}>
+                        <div className="divide-y divide-border-subtle/30">
+                          <SettingCard label={t('language' as any)} description={t('language.desc' as any)}>
                             <SegmentedControl 
                               options={['English', 'French', 'Spanish']}
                               value={appLanguage}
-                              onChange={(v) => setAppLanguage(v as 'English' | 'French' | 'Spanish')}
+                              onChange={(v) => setAppLanguage(v as any)}
                             />
                           </SettingCard>
-                          <SettingCard label={t('persist.library')} description={t('persist.library.desc')}>
-                            <Toggle 
-                              checked={persistLibrary} 
-                              onChange={setPersistLibrary} 
+                          <SettingCard label={t('remember.position' as any)} description={t('remember.position.desc' as any)}>
+                            <Toggle checked={rememberPosition} onChange={setRememberPosition} />
+                          </SettingCard>
+                          <SettingCard label={t('auto.play' as any)} description={t('auto.play.desc' as any)}>
+                            <Toggle checked={autoPlay} onChange={setAutoPlay} />
+                          </SettingCard>
+                          <SettingCard label={t('persist.library' as any)} description={t('persist.library.desc' as any)}>
+                            <Toggle checked={persistLibrary} onChange={setPersistLibrary} />
+                          </SettingCard>
+                          <SettingCard label={t('scroll.mode' as any)} description={t('scroll.mode.desc' as any)}>
+                            <SegmentedControl 
+                              options={['Volume', 'Seek']}
+                              value={scrollMode.charAt(0).toUpperCase() + scrollMode.slice(1)}
+                              onChange={(v) => setScrollMode(v.toLowerCase() as any)}
                             />
                           </SettingCard>
-                          <SettingCard label={t('seek.interval')} description={t('seek.interval.desc')}>
-                            <div className="flex items-center gap-4 min-w-[200px]">
-                              <input 
-                                type="range" min="5" max="60" step="5"
-                                value={seekInterval}
-                                onChange={(e) => setSeekInterval(Number(e.target.value))}
-                                className="flex-1 h-1.5 rounded-full appearance-none bg-foreground/10 cursor-pointer accent-accent"
-                              />
-                              <span className="text-[11px] font-mono font-bold text-accent w-8">{seekInterval}s</span>
-                            </div>
+                          <SettingCard label={t('seek.interval' as any)} description={t('seek.interval.desc' as any)}>
+                            <SegmentedControl 
+                              options={['5s', '10s', '30s', '60s']}
+                              value={`${seekInterval}s`}
+                              onChange={(v) => setSeekInterval(parseInt(v))}
+                            />
                           </SettingCard>
                         </div>
-                        <div className="h-5" /> {/* Bottom Padding */}
                       </div>
                     )}
 
                     {activeTab === 'interface' && (
                       <div className="space-y-8 pt-2">
-                        <div className="divide-y divide-white/[0.04]">
-                           <div className="py-4">
-                             <div className="flex items-center gap-2 mb-4">
-                               <Palette size={13} className="text-muted/60" />
-                               <span className="text-[11px] font-semibold uppercase tracking-widest text-muted">{t('theme')}</span>
-                             </div>
-                             <div className="grid grid-cols-4 gap-2.5">
-                               {[
-                                 { id: 'midnight', name: 'Midnight', bg: '#0a0a0a', text: '#ffffff', accent: '#6366f1' },
-                                 { id: 'daylight', name: 'Daylight', bg: '#f8f9fa', text: '#1a1a1a', accent: '#3b82f6' },
-                                 { id: 'aura', name: 'Aura', bg: '#0f0b1a', text: '#f0e6ff', accent: '#a78bfa' },
-                                 { id: 'sakura', name: 'Sakura', bg: '#fff5f7', text: '#4a1d24', accent: '#f472b6' },
-                               ].map((t) => (
-                                 <button
-                                   key={t.id}
-                                   onClick={() => setTheme(t.id as any)}
-                                   className={`group relative flex flex-col gap-1.5 p-1.5 rounded-lg border-[1.5px] transition-all cursor-pointer ${
-                                     theme === t.id 
-                                     ? 'border-accent bg-accent/5' 
-                                     : 'border-border-subtle bg-foreground/[0.01] hover:bg-foreground/[0.03]'
-                                   }`}
-                                 >
-                                   <div 
-                                     className="w-full aspect-[16/10] rounded-md shadow-sm flex flex-col p-1.5 gap-0.5"
-                                     style={{ backgroundColor: t.bg }}
-                                   >
-                                     <div className="w-1/2 h-0.5 rounded-full" style={{ backgroundColor: t.text, opacity: 0.15 }} />
-                                     <div className="w-full h-0.5 rounded-full" style={{ backgroundColor: t.text, opacity: 0.08 }} />
-                                     <div className="w-2/3 h-0.5 rounded-full mt-auto" style={{ backgroundColor: t.accent }} />
-                                   </div>
-                                   <div className="flex items-center justify-between px-0.5">
-                                     <span className={`text-[10px] font-bold tracking-tight ${theme === t.id ? 'text-accent' : 'text-muted group-hover:text-foreground'}`}>
-                                       {t.name}
-                                     </span>
-                                     {theme === t.id && (
-                                       <div className="w-1.5 h-1.5 bg-accent rounded-full" />
-                                     )}
-                                   </div>
-                                 </button>
-                               ))}
-                             </div>
-                           </div>
-                        </div>
-
-                        {/* Accent Color */}
-                        <div>
-                          <div className="flex items-center gap-2 mb-4">
-                            <Palette size={13} className="text-muted/60" />
-                            <span className="text-[11px] font-semibold uppercase tracking-widest text-muted">{t('accent.color')}</span>
-                          </div>
-                           <div className="grid grid-cols-4 gap-2">
-                             {PRESET_COLORS.map((preset) => (
-                               <button
-                                 key={preset.name}
-                                 onClick={() => setAccentColor(preset.color)}
-                                 className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all cursor-pointer border ${
-                                   accentColor === preset.color 
-                                   ? 'bg-accent/10 border-accent/20' 
-                                   : 'bg-transparent border-border-subtle hover:bg-foreground/[0.04]'
-                                 }`}
-                               >
-                                 <div 
-                                   className="w-4 h-4 rounded-full shrink-0 ring-1 ring-foreground/10"
-                                   style={{ backgroundColor: preset.color }}
-                                 />
-                                 <span className={`text-[10px] font-bold tracking-tight transition-colors ${
-                                   accentColor === preset.color ? 'text-accent' : 'text-muted group-hover:text-foreground'
-                                 }`}>
-                                   {preset.name}
-                                 </span>
+                        <div className="divide-y divide-border-subtle/30">
+                          <SettingCard label={t('theme' as any)} description={t('theme.desc' as any)}>
+                            <SegmentedControl 
+                              options={['Midnight', 'Daylight', 'Aura', 'Sakura']}
+                              value={theme.charAt(0).toUpperCase() + theme.slice(1)}
+                              onChange={(v) => setTheme(v.toLowerCase() as any)}
+                            />
+                          </SettingCard>
+                          
+                          <div className="py-6 border-t border-border-subtle/30">
+                            <div className="flex items-center gap-2 mb-5">
+                              <Palette size={13} className="text-muted/60" />
+                              <span className="text-[11px] font-semibold uppercase tracking-widest text-muted">{t('accent.color')}</span>
+                            </div>
+                            
+                            <div className="grid grid-cols-6 gap-2 mb-6">
+                              {PRESET_COLORS.map((preset) => (
+                                <button
+                                  key={preset.color}
+                                  onClick={() => setAccentColor(preset.color)}
+                                  className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all cursor-pointer border ${
+                                    accentColor === preset.color 
+                                    ? 'bg-accent/10 border-accent/20' 
+                                    : 'bg-transparent border-border-subtle hover:bg-foreground/[0.04]'
+                                  }`}
+                                >
+                                  <div className="w-4 h-4 rounded-full shrink-0 ring-1 ring-foreground/10" style={{ backgroundColor: preset.color }} />
+                                  <span className={`text-[10px] font-bold tracking-tight transition-colors ${
+                                    accentColor === preset.color ? 'text-accent' : 'text-muted group-hover:text-foreground'
+                                  }`}>
+                                    {preset.name}
+                                  </span>
                                 </button>
                               ))}
-
-                              {/* User-Saved Custom Presets */}
                               {customPresets.map((color, idx) => (
                                 <button
                                   key={idx}
@@ -403,121 +398,46 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                                   }`}>
                                     Saved {idx + 1}
                                   </span>
-                                  <button 
-                                    onClick={(e) => { e.stopPropagation(); removeCustomPreset(color); }}
-                                    className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[8px] hover:bg-red-500"
-                                  >
-                                    ×
-                                  </button>
+                                  <button onClick={(e) => { e.stopPropagation(); removeCustomPreset(color); }} className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[8px]">×</button>
                                 </button>
                               ))}
-                              
-                              {/* Minimal Mixer Trigger */}
-                              <button 
-                                onClick={() => setShowPicker(true)}
-                                className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all border cursor-pointer ${
-                                  showPicker ? 'bg-accent/10 border-accent/20' : 'bg-transparent border-border-subtle hover:bg-foreground/[0.04]'
-                                }`}
-                              >
+                              <button onClick={() => setShowPicker(true)} className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all border cursor-pointer ${showPicker ? 'bg-accent/10 border-accent/20' : 'bg-transparent border-border-subtle hover:bg-foreground/[0.04]'}`}>
                                 <div className="w-4 h-4 rounded-full shrink-0 ring-1 ring-foreground/10 bg-[conic-gradient(from_0deg,#ff0000,#ffff00,#00ff00,#00ffff,#0000ff,#ff00ff,#ff0000)]" />
-                                <span className="text-[10px] font-bold tracking-tight text-muted group-hover:text-foreground">
-                                  {t('mixer')}
-                                </span>
+                                <span className="text-[10px] font-bold tracking-tight text-muted group-hover:text-foreground">{t('mixer')}</span>
                               </button>
                             </div>
 
                             <AnimatePresence>
                               {showPicker && (
                                 <div className="fixed inset-0 flex items-center justify-center z-[110] p-6 pointer-events-none">
-                                  <motion.div 
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    onClick={() => setShowPicker(false)}
-                                    className="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto"
-                                  />
-                                  
-                                  <motion.div 
-                                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                                    exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                                    className="relative w-64 p-3 rounded-xl bg-background border border-border-subtle shadow-2xl pointer-events-auto"
-                                  >
-                                    <div className="flex items-center justify-between mb-4 px-1 pt-1">
+                                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowPicker(false)} className="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto" />
+                                  <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} className="relative w-64 p-3 rounded-xl bg-background border border-border-subtle shadow-2xl pointer-events-auto">
+                                    <div className="flex items-center justify-between mb-4 px-1">
                                       <div className="flex items-center gap-2.5">
                                         <div className="w-1.5 h-1.5 rounded-full bg-accent" />
-                                        <h3 className="text-[13px] font-semibold text-foreground/90 capitalize tracking-tight">{t('color.mixer')}</h3>
+                                        <h3 className="text-[13px] font-semibold text-foreground/90 capitalize">{t('color.mixer')}</h3>
                                       </div>
-                                      <button 
-                                        onClick={() => setShowPicker(false)}
-                                        className="text-muted hover:text-foreground transition-colors cursor-pointer p-1"
-                                      >
-                                        <X size={14} />
-                                      </button>
+                                      <button onClick={() => setShowPicker(false)} className="text-muted hover:text-foreground p-1"><X size={14} /></button>
                                     </div>
-
                                     <div className="space-y-3">
-                                      {/* Full-width Visual Preview & Hex */}
                                       <div className="flex flex-col items-center gap-3">
-                                          <div 
-                                          className="w-full h-14 rounded-lg shadow-xl border border-white/10 flex items-center justify-center overflow-hidden" 
-                                          style={{ backgroundColor: accentColor }} 
-                                        />
+                                        <div className="w-full h-14 rounded-lg shadow-xl border border-white/10" style={{ backgroundColor: accentColor }} />
                                         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-foreground/[0.03] border border-border-subtle">
-                                          <span className="text-[9px] font-bold text-muted uppercase tracking-widest">{t('hex')}</span>
-                                          <input 
-                                            type="text" 
-                                            value={accentColor.toUpperCase()}
-                                            onChange={(e) => setAccentColor(e.target.value)}
-                                            className="w-16 bg-transparent border-none text-[10px] font-mono font-bold text-accent uppercase focus:ring-0 p-0 text-center"
-                                          />
+                                          <span className="text-[9px] font-bold text-muted uppercase">HEX</span>
+                                          <input type="text" value={accentColor.toUpperCase()} onChange={(e) => setAccentColor(e.target.value)} className="w-16 bg-transparent border-none text-[10px] font-mono font-bold text-accent uppercase focus:ring-0 p-0 text-center" />
                                         </div>
                                       </div>
-
                                       <div className="space-y-2.5">
-                                        {/* Hue Slider */}
-                                        <div className="space-y-1.5">
-                                          <div className="flex justify-between text-[8px] font-black text-muted uppercase tracking-[0.15em] opacity-60">
-                                            <span>{t('spectrum')}</span>
-                                          </div>
-                                          <input 
-                                            type="range" min="0" max="360"
-                                            className="w-full h-2 rounded-full appearance-none cursor-pointer bg-[linear-gradient(to_right,#ff0000,#ffff00,#00ff00,#00ffff,#0000ff,#ff00ff,#ff0000)]"
-                                            onChange={(e) => setAccentColor(`hsl(${e.target.value}, 70%, 60%)`)}
-                                          />
-                                        </div>
-
-                                        {/* Brightness Slider */}
-                                        <div className="space-y-1.5">
-                                          <div className="flex justify-between text-[8px] font-black text-muted uppercase tracking-[0.15em] opacity-60">
-                                            <span>{t('luminance')}</span>
-                                          </div>
-                                          <input 
-                                            type="range" min="20" max="90"
-                                            className="w-full h-2 rounded-full appearance-none cursor-pointer"
-                                            style={{ background: `linear-gradient(to right, #000, ${accentColor}, #fff)` }}
-                                            onChange={(e) => {
-                                               const matches = accentColor.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
-                                               if (matches) setAccentColor(`hsl(${matches[1]}, ${matches[2]}%, ${e.target.value}%)`);
-                                            }}
-                                          />
-                                        </div>
+                                        <input type="range" min="0" max="360" className="w-full h-2 rounded-full appearance-none cursor-pointer bg-[linear-gradient(to_right,#ff0000,#ffff00,#00ff00,#00ffff,#0000ff,#ff00ff,#ff0000)]" onChange={(e) => setAccentColor(`hsl(${e.target.value}, 70%, 60%)`)} />
+                                        <input type="range" min="20" max="90" className="w-full h-2 rounded-full appearance-none cursor-pointer" style={{ background: `linear-gradient(to right, #000, ${accentColor}, #fff)` }} onChange={(e) => {
+                                          const matches = accentColor.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
+                                          if (matches) setAccentColor(`hsl(${matches[1]}, ${matches[2]}%, ${e.target.value}%)`);
+                                        }} />
                                       </div>
-
-                                        <div className="flex gap-2 pt-2">
-                                          <button 
-                                            onClick={() => { addCustomPreset(accentColor); setShowPicker(false); }}
-                                            className="flex-1 py-2.5 rounded-lg bg-foreground/[0.05] hover:bg-foreground/[0.1] text-foreground text-[9px] font-bold uppercase tracking-wider transition-all border border-border-subtle cursor-pointer whitespace-nowrap"
-                                          >
-                                            {t('save')}
-                                          </button>
-                                          <button 
-                                            onClick={() => setShowPicker(false)}
-                                            className="flex-1 py-2.5 rounded-lg bg-accent text-white text-[10px] font-bold uppercase tracking-wider hover:brightness-110 transition-all shadow-lg shadow-accent/20 cursor-pointer"
-                                          >
-                                            {t('done')}
-                                          </button>
-                                        </div>
+                                      <div className="flex gap-2 pt-2">
+                                        <button onClick={() => { addCustomPreset(accentColor); setShowPicker(false); }} className="flex-1 py-2 rounded-lg bg-foreground/[0.05] text-foreground text-[9px] font-bold uppercase border border-border-subtle">Save</button>
+                                        <button onClick={() => setShowPicker(false)} className="flex-1 py-2 rounded-lg bg-accent text-white text-[10px] font-bold uppercase shadow-lg shadow-accent/20">Done</button>
+                                      </div>
                                     </div>
                                   </motion.div>
                                 </div>
@@ -525,168 +445,91 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                             </AnimatePresence>
                           </div>
 
-                          {/* Control Bar Layout */}
                           <div className="py-6 border-t border-border-subtle/30">
                             <div className="flex items-center gap-2 mb-5">
                               <Monitor size={13} className="text-muted/60" />
                               <span className="text-[11px] font-semibold uppercase tracking-widest text-muted">Control Layout</span>
                             </div>
                             <div className="grid grid-cols-4 gap-2.5">
-                              {[
-                                { 
-                                  id: 'default', 
-                                  name: 'Default', 
-                                  preview: (
-                                    <div className="w-full h-3 flex items-center justify-between px-1.5 opacity-60">
-                                      <div className="flex gap-1"><div className="w-2 h-1.5 bg-accent rounded-sm" /><div className="w-4 h-1.5 bg-foreground/10 rounded-sm" /></div>
-                                      <div className="flex gap-1"><div className="w-1.5 h-1.5 bg-foreground/10 rounded-sm" /><div className="w-1.5 h-1.5 bg-foreground/10 rounded-sm" /></div>
-                                    </div>
-                                  )
-                                },
-                                { 
-                                  id: 'centered', 
-                                  name: 'Centered', 
-                                  preview: (
-                                    <div className="w-full h-3 flex items-center justify-between px-1.5 opacity-60">
-                                      <div className="w-3 h-1.5 bg-foreground/10 rounded-sm" />
-                                      <div className="w-2.5 h-2.5 bg-accent rounded-full -mt-0.5" />
-                                      <div className="w-3 h-1.5 bg-foreground/10 rounded-sm" />
-                                    </div>
-                                  )
-                                },
-                                { 
-                                  id: 'compact', 
-                                  name: 'Compact', 
-                                  preview: (
-                                    <div className="w-full h-3 flex items-center px-1.5 gap-1.5 opacity-60">
-                                      <div className="w-2 h-1.5 bg-accent rounded-sm" />
-                                      <div className="w-5 h-1.5 bg-foreground/10 rounded-sm" />
-                                      <div className="ml-auto w-1.5 h-1.5 bg-foreground/10 rounded-sm" />
-                                    </div>
-                                  )
-                                },
-                                { 
-                                  id: 'minimal', 
-                                  name: 'Minimal', 
-                                  preview: (
-                                    <div className="w-full h-3 flex items-center justify-center gap-4 opacity-60">
-                                      <div className="w-2 h-2 bg-accent rounded-sm" />
-                                      <div className="w-2 h-2 bg-foreground/10 rounded-sm" />
-                                    </div>
-                                  )
-                                },
-                              ].map((layout) => (
-                                <button
-                                  key={layout.id}
-                                  onClick={() => setControlBarLayout(layout.id as any)}
-                                  className={`group flex flex-col items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
-                                    controlBarLayout === layout.id 
-                                    ? 'bg-accent/10 border-accent/20 text-accent shadow-[0_4px_12px_rgba(var(--accent-rgb),0.1)]' 
-                                    : 'bg-foreground/[0.02] border-border-subtle text-muted hover:bg-foreground/[0.04] hover:text-foreground'
-                                  }`}
-                                >
-                                  <div className={`w-full aspect-[2/1] rounded-lg transition-colors flex items-center justify-center border ${
-                                    controlBarLayout === layout.id ? 'bg-accent/10 border-accent/20' : 'bg-foreground/[0.03] border-border-subtle group-hover:bg-foreground/[0.05]'
-                                  }`}>
-                                    {layout.preview}
+                              {['default', 'centered', 'compact', 'minimal'].map((id) => (
+                                <button key={id} onClick={() => setControlBarLayout(id as any)} className={`group flex flex-col items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${controlBarLayout === id ? 'bg-accent/10 border-accent/20 text-accent shadow-[0_4px_12px_rgba(var(--accent-rgb),0.1)]' : 'bg-foreground/[0.02] border-border-subtle text-muted hover:bg-foreground/[0.04] hover:text-foreground'}`}>
+                                  <div className={`w-full aspect-[2/1] rounded-lg border flex items-center justify-center ${controlBarLayout === id ? 'bg-accent/10 border-accent/20' : 'bg-foreground/[0.03] border-border-subtle'}`}>
+                                    <div className="text-[8px] font-bold uppercase opacity-40">{id}</div>
                                   </div>
-                                  <span className="text-[10px] font-bold tracking-tight">{layout.name}</span>
+                                  <span className="text-[10px] font-bold capitalize">{id}</span>
                                 </button>
                               ))}
                             </div>
                           </div>
                         </div>
+                      </div>
                     )}
 
                     {activeTab === 'video' && (
                       <div className="space-y-8 pt-2">
                         <div className="divide-y divide-border-subtle/30">
-                          <div className="py-4 flex items-center justify-between">
-                            <div className="flex flex-col gap-1">
-                              <div className="flex items-center gap-2">
-                                <h4 className="text-[13px] font-medium text-foreground">{t('rendering.backend')}</h4>
-                                <span className="px-1.5 py-0.5 rounded-[4px] bg-amber-500/10 text-amber-500 text-[8px] font-bold uppercase tracking-wider border border-amber-500/20">
-                                  {t('restart.required')}
-                                </span>
-                              </div>
-                              <p className="text-[10px] text-muted">{t('rendering.backend.desc')}</p>
+                          <SettingCard label={t('rendering.backend' as any)} description={t('rendering.backend.desc' as any)}>
+                            <div className="flex items-center gap-2">
+                              <span className="px-1.5 py-0.5 rounded-[4px] bg-amber-500/10 text-amber-500 text-[8px] font-bold uppercase tracking-wider border border-amber-500/20">{t('restart.required' as any)}</span>
+                              <SegmentedControl options={['GPU-Next', 'D3D11', 'Vulkan']} value={renderingBackend.toUpperCase()} onChange={(v) => setRenderingBackend(v.toLowerCase() as any)} />
                             </div>
-                            <SegmentedControl 
-                              options={['GPU-Next', 'D3D11', 'Vulkan']}
-                              value={renderingBackend === 'gpu-next' ? 'GPU-Next' : renderingBackend === 'd3d11' ? 'D3D11' : 'Vulkan'}
-                              onChange={(v) => {
-                                const backend = v === 'GPU-Next' ? 'gpu-next' : v === 'D3D11' ? 'd3d11' : 'vulkan';
-                                setRenderingBackend(backend);
-                              }}
-                            />
-                          </div>
-                          <SettingCard label={t('interpolation')} description={t('interpolation.desc')}>
+                          </SettingCard>
+                          <SettingCard label={t('hardware.accel' as any)} description={t('hardware.accel.desc' as any)}>
+                            <Toggle checked={hwAcceleration} onChange={setHwAcceleration} />
+                          </SettingCard>
+                          <SettingCard label={t('interpolation' as any)} description={t('interpolation.desc' as any)}>
                             <Toggle checked={interpolation} onChange={setInterpolation} />
                           </SettingCard>
                           <SettingCard label={t('deband')} description={t('deband.desc')}>
                             <Toggle checked={deband} onChange={setDeband} />
                           </SettingCard>
+
+                          <div className="pt-6 mt-6 border-t border-border-subtle/30">
+                            <div className="flex items-center gap-2 mb-4">
+                              <Globe size={13} className="text-accent" />
+                              <span className="text-[11px] font-bold uppercase tracking-widest text-accent">Online Streaming</span>
+                            </div>
+                            <div className="flex items-center justify-between group py-2 mb-4">
+                              <div className="space-y-0.5">
+                                <h4 className="text-[13px] font-medium text-foreground/90">Streaming Quality</h4>
+                                <p className="text-[11px] text-muted leading-relaxed font-medium">Preferred resolution for web videos (YouTube/Twitch)</p>
+                              </div>
+                            </div>
+                            <div className="flex justify-center px-4">
+                              <QualitySlider 
+                                value={(usePlayerStore.getState() as any).streamingQuality || '1080'}
+                                onChange={async (val) => {
+                                  await setProperty('ytdl-format', `bestvideo[height<=${val}]+bestaudio/best`);
+                                  usePlayerStore.setState({ streamingQuality: val } as any);
+                                }}
+                              />
+                            </div>
+                          </div>
                         </div>
-
-
                       </div>
                     )}
-
 
                     {activeTab === 'equalizer' && (
                       <div className="space-y-8 pt-[18px]">
                         <div className="flex flex-wrap gap-1.5">
-                          {EQ_PRESETS.map((preset) => {
-                            const isActive = JSON.stringify(equalizer) === JSON.stringify(preset.bands);
-                            return (
-                              <button
-                                key={preset.name}
-                                onClick={() => applyPreset(preset.bands)}
-                                className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all cursor-pointer ${
-                                  isActive
-                                  ? 'bg-accent text-white'
-                                  : 'bg-foreground/[0.04] text-muted hover:bg-foreground/[0.08] hover:text-foreground'
-                                }`}
-                              >
-                                {preset.name}
-                              </button>
-                            );
-                          })}
-                          <button 
-                            onClick={resetEqualizer}
-                            className="px-3 py-1.5 rounded-lg text-[11px] font-medium text-muted hover:text-foreground transition-colors cursor-pointer ml-auto"
-                          >
-                            {t('reset')}
-                          </button>
+                          {EQ_PRESETS.map((preset) => (
+                            <button key={preset.name} onClick={() => applyPreset(preset.bands)} className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all cursor-pointer ${JSON.stringify(equalizer) === JSON.stringify(preset.bands) ? 'bg-accent text-white' : 'bg-foreground/[0.04] text-muted hover:bg-foreground/[0.08] hover:text-foreground'}`}>{preset.name}</button>
+                          ))}
+                          <button onClick={resetEqualizer} className="px-3 py-1.5 rounded-lg text-[11px] font-medium text-muted hover:text-foreground transition-colors cursor-pointer ml-auto">{t('reset')}</button>
                         </div>
-
                         <div className="flex-1 flex items-stretch gap-1 min-h-[220px] p-4 rounded-xl bg-foreground/[0.01] border border-border-subtle">
-                          {BANDS.map((band, idx) => {
-                            const pct = ((equalizer[idx] + 20) / 40) * 100;
-                            return (
-                              <div key={band.freq} className="flex-1 flex flex-col items-center gap-2 group relative">
-                                <div className="text-[9px] font-mono font-semibold text-accent opacity-0 group-hover:opacity-100 transition-opacity h-4 flex items-center">
-                                  {equalizer[idx] > 0 ? '+' : ''}{equalizer[idx]}
+                          {BANDS.map((band, idx) => (
+                            <div key={band.freq} className="flex-1 flex flex-col items-center gap-2 group relative">
+                              <div className="text-[9px] font-mono font-semibold text-accent opacity-0 group-hover:opacity-100 transition-opacity h-4 flex items-center">{equalizer[idx] > 0 ? '+' : ''}{equalizer[idx]}</div>
+                              <div className="flex-1 w-full flex flex-col items-center relative">
+                                <div className="w-[6px] h-full bg-foreground/[0.04] rounded-full relative overflow-hidden">
+                                  <div className="absolute bottom-0 w-full bg-accent/60 rounded-full transition-all group-hover:bg-accent" style={{ height: `${((equalizer[idx] + 20) / 40) * 100}%` }} />
                                 </div>
-                                <div className="flex-1 w-full flex flex-col items-center relative">
-                                  <div className="w-[6px] h-full bg-foreground/[0.04] rounded-full relative overflow-hidden">
-                                    <div 
-                                      className="absolute bottom-0 w-full bg-accent/60 rounded-full transition-all group-hover:bg-accent"
-                                      style={{ height: `${pct}%` }}
-                                    />
-                                  </div>
-                                  <input 
-                                    type="range" min="-20" max="20" step="0.5"
-                                    value={equalizer[idx]}
-                                    onChange={(e) => updateEqualizer(idx, parseFloat(e.target.value))}
-                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                    style={{ appearance: 'slider-vertical', writingMode: 'vertical-lr' } as any}
-                                  />
-                                </div>
-                                <span className="text-[9px] font-medium text-muted/60 group-hover:text-foreground transition-colors">{band.label}</span>
+                                <input type="range" min="-20" max="20" step="0.5" value={equalizer[idx]} onChange={(e) => updateEqualizer(idx, parseFloat(e.target.value))} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" style={{ appearance: 'slider-vertical', writingMode: 'vertical-lr' } as any} />
                               </div>
-                            );
-                          })}
+                              <span className="text-[9px] font-medium text-muted/60 group-hover:text-foreground transition-colors">{band.label}</span>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     )}
@@ -697,9 +540,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                         {shortcuts.map((s, idx) => (
                           <div key={idx} className="flex items-center justify-between py-3">
                             <span className="text-[12px] text-muted font-medium">{s.desc}</span>
-                            <kbd className="px-2.5 py-1 bg-foreground/[0.05] rounded-md text-[11px] font-mono text-foreground/60 border border-border-subtle min-w-[42px] text-center">
-                              {s.key}
-                            </kbd>
+                            <kbd className="px-2.5 py-1 bg-foreground/[0.05] rounded-md text-[11px] font-mono text-foreground/60 border border-border-subtle min-w-[42px] text-center">{s.key}</kbd>
                           </div>
                         ))}
                         </div>
@@ -709,58 +550,20 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                     {activeTab === 'about' && (
                       <div className="space-y-8 pt-6">
                         <div className="flex items-start gap-8 mb-8">
-                          <div className="w-16 h-16 flex-shrink-0">
-                            <img src="/lieb-player-icon.png" alt="Lieb Player" className="w-full h-full object-contain" />
-                          </div>
+                          <div className="w-16 h-16 flex-shrink-0"><img src="/lieb-player-icon.png" alt="Lieb Player" className="w-full h-full object-contain" /></div>
                           <div className="flex-1 pt-1">
-                            <div className="flex items-center gap-3 mb-1">
-                              <h2 className="text-xl font-black text-foreground tracking-tighter uppercase">
-                                Lieb
-                              </h2>
-                              <span className="px-1.5 py-0.5 rounded-[2px] bg-foreground text-background text-[8px] font-black tracking-[0.2em] uppercase">
-                                Alpha 0.1
-                              </span>
-                            </div>
+                            <div className="flex items-center gap-3 mb-1"><h2 className="text-xl font-black text-foreground tracking-tighter uppercase">Lieb</h2><span className="px-1.5 py-0.5 rounded-[2px] bg-foreground text-background text-[8px] font-black tracking-[0.2em] uppercase">Alpha 0.1</span></div>
                             <p className="text-[10px] text-muted font-bold uppercase tracking-[0.3em]">{t('about.subtitle')}</p>
                           </div>
                         </div>
-
                         <div className="mb-10 space-y-6">
-                          <p className="text-[13px] text-foreground/80 leading-[1.8] font-normal max-w-xl">
-                            {t('about.story')}
-                          </p>
-                          <p className="text-[12px] text-muted leading-[1.8] font-normal max-w-xl">
-                            {t('about.tech')}
-                          </p>
+                          <p className="text-[13px] text-foreground/80 leading-[1.8] font-normal max-w-xl">{t('about.story')}</p>
+                          <p className="text-[12px] text-muted leading-[1.8] font-normal max-w-xl">{t('about.tech')}</p>
                         </div>
-
                         <div className="grid grid-cols-3 gap-8 pt-6 border-t border-white/[0.04]">
-                          <div>
-                            <p className="text-[9px] text-muted font-black uppercase tracking-[0.2em] mb-2">{t('designer')}</p>
-                            <p className="text-[11px] font-bold text-foreground">Christlieb Dela</p>
-                          </div>
-                          
-                          <div>
-                            <p className="text-[9px] text-muted font-black uppercase tracking-[0.2em] mb-2">{t('repository')}</p>
-                            <a 
-                              href="https://github.com/christliebdela/lieb-player" 
-                              target="_blank" 
-                              className="text-[11px] font-bold text-foreground hover:text-accent transition-colors flex items-center gap-1.5"
-                            >
-                              {t('source')} <ExternalLink size={10} strokeWidth={3} />
-                            </a>
-                          </div>
-
-                          <div>
-                            <p className="text-[9px] text-muted font-black uppercase tracking-[0.2em] mb-2">{t('feedback')}</p>
-                            <a 
-                              href="https://github.com/christliebdela/lieb-player/issues" 
-                              target="_blank" 
-                              className="text-[11px] font-bold text-accent hover:underline decoration-2 underline-offset-4"
-                            >
-                              {t('report.issue')}
-                            </a>
-                          </div>
+                          <div><p className="text-[9px] text-muted font-black uppercase tracking-[0.2em] mb-2">{t('designer')}</p><p className="text-[11px] font-bold text-foreground">Christlieb Dela</p></div>
+                          <div><p className="text-[9px] text-muted font-black uppercase tracking-[0.2em] mb-2">{t('repository' as any)}</p><a href="https://github.com/christliebdela/lieb-player" target="_blank" className="text-[11px] font-bold text-foreground hover:text-accent transition-colors flex items-center gap-1.5">{t('source' as any)} <ExternalLink size={10} strokeWidth={3} /></a></div>
+                          <div><p className="text-[9px] text-muted font-black uppercase tracking-[0.2em] mb-2">{t('feedback')}</p><a href="https://github.com/christliebdela/lieb-player/issues" target="_blank" className="text-[11px] font-bold text-accent hover:underline decoration-2 underline-offset-4">{t('report.issue')}</a></div>
                         </div>
                       </div>
                     )}
@@ -770,44 +573,19 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                         <div className="divide-y divide-white/[0.04]">
                           <div className="py-4 flex items-center justify-between group">
                             <div className="flex items-center gap-4">
-                              <div className="w-10 h-10 rounded-xl bg-foreground/[0.03] border border-border-subtle flex items-center justify-center text-muted group-hover:text-red-400 group-hover:bg-red-400/5 transition-all">
-                                <Trash2 size={18} />
-                              </div>
-                              <div className="space-y-0.5">
-                                <h4 className="text-[13px] font-medium text-foreground/90">{t('clear.cache')}</h4>
-                                <p className="text-[11px] text-muted leading-relaxed font-medium">{t('clear.cache.desc')}</p>
-                              </div>
+                              <div className="w-10 h-10 rounded-xl bg-foreground/[0.03] border border-border-subtle flex items-center justify-center text-muted group-hover:text-red-400 group-hover:bg-red-400/5 transition-all"><Trash2 size={18} /></div>
+                              <div className="space-y-0.5"><h4 className="text-[13px] font-medium text-foreground/90">{t('clear.cache')}</h4><p className="text-[11px] text-muted leading-relaxed font-medium">{t('clear.cache.desc')}</p></div>
                             </div>
-                            <button 
-                              onClick={() => {
-                                clearPlaylist();
-                                showActionOSD(t('cache.cleared'), 'trash');
-                              }}
-                              className="px-4 py-2 rounded-lg bg-foreground/[0.04] hover:bg-red-500/10 text-muted hover:text-red-400 text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer border border-border-subtle hover:border-red-500/20"
-                            >
-                              {t('clear.cache')}
-                            </button>
+                            <button onClick={() => { clearPlaylist(); showActionOSD(t('cache.cleared'), 'trash'); }} className="px-4 py-2 rounded-lg bg-foreground/[0.04] hover:bg-red-500/10 text-muted hover:text-red-400 text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer border border-border-subtle hover:border-red-500/20">{t('clear.cache')}</button>
                           </div>
-
                           <div className="py-4 flex items-center justify-between group">
                             <div className="flex items-center gap-4">
-                              <div className="w-10 h-10 rounded-xl bg-foreground/[0.03] border border-border-subtle flex items-center justify-center text-muted group-hover:text-red-500 group-hover:bg-red-400/5 transition-all">
-                                <RotateCcw size={18} />
-                              </div>
-                              <div className="space-y-0.5">
-                                <h4 className="text-[13px] font-medium text-foreground/90">{t('reset.app')}</h4>
-                                <p className="text-[11px] text-muted leading-relaxed font-medium">{t('reset.app.desc')}</p>
-                              </div>
+                              <div className="w-10 h-10 rounded-xl bg-foreground/[0.03] border border-border-subtle flex items-center justify-center text-muted group-hover:text-red-500 group-hover:bg-red-400/5 transition-all"><RotateCcw size={18} /></div>
+                              <div className="space-y-0.5"><h4 className="text-[13px] font-medium text-foreground/90">{t('reset.app')}</h4><p className="text-[11px] text-muted leading-relaxed font-medium">{t('reset.app.desc')}</p></div>
                             </div>
-                            <button 
-                              onClick={() => setShowConfirm(true)}
-                              className="px-4 py-2 rounded-lg bg-red-500 text-white text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer shadow-lg shadow-red-500/10 hover:brightness-110"
-                            >
-                              {t('reset.app')}
-                            </button>
+                            <button onClick={() => setShowConfirm(true)} className="px-4 py-2 rounded-lg bg-red-500 text-white text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer shadow-lg shadow-red-500/10 hover:brightness-110">{t('reset.app')}</button>
                           </div>
                         </div>
-                        <div className="h-5" /> {/* Bottom Padding */}
                       </div>
                     )}
                   </motion.div>
@@ -818,32 +596,12 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
             <AnimatePresence>
               {showConfirm && (
                 <div className="absolute inset-0 z-[300] flex items-center justify-center p-8 bg-black/40 backdrop-blur-md">
-                  <motion.div 
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.9, opacity: 0 }}
-                    className="w-full max-w-[320px] bg-background border border-border-subtle rounded-2xl p-6 shadow-2xl"
-                  >
+                  <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="w-full max-w-[320px] bg-background border border-border-subtle rounded-2xl p-6 shadow-2xl">
                     <h3 className="text-[14px] font-black text-foreground uppercase tracking-tighter mb-2">{t('reset.app')}</h3>
-                    <p className="text-[11px] text-muted leading-relaxed mb-6">
-                      {t('reset.app.desc')}
-                    </p>
+                    <p className="text-[11px] text-muted leading-relaxed mb-6">{t('reset.app.desc')}</p>
                     <div className="flex gap-2">
-                      <button 
-                        onClick={() => setShowConfirm(false)}
-                        className="flex-1 py-2.5 rounded-xl bg-foreground/[0.04] hover:bg-foreground/[0.08] text-muted text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer border border-border-subtle"
-                      >
-                        {t('cancel')}
-                      </button>
-                      <button 
-                        onClick={() => {
-                          localStorage.clear();
-                          window.location.reload();
-                        }}
-                        className="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer shadow-lg shadow-red-500/20 hover:brightness-110"
-                      >
-                        {t('reset.app')}
-                      </button>
+                      <button onClick={() => setShowConfirm(false)} className="flex-1 py-2.5 rounded-xl bg-foreground/[0.04] hover:bg-foreground/[0.08] text-muted text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer border border-border-subtle">{t('cancel')}</button>
+                      <button onClick={() => { localStorage.clear(); window.location.reload(); }} className="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer shadow-lg shadow-red-500/20 hover:brightness-110">{t('reset.app')}</button>
                     </div>
                   </motion.div>
                 </div>
@@ -852,10 +610,8 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
     </div>
   );
 
-  // Standalone: render the panel directly, filling the window
   if (standalone) return panel;
 
-  // Overlay mode: wrap in backdrop + portal
   const overlay = (
     <AnimatePresence>
       {isSettingsOpen && (
