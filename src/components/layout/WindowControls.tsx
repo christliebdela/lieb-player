@@ -60,7 +60,7 @@ export const WindowControls: React.FC = () => {
           {isMaximized ? <Copy size={14} strokeWidth={2.5} /> : <Square size={14} strokeWidth={2.5} />}
         </button>
         <button 
-          onClick={() => appWindow.close()}
+          onClick={handleClose}
           className="p-1.5 border border-transparent hover:border-red-500/30 hover:bg-red-500/5 rounded-lg transition-all text-muted hover:text-red-500 cursor-pointer"
         >
           <X size={16} strokeWidth={2.5} />
