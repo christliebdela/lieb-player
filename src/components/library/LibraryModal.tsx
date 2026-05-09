@@ -297,14 +297,14 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
                <div className="flex items-center gap-2">
                  <button 
                    onClick={handleAddFiles}
-                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-foreground/[0.03] hover:bg-foreground/[0.08] text-muted hover:text-foreground text-[9px] font-bold uppercase tracking-widest transition-all cursor-pointer border border-border-subtle/50"
+                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-foreground/[0.03] hover:bg-foreground/[0.06] text-muted hover:text-accent text-[9px] font-bold uppercase tracking-widest transition-all cursor-pointer border border-border-subtle/50 hover:border-accent/30"
                  >
                    <FilePlus size={12} />
                    <span>{t('library.add.file')}</span>
                  </button>
                  <button 
                    onClick={handleAddFolder}
-                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-foreground/[0.03] hover:bg-foreground/[0.08] text-muted hover:text-foreground text-[9px] font-bold uppercase tracking-widest transition-all cursor-pointer border border-border-subtle/50"
+                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-foreground/[0.03] hover:bg-foreground/[0.06] text-muted hover:text-accent text-[9px] font-bold uppercase tracking-widest transition-all cursor-pointer border border-border-subtle/50 hover:border-accent/30"
                  >
                    <FolderPlus size={12} />
                    <span>{t('library.add.folder')}</span>

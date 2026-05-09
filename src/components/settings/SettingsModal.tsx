@@ -442,12 +442,12 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
                                    animate={{ opacity: 1, scale: 1, y: 0 }}
                                    exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                                   className="relative w-64 p-3 rounded-2xl bg-background border border-border-subtle shadow-2xl pointer-events-auto"
+                                   className="relative w-64 p-3 rounded-xl bg-background border border-border-subtle shadow-2xl pointer-events-auto"
                                  >
-                                   <div className="flex items-center justify-between mb-4 px-1">
+                                   <div className="flex items-center justify-between mb-4 px-1 pt-1">
                                      <div className="flex items-center gap-2.5">
-                                       <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-                                       <h3 className="text-[10px] font-black text-foreground uppercase tracking-[0.2em]">{t('color.mixer')}</h3>
+                                       <div className="w-1.5 h-1.5 rounded-full bg-accent" />
+                                       <h3 className="text-[13px] font-semibold text-foreground/90 capitalize tracking-tight">{t('color.mixer')}</h3>
                                      </div>
                                      <button 
                                        onClick={() => setShowPicker(false)}
@@ -461,7 +461,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                                      {/* Full-width Visual Preview & Hex */}
                                      <div className="flex flex-col items-center gap-3">
                                          <div 
-                                         className="w-full h-14 rounded-2xl shadow-xl border border-white/10 flex items-center justify-center overflow-hidden" 
+                                         className="w-full h-14 rounded-lg shadow-xl border border-white/10 flex items-center justify-center overflow-hidden" 
                                          style={{ backgroundColor: accentColor }} 
                                        />
                                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-foreground/[0.03] border border-border-subtle">
@@ -508,13 +508,13 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                                        <div className="flex gap-2 pt-2">
                                          <button 
                                            onClick={() => { addCustomPreset(accentColor); setShowPicker(false); }}
-                                           className="flex-1 py-3 rounded-xl bg-foreground/[0.05] hover:bg-foreground/[0.1] text-foreground text-[9px] font-black uppercase tracking-[0.1em] transition-all border border-border-subtle cursor-pointer whitespace-nowrap"
+                                           className="flex-1 py-2.5 rounded-lg bg-foreground/[0.05] hover:bg-foreground/[0.1] text-foreground text-[9px] font-bold uppercase tracking-wider transition-all border border-border-subtle cursor-pointer whitespace-nowrap"
                                          >
                                            {t('save')}
                                          </button>
                                          <button 
                                            onClick={() => setShowPicker(false)}
-                                           className="flex-1 py-3 rounded-xl bg-accent text-white text-[10px] font-black uppercase tracking-[0.1em] hover:brightness-110 transition-all shadow-lg shadow-accent/20 cursor-pointer"
+                                           className="flex-1 py-2.5 rounded-lg bg-accent text-white text-[10px] font-bold uppercase tracking-wider hover:brightness-110 transition-all shadow-lg shadow-accent/20 cursor-pointer"
                                          >
                                            {t('done')}
                                          </button>

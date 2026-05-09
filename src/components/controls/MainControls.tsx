@@ -1,16 +1,39 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { 
   Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, 
-  Maximize, Minimize, Settings, LayoutGrid, Subtitles,
-  ChevronsLeft, ChevronsRight, Repeat, Repeat1, PictureInPicture2
+  Maximize, Minimize, Settings, FolderOpen, Subtitles,
+  Rewind, FastForward, Repeat, Repeat1, PictureInPicture2
 } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { getCurrentWindow, PhysicalSize, PhysicalPosition, currentMonitor } from '@tauri-apps/api/window';
 import { command, setProperty } from 'tauri-plugin-mpv-api';
 import { emit } from '@tauri-apps/api/event';
 import { showActionOSD } from '../../utils/osd';
 import { useTranslation } from '../../i18n';
+
+const Tooltip: React.FC<{ children: React.ReactNode; content: string }> = ({ children, content }) => {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative flex flex-col items-center group" onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
+      {children}
+      <AnimatePresence>
+        {show && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            transition={{ type: "spring", damping: 20, stiffness: 300 }}
+            className="absolute bottom-full mb-2 px-2 py-1 bg-black/90 backdrop-blur-xl border border-white/5 rounded-md shadow-2xl pointer-events-none whitespace-nowrap z-[100] flex items-center justify-center"
+          >
+            <span className="text-[8px] font-medium uppercase tracking-[0.2em] text-accent leading-none">{content}</span>
+            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-black/90" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 
 export const MainControls: React.FC = () => {
   const { 
@@ -210,92 +233,102 @@ export const MainControls: React.FC = () => {
 
         <div className="px-4 py-5 flex items-center justify-between">
           <div className={`flex items-center ${isSmall ? 'gap-3' : 'gap-6'}`}>
-            <button 
-              disabled={!hasMedia}
-              onClick={async () => {
-                if (duration > 0 && currentTime >= duration - 0.2) {
-                  await command('seek', [0, 'absolute']);
-                }
-                await command('cycle', ['pause']);
-                showActionOSD(!isPlaying ? t('play') : t('pause'), !isPlaying ? 'play' : 'pause');
-              }}
-              className={`transition-all duration-300 transform active:scale-95 cursor-pointer group ${hasMedia ? 'text-muted hover:text-accent drop-shadow-md' : 'text-muted/40 cursor-default'}`}
-            >
-              <div className="group-hover:scale-110 transition-transform flex items-center justify-center">
-                {isPlaying ? (
-                  <Pause size={isSmall ? 20 : 24} strokeWidth={1.5} fill="currentColor" />
-                ) : (
-                  <Play size={isSmall ? 20 : 24} strokeWidth={1.5} fill="currentColor" className="ml-0.5" />
-                )}
-              </div>
-            </button>
+            <Tooltip content={isPlaying ? t('pause') : t('play')}>
+              <button 
+                disabled={!hasMedia}
+                onClick={async () => {
+                  if (duration > 0 && currentTime >= duration - 0.2) {
+                    await command('seek', [0, 'absolute']);
+                  }
+                  await command('cycle', ['pause']);
+                  showActionOSD(!isPlaying ? t('play') : t('pause'), !isPlaying ? 'play' : 'pause');
+                }}
+                className={`transition-all duration-300 transform active:scale-95 cursor-pointer group ${hasMedia ? 'text-muted hover:text-accent drop-shadow-md' : 'text-muted/40 cursor-default'}`}
+              >
+                <div className="group-hover:scale-110 transition-transform flex items-center justify-center">
+                  {isPlaying ? (
+                    <Pause size={isSmall ? 20 : 24} strokeWidth={1.5} fill="currentColor" />
+                  ) : (
+                    <Play size={isSmall ? 20 : 24} strokeWidth={1.5} fill="currentColor" className="ml-0.5" />
+                  )}
+                </div>
+              </button>
+            </Tooltip>
 
             {hasPlaylist && (
               <div className={`flex items-center ${isSmall ? 'gap-2' : 'gap-4'}`}>
-                <button 
-                  onClick={async () => {
-                    const idx = playlist.findIndex(t => t.path === currentTrack);
-                    if (idx > 0) {
-                      const prev = playlist[idx - 1];
-                      await emit('lieb-play', { path: prev.path, subs: prev.subs });
-                      setCurrentTrack(prev.path);
-                    }
-                  }}
-                  className={`text-muted hover:text-accent transition-all cursor-pointer group/btn ${playlist.findIndex(t => t.path === currentTrack) <= 0 ? 'opacity-30 cursor-default pointer-events-none' : ''}`}
-                  title="Previous (P)"
-                >
-                  <SkipBack size={18} className="group-hover/btn:scale-110 transition-transform" />
-                </button>
-                <button 
-                  onClick={async () => {
-                    const idx = playlist.findIndex(t => t.path === currentTrack);
-                    if (idx !== -1 && idx < playlist.length - 1) {
-                      const next = playlist[idx + 1];
-                      await emit('lieb-play', { path: next.path, subs: next.subs });
-                      setCurrentTrack(next.path);
-                    }
-                  }}
-                  className={`text-muted hover:text-accent transition-all cursor-pointer group/btn ${playlist.findIndex(t => t.path === currentTrack) >= playlist.length - 1 ? 'opacity-30 cursor-default pointer-events-none' : ''}`}
-                  title="Next (N)"
-                >
-                  <SkipForward size={18} className="group-hover/btn:scale-110 transition-transform" />
-                </button>
+                <Tooltip content="Previous (P)">
+                  <button 
+                    onClick={async () => {
+                      const idx = playlist.findIndex(t => t.path === currentTrack);
+                      if (idx > 0) {
+                        const prev = playlist[idx - 1];
+                        await emit('lieb-play', { path: prev.path, subs: prev.subs });
+                        setCurrentTrack(prev.path);
+                      }
+                    }}
+                    className={`text-muted hover:text-accent transition-all cursor-pointer group/btn ${playlist.findIndex(t => t.path === currentTrack) <= 0 ? 'opacity-30 cursor-default pointer-events-none' : ''}`}
+                  >
+                    <SkipBack size={18} className="group-hover/btn:scale-110 transition-transform" />
+                  </button>
+                </Tooltip>
+                <Tooltip content="Next (N)">
+                  <button 
+                    onClick={async () => {
+                      const idx = playlist.findIndex(t => t.path === currentTrack);
+                      if (idx !== -1 && idx < playlist.length - 1) {
+                        const next = playlist[idx + 1];
+                        await emit('lieb-play', { path: next.path, subs: next.subs });
+                        setCurrentTrack(next.path);
+                      }
+                    }}
+                    className={`text-muted hover:text-accent transition-all cursor-pointer group/btn ${playlist.findIndex(t => t.path === currentTrack) >= playlist.length - 1 ? 'opacity-30 cursor-default pointer-events-none' : ''}`}
+                  >
+                    <SkipForward size={18} className="group-hover/btn:scale-110 transition-transform" />
+                  </button>
+                </Tooltip>
               </div>
             )}
             
             <div className={`flex items-center ${isSmall ? 'gap-3' : 'gap-6'} ${!hasMedia ? 'opacity-20 pointer-events-none' : ''}`}>
-              <button 
-                onClick={() => {
-                  command('seek', [-seekInterval, 'relative']);
-                  showActionOSD(`${seekInterval}s`, 'rewind');
-                }}
-                className="text-muted hover:text-accent transition-all cursor-pointer relative group/btn"
-              >
-                <ChevronsLeft size={isSmall ? 18 : 22} className="group-hover/btn:scale-110 transition-transform" />
-              </button>
+              <Tooltip content="Rewind">
+                <button 
+                  onClick={() => {
+                    command('seek', [-seekInterval, 'relative']);
+                    showActionOSD(`${seekInterval}s`, 'rewind');
+                  }}
+                  className="text-muted hover:text-accent transition-all cursor-pointer relative group/btn"
+                >
+                  <Rewind size={isSmall ? 18 : 22} className="group-hover/btn:scale-110 transition-transform" />
+                </button>
+              </Tooltip>
 
-              <button 
-                onClick={() => {
-                  command('seek', [seekInterval, 'relative']);
-                  showActionOSD(`${seekInterval}s`, 'forward');
-                }}
-                className="text-muted hover:text-accent transition-all cursor-pointer relative group/btn"
-              >
-                <ChevronsRight size={isSmall ? 18 : 22} className="group-hover/btn:scale-110 transition-transform" />
-              </button>
+              <Tooltip content="Forward">
+                <button 
+                  onClick={() => {
+                    command('seek', [seekInterval, 'relative']);
+                    showActionOSD(`${seekInterval}s`, 'forward');
+                  }}
+                  className="text-muted hover:text-accent transition-all cursor-pointer relative group/btn"
+                >
+                  <FastForward size={isSmall ? 18 : 22} className="group-hover/btn:scale-110 transition-transform" />
+                </button>
+              </Tooltip>
             </div>
 
             {!isSmall && <div className="h-5 w-[1px] bg-border-subtle mx-1" />}
 
             <div className={`flex items-center ${isSmall ? 'gap-2' : 'gap-4'} group/volume relative ${!hasMedia ? 'opacity-20 pointer-events-none' : ''}`}>
-              <button 
-                onClick={() => setProperty('mute', !isMuted)}
-                className="text-muted hover:text-accent transition-all cursor-pointer group"
-              >
-                <div className="group-hover:scale-110 transition-transform">
-                  {isMuted || volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
-                </div>
-              </button>
+              <Tooltip content={isMuted ? 'Unmute (M)' : 'Mute (M)'}>
+                <button 
+                  onClick={() => setProperty('mute', !isMuted)}
+                  className="text-muted hover:text-accent transition-all cursor-pointer group"
+                >
+                  <div className="group-hover:scale-110 transition-transform">
+                    {isMuted || volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                  </div>
+                </button>
+              </Tooltip>
               {!isTiny && (
                 <div className={`${isSmall ? 'w-16' : 'w-24'} relative flex items-center gap-2`}>
                   <div className="relative flex-1 h-1 bg-foreground/10 rounded-full overflow-hidden">
@@ -332,96 +365,103 @@ export const MainControls: React.FC = () => {
           <div className={`flex items-center ${isSmall ? 'gap-3' : 'gap-6'}`}>
             {!isSmall && (
               <>
-                <button 
-                  disabled={!hasMedia}
-                  onClick={handleLoopCycle}
-                  className={`transition-all cursor-pointer relative group ${
-                    loopMode !== 'off' ? 'text-accent' : hasMedia ? 'text-muted hover:text-accent' : 'text-muted/40 cursor-default'
-                  }`}
-                  title={`Loop: ${loopMode}`}
-                >
-                  <div className="group-hover:scale-110 transition-transform">
-                    {loopMode === 'one' ? <Repeat1 size={18} /> : <Repeat size={18} />}
-                  </div>
-                </button>
+                <Tooltip content={`Loop: ${loopMode}`}>
+                  <button 
+                    disabled={!hasMedia}
+                    onClick={handleLoopCycle}
+                    className={`transition-all cursor-pointer relative group ${
+                      loopMode !== 'off' ? 'text-accent' : hasMedia ? 'text-muted hover:text-accent' : 'text-muted/40 cursor-default'
+                    }`}
+                  >
+                    <div className="group-hover:scale-110 transition-transform">
+                      {loopMode === 'one' ? <Repeat1 size={18} /> : <Repeat size={18} />}
+                    </div>
+                  </button>
+                </Tooltip>
                 
-                <button 
-                  onClick={() => openWindow('library', 'Library', 800, 600)}
-                  className="text-muted hover:text-accent transition-all cursor-pointer group"
-                  title="Library (L)"
-                >
-                  <LayoutGrid size={18} className="group-hover:scale-110 transition-transform" />
-                </button>
+                <Tooltip content="Library (L)">
+                  <button 
+                    onClick={() => openWindow('library', 'Library', 800, 600)}
+                    className="text-muted hover:text-accent transition-all cursor-pointer group"
+                  >
+                    <FolderOpen size={18} className="group-hover:scale-110 transition-transform" />
+                  </button>
+                </Tooltip>
 
-                <button 
-                  disabled={!hasMedia}
-                  onClick={async () => {
-                    const state = usePlayerStore.getState();
-                    if (!state.hasSubtitles) {
-                      showActionOSD(t('no.captions'), 'subtitles');
-                      return;
-                    }
-                    const next = !subsEnabled;
-                    setSubsEnabled(next);
-                    showActionOSD(next ? t('captions.on') : t('captions.off'), 'subtitles');
-                  }}
-                  className={`transition-all cursor-pointer group ${subsEnabled ? 'text-accent' : hasMedia ? 'text-muted hover:text-accent' : 'text-muted/40 cursor-default'}`}
-                  title={subsEnabled ? "Disable Subtitles" : "Enable Subtitles"}
-                >
-                  <Subtitles size={18} className="group-hover:scale-110 transition-transform" />
-                </button>
+                <Tooltip content={subsEnabled ? "Disable Subtitles" : "Enable Subtitles"}>
+                  <button 
+                    disabled={!hasMedia}
+                    onClick={async () => {
+                      const state = usePlayerStore.getState();
+                      if (!state.hasSubtitles) {
+                        showActionOSD(t('no.captions'), 'subtitles');
+                        return;
+                      }
+                      const next = !subsEnabled;
+                      setSubsEnabled(next);
+                      showActionOSD(next ? t('captions.on') : t('captions.off'), 'subtitles');
+                    }}
+                    className={`transition-all cursor-pointer group ${subsEnabled ? 'text-accent' : hasMedia ? 'text-muted hover:text-accent' : 'text-muted/40 cursor-default'}`}
+                  >
+                    <Subtitles size={18} className="group-hover:scale-110 transition-transform" />
+                  </button>
+                </Tooltip>
               </>
             )}
             
-            <button 
-              onClick={() => openWindow('settings', 'Settings', 800, 560)}
-              className="text-muted hover:text-accent transition-all cursor-pointer group"
-              title="Settings (S)"
-            >
-              <Settings size={18} className="group-hover:scale-110 group-hover:rotate-45 transition-all duration-300" />
-            </button>
+            <Tooltip content="Settings (S)">
+              <button 
+                onClick={() => openWindow('settings', 'Settings', 800, 560)}
+                className="text-muted hover:text-accent transition-all cursor-pointer group"
+              >
+                <Settings size={18} className="group-hover:scale-110 group-hover:rotate-45 transition-all duration-300" />
+              </button>
+            </Tooltip>
 
-            <button 
-              onClick={async () => {
-                const next = !isPinned;
-                await appWindow.setAlwaysOnTop(next);
-                setIsPinned(next);
-                showActionOSD(next ? 'PiP Mode On' : 'PiP Mode Off', 'pip');
+            <Tooltip content={isPinned ? 'Unpin (Always on Top)' : 'Pin (Always on Top)'}>
+              <button 
+                onClick={async () => {
+                  const next = !isPinned;
+                  await appWindow.setAlwaysOnTop(next);
+                  setIsPinned(next);
+                  showActionOSD(next ? 'PiP Mode On' : 'PiP Mode Off', 'pip');
 
-                if (next) {
-                  try {
-                    const monitor = await currentMonitor();
-                    if (monitor) {
-                      const scaleFactor = await appWindow.scaleFactor();
-                      const targetW = Math.round((monitor.size.width / scaleFactor) * 0.3);
-                      const targetH = Math.round(targetW / aspectRatio);
-                      await appWindow.setSize(new PhysicalSize(Math.round(targetW * scaleFactor), Math.round(targetH * scaleFactor)));
-                      await new Promise(r => setTimeout(r, 100));
-                      const posX = monitor.size.width - Math.round(targetW * scaleFactor) - Math.round(20 * scaleFactor);
-                      const posY = Math.round(20 * scaleFactor);
-                      await appWindow.setPosition(new PhysicalPosition(posX, posY));
+                  if (next) {
+                    try {
+                      const monitor = await currentMonitor();
+                      if (monitor) {
+                        const scaleFactor = await appWindow.scaleFactor();
+                        const targetW = Math.round((monitor.size.width / scaleFactor) * 0.3);
+                        const targetH = Math.round(targetW / aspectRatio);
+                        await appWindow.setSize(new PhysicalSize(Math.round(targetW * scaleFactor), Math.round(targetH * scaleFactor)));
+                        await new Promise(r => setTimeout(r, 100));
+                        const posX = monitor.size.width - Math.round(targetW * scaleFactor) - Math.round(20 * scaleFactor);
+                        const posY = Math.round(20 * scaleFactor);
+                        await appWindow.setPosition(new PhysicalPosition(posX, posY));
+                      }
+                    } catch (err) {
+                      console.error(' Lieb Player: Failed to snap window:', err);
                     }
-                  } catch (err) {
-                    console.error(' Lieb Player: Failed to snap window:', err);
                   }
-                }
-              }}
-              className={`transition-all cursor-pointer group ${isPinned ? 'text-accent scale-110' : 'text-muted hover:text-accent'}`}
-              title={isPinned ? 'Unpin (Always on Top)' : 'Pin (Always on Top)'}
-            >
-              <div className="group-hover:scale-110 transition-transform">
-                <PictureInPicture2 size={18} strokeWidth={1.5} />
-              </div>
-            </button>
+                }}
+                className={`transition-all cursor-pointer group ${isPinned ? 'text-accent scale-110' : 'text-muted hover:text-accent'}`}
+              >
+                <div className="group-hover:scale-110 transition-transform">
+                  <PictureInPicture2 size={18} strokeWidth={1.5} />
+                </div>
+              </button>
+            </Tooltip>
 
-            <button 
-              onClick={handleFullscreen}
-              className={`transition-all cursor-pointer group ${isFullscreen ? 'text-accent' : 'text-muted hover:text-accent'}`}
-            >
-              <div className="group-hover:scale-110 transition-transform">
-                {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
-              </div>
-            </button>
+            <Tooltip content={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen (F)'}>
+              <button 
+                onClick={handleFullscreen}
+                className={`transition-all cursor-pointer group ${isFullscreen ? 'text-accent' : 'text-muted hover:text-accent'}`}
+              >
+                <div className="group-hover:scale-110 transition-transform">
+                  {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
+                </div>
+              </button>
+            </Tooltip>
           </div>
         </div>
       </div>
