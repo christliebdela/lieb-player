@@ -2,13 +2,29 @@
 
 :root {
   --accent: #6366f1;
+  --background: #0a0a0a;
+  --surface: #1a1a1a;
+  --text: #ffffff;
+  --border: rgba(255, 255, 255, 0.08);
+  --muted: rgba(255, 255, 255, 0.4);
+}
+
+[data-theme='light'] {
+  --background: #f3f4f6;
+  --surface: #ffffff;
+  --text: #111827;
+  --border: rgba(0, 0, 0, 0.08);
+  --muted: rgba(0, 0, 0, 0.4);
 }
 
 @theme {
-  --color-background: #0a0a0a;
-  --color-surface: #1a1a1a;
+  --color-background: var(--background);
+  --color-surface: var(--surface);
   --color-accent: var(--accent);
   --color-accent-hover: color-mix(in srgb, var(--accent), black 20%);
+  --color-foreground: var(--text);
+  --color-border-subtle: var(--border);
+  --color-muted: var(--muted);
 }
 
 @layer base {
@@ -20,7 +36,7 @@
     outline: none !important;
   }
   body {
-    @apply bg-background text-white antialiased overflow-hidden;
+    @apply bg-background text-foreground antialiased overflow-hidden transition-colors duration-300;
   }
 }
 

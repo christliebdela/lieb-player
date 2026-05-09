@@ -127,7 +127,7 @@ export const MainControls: React.FC = () => {
         y: centerY,
         decorations: false,
         transparent: true,
-        alwaysOnTop: true,
+        alwaysOnTop: isPinned,
       });
     } catch (err) {
       console.error(`Failed to open ${label} window:`, err);
@@ -158,12 +158,12 @@ export const MainControls: React.FC = () => {
       className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none"
       onWheel={handleWheel}
     >
-      <div className="w-full pointer-events-auto relative bg-black/40 backdrop-blur-3xl border-t border-white/5 shadow-[0_-15px_40px_rgba(0,0,0,0.5)]">
+      <div className="w-full pointer-events-auto relative bg-surface/30 backdrop-blur-3xl border-t border-border-subtle shadow-[0_8px_30px_rgba(0,0,0,0.08)]">
         <div 
           ref={progressRef}
           className={`absolute top-0 left-4 right-4 h-1 z-20 group -translate-y-[1px] ${hasMedia ? 'cursor-pointer' : 'cursor-default opacity-0 pointer-events-none'}`}
         >
-          <div className="w-full h-full bg-white/10 relative overflow-visible group-hover:h-[4px] transition-all rounded-full">
+          <div className="w-full h-full bg-foreground/10 relative overflow-visible group-hover:h-[4px] transition-all rounded-full">
             <motion.div 
               className="absolute top-0 left-0 h-full bg-accent shadow-[0_0_15px_rgba(var(--accent-rgb),0.6)] rounded-full"
               style={{ width: `${hasMedia ? (currentTime / duration) * 100 : 0}%` }}
@@ -191,7 +191,7 @@ export const MainControls: React.FC = () => {
                 }
                 await command('cycle', ['pause']);
               }}
-              className={`transition-all duration-300 transform active:scale-95 cursor-pointer group ${hasMedia ? 'text-black dark:text-white hover:text-accent drop-shadow-md' : 'text-white/30 cursor-default'}`}
+              className={`transition-all duration-300 transform active:scale-95 cursor-pointer group ${hasMedia ? 'text-foreground hover:text-accent drop-shadow-md' : 'text-muted/40 cursor-default'}`}
             >
               <div className="group-hover:scale-110 transition-transform flex items-center justify-center">
                 {isPlaying ? (
@@ -206,14 +206,14 @@ export const MainControls: React.FC = () => {
               <div className={`flex items-center ${isSmall ? 'gap-2' : 'gap-4'}`}>
                 <button 
                   onClick={() => command('playlist_prev')}
-                  className="text-white/30 hover:text-accent transition-all cursor-pointer group/btn"
+                  className="text-muted hover:text-accent transition-all cursor-pointer group/btn"
                   title="Previous (P)"
                 >
                   <SkipBack size={18} className="group-hover/btn:scale-110 transition-transform" />
                 </button>
                 <button 
                   onClick={() => command('playlist_next')}
-                  className="text-white/30 hover:text-accent transition-all cursor-pointer group/btn"
+                  className="text-muted hover:text-accent transition-all cursor-pointer group/btn"
                   title="Next (N)"
                 >
                   <SkipForward size={18} className="group-hover/btn:scale-110 transition-transform" />
@@ -224,7 +224,7 @@ export const MainControls: React.FC = () => {
             <div className={`flex items-center ${isSmall ? 'gap-3' : 'gap-6'} ${!hasMedia ? 'opacity-20 pointer-events-none' : ''}`}>
               <button 
                 onClick={() => command('seek', [-10, 'relative'])}
-                className="text-white/30 hover:text-accent transition-all cursor-pointer relative group/btn"
+                className="text-muted hover:text-accent transition-all cursor-pointer relative group/btn"
               >
                 <RotateCcw size={isSmall ? 18 : 22} className="group-hover/btn:scale-110 transition-transform" />
                 <span className={`absolute inset-0 flex items-center justify-center font-black mt-0.5 ml-[-1px] ${isSmall ? 'text-[5px]' : 'text-[7px]'}`}>10</span>
@@ -232,30 +232,36 @@ export const MainControls: React.FC = () => {
 
               <button 
                 onClick={() => command('seek', [10, 'relative'])}
-                className="text-white/30 hover:text-accent transition-all cursor-pointer relative group/btn"
+                className="text-muted hover:text-accent transition-all cursor-pointer relative group/btn"
               >
                 <RotateCw size={isSmall ? 18 : 22} className="group-hover/btn:scale-110 transition-transform" />
                 <span className={`absolute inset-0 flex items-center justify-center font-black mt-0.5 mr-[-1px] ${isSmall ? 'text-[5px]' : 'text-[7px]'}`}>10</span>
               </button>
             </div>
 
-            {!isSmall && <div className="h-5 w-[1px] bg-white/10 mx-1" />}
+            {!isSmall && <div className="h-5 w-[1px] bg-border-subtle mx-1" />}
 
             <div className={`flex items-center ${isSmall ? 'gap-2' : 'gap-4'} group/volume relative ${!hasMedia ? 'opacity-20 pointer-events-none' : ''}`}>
               <button 
                 onClick={() => setProperty('mute', !isMuted)}
-                className="text-white/30 hover:text-accent transition-all cursor-pointer group"
+                className="text-muted hover:text-accent transition-all cursor-pointer group"
               >
                 <div className="group-hover:scale-110 transition-transform">
                   {isMuted || volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
                 </div>
               </button>
               {!isTiny && (
-                <div className={`${isSmall ? 'w-16' : 'w-24'} h-[3px] bg-white/10 rounded-full relative group-hover/volume:bg-white/10 transition-all`}>
-                  <div 
-                    className="absolute top-0 left-0 h-full bg-white/10 rounded-full"
-                    style={{ width: `${isMuted ? 0 : volume}%` }}
-                  />
+                <div className={`${isSmall ? 'w-16' : 'w-24'} relative flex items-center gap-2`}>
+                  <div className="relative flex-1 h-1.5 bg-foreground/10 rounded-full overflow-hidden">
+                    <motion.div 
+                      className="absolute top-0 left-0 h-full bg-accent"
+                      initial={false}
+                      animate={{ width: `${isMuted ? 0 : volume}%` }}
+                    />
+                  </div>
+                  <span className="text-[10px] font-bold tabular-nums text-muted min-w-[20px]">
+                    {isMuted ? '0' : Math.round(volume)}
+                  </span>
                   <input 
                     type="range"
                     min="0"
@@ -269,8 +275,10 @@ export const MainControls: React.FC = () => {
             </div>
 
             {!isTiny && (
-              <div className="text-[10px] font-bold font-mono text-white/30 tracking-widest pl-1">
-                {hasMedia ? `${formatTime(currentTime)} / ${formatTime(duration)}` : '0:00 / 0:00'}
+              <div className="flex items-center gap-2 tabular-nums text-[10px] font-bold tracking-tight">
+                <span className="text-foreground">{formatTime(currentTime)}</span>
+                <span className="text-muted/40">/</span>
+                <span className="text-muted">{formatTime(duration)}</span>
               </div>
             )}
           </div>
@@ -282,7 +290,7 @@ export const MainControls: React.FC = () => {
                   disabled={!hasMedia}
                   onClick={handleLoopCycle}
                   className={`transition-all cursor-pointer relative group ${
-                    loopMode !== 'off' ? 'text-accent' : hasMedia ? 'text-white/30 hover:text-accent' : 'text-white/30 cursor-default'
+                    loopMode !== 'off' ? 'text-accent' : hasMedia ? 'text-muted hover:text-accent' : 'text-muted/40 cursor-default'
                   }`}
                   title={`Loop: ${loopMode}`}
                 >
@@ -292,8 +300,8 @@ export const MainControls: React.FC = () => {
                 </button>
                 
                 <button 
-                  onClick={() => openWindow('library', 'Library', 800, 560)}
-                  className="p-1 rounded-lg hover:bg-white/10 text-white/30 hover:text-accent transition-all cursor-pointer group"
+                  onClick={() => openWindow('library', 'Library', 800, 600)}
+                  className="text-muted hover:text-accent transition-all cursor-pointer group"
                   title="Library (L)"
                 >
                   <Library size={18} className="group-hover:scale-110 transition-transform" />
@@ -301,7 +309,7 @@ export const MainControls: React.FC = () => {
 
                 <button 
                   disabled={!hasMedia}
-                  className={`transition-all cursor-pointer group ${hasMedia ? 'text-white/30 hover:text-accent' : 'text-white/30 cursor-default'}`}
+                  className={`transition-all cursor-pointer group ${hasMedia ? 'text-muted hover:text-accent' : 'text-muted cursor-default'}`}
                   title="Subtitles"
                 >
                   <Subtitles size={18} className="group-hover:scale-110 transition-transform" />
@@ -311,7 +319,7 @@ export const MainControls: React.FC = () => {
             
             <button 
               onClick={() => openWindow('settings', 'Settings', 800, 560)}
-              className="text-white/30 hover:text-accent transition-all cursor-pointer group"
+              className="text-muted hover:text-accent transition-all cursor-pointer group"
               title="Settings (S)"
             >
               <Settings size={18} className="group-hover:scale-110 group-hover:rotate-45 transition-all duration-300" />
@@ -341,7 +349,7 @@ export const MainControls: React.FC = () => {
                   }
                 }
               }}
-              className={`transition-all cursor-pointer group ${isPinned ? 'text-accent scale-110' : 'text-white/30 hover:text-accent'}`}
+              className={`transition-all cursor-pointer group ${isPinned ? 'text-accent scale-110' : 'text-muted hover:text-accent'}`}
               title={isPinned ? 'Unpin (Always on Top)' : 'Pin (Always on Top)'}
             >
               <div className="group-hover:scale-110 transition-transform">
@@ -351,7 +359,7 @@ export const MainControls: React.FC = () => {
 
             <button 
               onClick={handleFullscreen}
-              className={`transition-all cursor-pointer group ${isFullscreen ? 'text-accent' : 'text-white/30 hover:text-accent'}`}
+              className={`transition-all cursor-pointer group ${isFullscreen ? 'text-accent' : 'text-muted hover:text-accent'}`}
             >
               <div className="group-hover:scale-110 transition-transform">
                 {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}

@@ -9,7 +9,7 @@ const OBSERVED_PROPERTIES = [
 ] as const;
 
 export const VideoCanvas: React.FC = () => {
-    const { setDuration, setCurrentTime, setPlaying, setMetadata, setVolume, setMuted, setAspectRatio } = usePlayerStore();
+    const { setDuration, setCurrentTime, setPlaying, setMetadata, setVolume, setMuted, setAspectRatio, isFullscreen } = usePlayerStore();
 
   useEffect(() => {
     // Crucial: Set background to transparent for MPV to show through
@@ -82,6 +82,14 @@ export const VideoCanvas: React.FC = () => {
         try {
           const size = await appWindow.innerSize();
           const currentAspect = usePlayerStore.getState().aspectRatio;
+          const isMaxed = await appWindow.isMaximized();
+          const isFull = await appWindow.isFullscreen();
+          
+          if (isMaxed || isFull) {
+            resizeTimeout = null;
+            return;
+          }
+
           const ratio = currentAspect || (pendingW > 0 && pendingH > 0 ? pendingW / pendingH : 16/9);
           
           const expectedH = Math.round(size.width / ratio);
@@ -196,11 +204,11 @@ export const VideoCanvas: React.FC = () => {
     <div 
       className="absolute inset-0 bg-transparent pointer-events-auto"
       onContextMenu={handleRightClick}
-      data-tauri-drag-region
+      data-tauri-drag-region={!isFullscreen ? "true" : undefined}
     >
       <video-player 
         class="w-full h-full bg-transparent" 
-        data-tauri-drag-region
+        data-tauri-drag-region={!isFullscreen ? "true" : undefined}
       />
     </div>
   );

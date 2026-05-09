@@ -129,9 +129,9 @@ const ResizeGrip: React.FC<{ position: 'tl' | 'tr' | 'bl' | 'br', show: boolean 
 // ── Main player (all MPV hooks live here) ──
 function MainPlayer() {
   const { 
-    isPlaying, showControls, setShowControls, setPlaying, 
     metadata, duration, setPlaylist, volume, isMuted, 
-    showVolumeOSD, accentColor, crossfade, crossfadeDuration 
+    showVolumeOSD, accentColor, crossfade, crossfadeDuration,
+    isFullscreen, setPlaying, setShowControls, isPlaying, showControls
   } = usePlayerStore();
   const hasMedia = duration > 0;
 
@@ -231,7 +231,7 @@ function MainPlayer() {
 
   return (
     <div 
-      className={`relative w-full h-screen overflow-hidden font-inter select-none ${hasMedia ? 'bg-transparent' : 'bg-black'}`}
+      className={`relative w-full h-screen overflow-hidden font-inter select-none ${hasMedia ? 'bg-transparent' : 'bg-background'}`}
       style={{ cursor: !showControls && hasMedia ? 'none' : 'auto' }}
       onMouseMove={handleMouseMove}
     >
@@ -278,10 +278,10 @@ function MainPlayer() {
             className="w-[clamp(64px,9vw,110px)] h-auto object-contain opacity-20 grayscale"
           />
           <div className="mt-[clamp(16px,3vw,28px)] text-center">
-            <h1 className="text-[clamp(11px,1.2vw,16px)] font-black text-white tracking-[0.4em] uppercase opacity-10">
+            <h1 className="text-[clamp(11px,1.2vw,16px)] font-black text-foreground tracking-[0.4em] uppercase opacity-10">
               Lieb Player
             </h1>
-            <p className="mt-[clamp(8px,1vw,14px)] text-[clamp(8px,0.9vw,11px)] text-white/10 font-bold uppercase tracking-[0.3em]">
+            <p className="mt-[clamp(8px,1vw,14px)] text-[clamp(8px,0.9vw,11px)] text-foreground/10 font-bold uppercase tracking-[0.3em]">
               Drop media to play
             </p>
           </div>
@@ -294,11 +294,11 @@ function MainPlayer() {
         {/* Header - Transparent and Draggable */}
         <header 
           className="p-1 flex justify-between items-center pointer-events-auto"
-          data-tauri-drag-region
+          data-tauri-drag-region={!isFullscreen ? "true" : undefined}
         >
           <div className="flex items-center gap-2 px-3 py-1.5 opacity-20 hover:opacity-100 transition-opacity pointer-events-none">
             <img src="/lieb-player-icon.png" alt="Logo" className="w-3.5 h-3.5 object-contain grayscale" />
-            <span className="text-white text-[10px] tracking-[0.2em] font-bold uppercase">
+            <span className="text-foreground text-[10px] tracking-[0.2em] font-bold uppercase">
               lieb player
             </span>
           </div>
@@ -307,7 +307,7 @@ function MainPlayer() {
         </header>
 
         {/* Draggable spacer area */}
-        <div className="flex-1 w-full" data-tauri-drag-region />
+        <div className="flex-1 w-full" data-tauri-drag-region={!isFullscreen ? "true" : undefined} />
 
         {/* Bottom Area: Metadata & Controls */}
         <div className="p-12 flex items-end justify-between pointer-events-none relative flex-1">
@@ -353,6 +353,11 @@ function MainPlayer() {
 // ── App Router: picks the right component based on window label ──
 function App() {
   const label = getCurrentWindow().label;
+  const { theme } = usePlayerStore();
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
   if (label === 'settings') return <SettingsWindow />;
   if (label === 'library') return <LibraryWindow />;

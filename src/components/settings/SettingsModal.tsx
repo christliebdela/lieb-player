@@ -49,21 +49,21 @@ const EQ_PRESETS = [
 const SegmentedControl = ({ options, value, onChange }: { 
   options: string[]; value: string; onChange: (v: string) => void 
 }) => (
-  <div className="flex bg-white/[0.04] rounded-lg p-0.5 border border-white/5">
+  <div className="flex bg-foreground/[0.04] rounded-lg p-0.5 border border-border-subtle">
     {options.map((opt) => (
       <button
         key={opt}
         onClick={() => onChange(opt)}
         className={`relative px-3 py-1.5 text-[10px] font-semibold rounded-md transition-all cursor-pointer ${
           value === opt
-            ? 'text-black'
-            : 'text-white/40 hover:text-white/70'
+            ? 'text-white'
+            : 'text-muted hover:text-foreground'
         }`}
       >
         {value === opt && (
           <motion.div
             layoutId="segment-active"
-            className="absolute inset-0 bg-accent rounded-md"
+            className="absolute inset-0 bg-accent rounded-md shadow-sm"
             transition={{ type: 'spring', stiffness: 400, damping: 30 }}
           />
         )}
@@ -77,7 +77,7 @@ const SegmentedControl = ({ options, value, onChange }: {
 const Toggle = ({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) => (
   <button
     onClick={() => onChange(!checked)}
-    className={`relative w-10 h-[22px] rounded-full transition-colors cursor-pointer ${checked ? 'bg-accent' : 'bg-white/10 hover:bg-white/15'}`}
+    className={`relative w-10 h-[22px] rounded-full transition-colors cursor-pointer ${checked ? 'bg-accent' : 'bg-foreground/[0.08] hover:bg-foreground/[0.12]'}`}
   >
     <motion.div
       className="absolute top-[3px] w-4 h-4 bg-white rounded-full shadow-md"
@@ -93,8 +93,8 @@ const SettingCard = ({ label, description, children }: {
 }) => (
   <div className="flex items-center justify-between py-4 group">
     <div className="space-y-0.5">
-      <h4 className="text-[13px] font-medium text-white/90">{label}</h4>
-      {description && <p className="text-[11px] text-white/30 leading-relaxed">{description}</p>}
+      <h4 className="text-[13px] font-medium text-foreground/90">{label}</h4>
+      {description && <p className="text-[11px] text-muted leading-relaxed font-medium">{description}</p>}
     </div>
     {children}
   </div>
@@ -181,19 +181,19 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
 
   // The inner panel that contains sidebar + content
   const panel = (
-    <div className={`bg-[#050505] overflow-hidden flex ${
+    <div className={`bg-background overflow-hidden flex ${
       standalone 
         ? 'w-full h-screen' 
-        : 'w-full max-w-[780px] h-[520px] rounded-2xl shadow-[0_0_80px_rgba(0,0,0,0.8)] border border-white/10'
+        : 'w-full max-w-[780px] h-[520px] rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:shadow-[0_0_40px_rgba(0,0,0,0.3)] border border-border-subtle'
     }`}>
 
             {/* Sidebar */}
-            <div className="w-48 bg-white/[0.015] border-r border-white/5 p-3 flex flex-col">
+            <div className="w-48 bg-white/[0.015] border-r border-border-subtle p-3 flex flex-col">
               <div className="px-3 py-4 mb-2 flex items-center gap-2.5">
                 <img src="/lieb-player-icon.png" alt="Lieb Player" className="w-6 h-6 rounded-lg" />
                 <div>
-                  <h1 className="text-[13px] font-semibold text-white leading-tight tracking-tight">lieb player</h1>
-                  <p className="text-[9px] text-white/20 font-medium uppercase tracking-[0.15em]">preferences</p>
+                  <h1 className="text-[13px] font-semibold text-foreground leading-tight tracking-tight">lieb player</h1>
+                  <p className="text-[9px] text-muted font-medium uppercase tracking-[0.15em]">preferences</p>
                 </div>
               </div>
               
@@ -204,8 +204,8 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                     onClick={() => setActiveTab(tab.id as Tab)}
                     className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12px] font-medium transition-all cursor-pointer ${
                       activeTab === tab.id 
-                      ? 'bg-white/[0.08] text-white' 
-                      : 'text-white/35 hover:text-white/70 hover:bg-white/5'
+                      ? 'bg-accent/10 text-accent' 
+                      : 'text-muted hover:text-foreground hover:bg-foreground/[0.04]'
                     }`}
                   >
                     <tab.icon size={15} strokeWidth={activeTab === tab.id ? 2.5 : 1.5} />
@@ -214,8 +214,8 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                 ))}
               </div>
 
-              <div className="mt-auto pt-3 border-t border-white/5">
-                <div className="flex items-center gap-2 px-3 py-1.5 text-[10px] text-white/20 font-mono">
+              <div className="mt-auto pt-3 border-t border-border-subtle">
+                <div className="flex items-center gap-2 px-3 py-1.5 text-[10px] text-muted font-mono">
                   v0.1.0-alpha
                 </div>
               </div>
@@ -223,11 +223,11 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
 
             {/* Content Area */}
             <div className="flex-1 flex flex-col min-w-0">
-              <header className="h-12 flex items-center justify-between px-6 border-b border-white/5 shrink-0" data-tauri-drag-region>
-                <h2 className="text-[13px] font-semibold text-white/80 capitalize">{activeTab}</h2>
+              <header className="h-12 flex items-center justify-between px-6 border-b border-border-subtle shrink-0" data-tauri-drag-region>
+                <h2 className="text-[13px] font-semibold text-foreground/80 capitalize">{activeTab}</h2>
                 <button 
                   onClick={handleClose}
-                  className="w-7 h-7 flex items-center justify-center hover:bg-white/10 rounded-lg transition-colors text-white/30 hover:text-white cursor-pointer"
+                  className="w-7 h-7 flex items-center justify-center hover:bg-white/10 rounded-lg transition-colors text-muted hover:text-foreground cursor-pointer"
                 >
                   <X size={16} />
                 </button>
@@ -280,8 +280,8 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                         {/* Accent Color */}
                         <div>
                           <div className="flex items-center gap-2 mb-4">
-                            <Palette size={13} className="text-white/25" />
-                            <span className="text-[11px] font-semibold uppercase tracking-widest text-white/30">Accent Color</span>
+                            <Palette size={13} className="text-muted/60" />
+                            <span className="text-[11px] font-semibold uppercase tracking-widest text-muted">Accent Color</span>
                           </div>
                           <div className="grid grid-cols-4 gap-2">
                             {PRESET_COLORS.map((preset) => (
@@ -290,27 +290,27 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                                 onClick={() => setAccentColor(preset.color)}
                                 className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all cursor-pointer border ${
                                   accentColor === preset.color 
-                                  ? 'bg-white/[0.08] border-white/15' 
-                                  : 'bg-transparent border-white/5 hover:bg-white/[0.04]'
+                                  ? 'bg-accent/10 border-accent/20' 
+                                  : 'bg-transparent border-border-subtle hover:bg-foreground/[0.04]'
                                 }`}
                               >
                                 <div 
-                                  className="w-5 h-5 rounded-full shrink-0 ring-1 ring-white/10"
+                                  className="w-5 h-5 rounded-full shrink-0 ring-1 ring-foreground/10"
                                   style={{ backgroundColor: preset.color }}
                                 />
                                 <span className={`text-[11px] font-medium transition-colors ${
-                                  accentColor === preset.color ? 'text-white' : 'text-white/35 group-hover:text-white/60'
+                                  accentColor === preset.color ? 'text-accent' : 'text-muted hover:text-foreground'
                                 }`}>
                                   {preset.name}
                                 </span>
                               </button>
                             ))}
                           </div>
-                          <div className="flex items-center gap-3 mt-3 p-3 rounded-xl bg-white/5 border border-white/5">
+                          <div className="flex items-center gap-3 mt-3 p-3 rounded-xl bg-foreground/[0.04] border border-border-subtle">
                             <div className="flex-1">
-                              <span className="text-[11px] font-medium text-white/50">Custom</span>
+                              <span className="text-[11px] font-medium text-muted">Custom</span>
                             </div>
-                            <div className="relative w-8 h-8 rounded-lg overflow-hidden cursor-pointer ring-1 ring-white/10">
+                            <div className="relative w-8 h-8 rounded-lg overflow-hidden cursor-pointer ring-1 ring-border-subtle">
                               <div className="w-full h-full" style={{ backgroundColor: accentColor }} />
                               <input 
                                 type="color" value={accentColor}
@@ -325,7 +325,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
 
                     {activeTab === 'video' && (
                       <div className="space-y-8">
-                        <div className="divide-y divide-white/[0.04]">
+                        <div className="divide-y divide-border-subtle/30">
                           <SettingCard label="Rendering Backend" description="Graphics API for video output">
                             <SegmentedControl 
                               options={['GPU-Next', 'D3D11', 'Vulkan']}
@@ -341,13 +341,13 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                           </SettingCard>
                         </div>
 
-                        <div className="p-5 rounded-xl bg-white/5 border border-white/5 space-y-4">
+                        <div className="p-5 rounded-xl bg-foreground/[0.03] border border-border-subtle space-y-4">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2.5">
                               <FastForward size={14} className="text-accent" />
                               <div>
-                                <h4 className="text-[13px] font-medium text-white/90">Crossfade</h4>
-                                <p className="text-[10px] text-white/30 mt-0.5">Smooth audio transitions between tracks</p>
+                                <h4 className="text-[13px] font-medium text-foreground">Crossfade</h4>
+                                <p className="text-[10px] text-muted mt-0.5">Smooth audio transitions between tracks</p>
                               </div>
                             </div>
                             <Toggle checked={crossfade} onChange={setCrossfade} />
@@ -357,17 +357,17 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                             <motion.div 
                               initial={{ height: 0, opacity: 0 }} 
                               animate={{ height: 'auto', opacity: 1 }}
-                              className="pt-3 border-t border-white/5 space-y-3"
+                              className="pt-3 border-t border-border-subtle space-y-3"
                             >
                               <div className="flex items-center justify-between text-[11px]">
-                                <span className="text-white/40 font-medium">Duration</span>
+                                <span className="text-muted font-medium">Duration</span>
                                 <span className="text-accent font-semibold font-mono">{crossfadeDuration}s</span>
                               </div>
                               <input 
                                 type="range" min="1" max="10" step="0.5"
                                 value={crossfadeDuration}
                                 onChange={(e) => setCrossfadeDuration(parseFloat(e.target.value))}
-                                className="w-full accent-accent bg-white/10 h-[3px] rounded-full cursor-pointer appearance-none"
+                                className="w-full accent-accent bg-foreground/[0.08] h-[3px] rounded-full cursor-pointer appearance-none"
                               />
                             </motion.div>
                           )}
@@ -376,7 +376,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                     )}
 
                     {activeTab === 'audio' && (
-                      <div className="divide-y divide-white/[0.04]">
+                      <div className="divide-y divide-border-subtle/30">
                         <SettingCard label="Normalization" description="Balance volume across different files">
                           <Toggle checked={false} onChange={() => {}} />
                         </SettingCard>
@@ -388,7 +388,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                           />
                         </SettingCard>
                         <SettingCard label="Audio Delay" description="Adjust sync offset in milliseconds">
-                          <span className="text-[11px] font-mono text-white/30 bg-white/[0.04] px-3 py-1.5 rounded-lg border border-white/5">0 ms</span>
+                          <span className="text-[11px] font-mono text-muted bg-foreground/[0.04] px-3 py-1.5 rounded-lg border border-border-subtle">0 ms</span>
                         </SettingCard>
                       </div>
                     )}
@@ -404,8 +404,8 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                                 onClick={() => applyPreset(preset.bands)}
                                 className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all cursor-pointer ${
                                   isActive
-                                  ? 'bg-accent text-black'
-                                  : 'bg-white/[0.04] text-white/35 hover:bg-white/[0.08] hover:text-white/70'
+                                  ? 'bg-accent text-white'
+                                  : 'bg-foreground/[0.04] text-muted hover:bg-foreground/[0.08] hover:text-foreground'
                                 }`}
                               >
                                 {preset.name}
@@ -414,13 +414,13 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                           })}
                           <button 
                             onClick={resetEqualizer}
-                            className="px-3 py-1.5 rounded-lg text-[11px] font-medium text-white/20 hover:text-white/50 transition-colors cursor-pointer ml-auto"
+                            className="px-3 py-1.5 rounded-lg text-[11px] font-medium text-muted hover:text-foreground transition-colors cursor-pointer ml-auto"
                           >
                             Reset
                           </button>
                         </div>
 
-                        <div className="flex-1 flex items-stretch gap-1 min-h-[220px] p-4 rounded-xl bg-white/[0.02] border border-white/5">
+                        <div className="flex-1 flex items-stretch gap-1 min-h-[220px] p-4 rounded-xl bg-foreground/[0.01] border border-border-subtle">
                           {BANDS.map((band, idx) => {
                             const pct = ((equalizer[idx] + 20) / 40) * 100;
                             return (
@@ -429,7 +429,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                                   {equalizer[idx] > 0 ? '+' : ''}{equalizer[idx]}
                                 </div>
                                 <div className="flex-1 w-full flex flex-col items-center relative">
-                                  <div className="w-[6px] h-full bg-white/[0.04] rounded-full relative overflow-hidden">
+                                  <div className="w-[6px] h-full bg-foreground/[0.04] rounded-full relative overflow-hidden">
                                     <div 
                                       className="absolute bottom-0 w-full bg-accent/60 rounded-full transition-all group-hover:bg-accent"
                                       style={{ height: `${pct}%` }}
@@ -443,7 +443,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                                     style={{ appearance: 'slider-vertical', writingMode: 'vertical-lr' } as any}
                                   />
                                 </div>
-                                <span className="text-[9px] font-medium text-white/20 group-hover:text-white/50 transition-colors">{band.label}</span>
+                                <span className="text-[9px] font-medium text-muted/60 group-hover:text-foreground transition-colors">{band.label}</span>
                               </div>
                             );
                           })}
@@ -452,11 +452,11 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                     )}
 
                     {activeTab === 'shortcuts' && (
-                      <div className="divide-y divide-white/[0.04]">
+                      <div className="divide-y divide-border-subtle/30">
                         {shortcuts.map((s, idx) => (
                           <div key={idx} className="flex items-center justify-between py-3">
-                            <span className="text-[12px] text-white/50 font-medium">{s.desc}</span>
-                            <kbd className="px-2.5 py-1 bg-white/[0.05] rounded-md text-[11px] font-mono text-white/60 border border-white/10 min-w-[42px] text-center">
+                            <span className="text-[12px] text-muted font-medium">{s.desc}</span>
+                            <kbd className="px-2.5 py-1 bg-foreground/[0.05] rounded-md text-[11px] font-mono text-foreground/60 border border-border-subtle min-w-[42px] text-center">
                               {s.key}
                             </kbd>
                           </div>
@@ -469,21 +469,21 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                         <div className="flex flex-col items-center text-center gap-4 mb-8">
                           <div className="relative">
                             <div className="absolute inset-0 bg-accent/20 blur-2xl rounded-full" />
-                            <div className="w-24 h-24 bg-[#050505] rounded-3xl flex items-center justify-center border border-white/10 shadow-2xl overflow-hidden p-2 relative z-10">
+                            <div className="w-24 h-24 bg-background rounded-3xl flex items-center justify-center border border-border-subtle shadow-2xl overflow-hidden p-2 relative z-10">
                               <img src="/lieb-player-icon.png" alt="Lieb Player" className="w-full h-full object-contain drop-shadow-xl" />
                             </div>
                           </div>
                           <div>
-                            <h2 className="text-xl font-bold text-white tracking-tight flex items-center justify-center gap-2">
+                            <h2 className="text-xl font-bold text-foreground tracking-tight flex items-center justify-center gap-2">
                               Lieb Player
                               <span className="px-2 py-0.5 rounded-full bg-accent/10 text-accent text-[9px] font-black tracking-widest border border-accent/20">ALPHA</span>
                             </h2>
-                            <p className="text-[11px] text-white/40 mt-1.5 font-medium tracking-wide">Version 0.1.0 · Modern Media Experience</p>
+                            <p className="text-[11px] text-muted mt-1.5 font-medium tracking-wide">Version 0.1.0 · Modern Media Experience</p>
                           </div>
                         </div>
 
                         <div className="text-center mb-8 px-2">
-                          <p className="text-[12px] text-white/50 leading-relaxed font-medium">
+                          <p className="text-[12px] text-muted leading-relaxed font-medium">
                             I built Lieb Player because I wanted more control and deep customization 
                             options that most other players simply don't provide. It's a project born 
                             from the need for a truly personal media experience that looks as good 
@@ -491,16 +491,16 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                           </p>
                         </div>
 
-                        <div className="flex items-center justify-between pt-5 border-t border-white/5">
+                        <div className="flex items-center justify-between pt-5 border-t border-border-subtle">
                           <div>
-                            <p className="text-[10px] text-white/30 font-medium uppercase tracking-widest mb-1">Created by</p>
-                            <p className="text-[13px] font-bold text-white/90">Christlieb Dela</p>
+                            <p className="text-[10px] text-muted font-medium uppercase tracking-widest mb-1">Created by</p>
+                            <p className="text-[13px] font-bold text-foreground">Christlieb Dela</p>
                           </div>
                           <div className="flex gap-2">
                             <a 
                               href="https://github.com/christliebdela/lieb-player" 
                               target="_blank" 
-                              className="w-8 h-8 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/5 flex items-center justify-center text-white/50 hover:text-white transition-all cursor-pointer"
+                              className="w-8 h-8 rounded-lg bg-foreground/[0.04] hover:bg-foreground/[0.08] border border-border-subtle flex items-center justify-center text-muted hover:text-foreground transition-all cursor-pointer"
                               title="Source Code"
                             >
                               <ExternalLink size={14} />
