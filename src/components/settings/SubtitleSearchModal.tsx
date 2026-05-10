@@ -42,7 +42,7 @@ export const SubtitleSearchModal: React.FC<{ standalone?: boolean }> = ({ standa
         headers: {
           'Api-Key': osApiKey,
           'Content-Type': 'application/json',
-          'User-Agent': 'LiebPlayer'
+          'User-Agent': 'Lieb Player'
         }
       });
       

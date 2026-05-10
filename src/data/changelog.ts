@@ -10,6 +10,30 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: "0.1.5",
+    date: "2026-05-10",
+    changes: {
+      English: [
+        "Secured Subtitle API: Move credentials to secure local storage settings",
+        "UI Refinement: Fixed overflow and clipping in the Subtitle Search modal",
+        "Polished OSD: Slimmed down Action OSD for a more subtle media experience",
+        "Privacy: Added visibility toggle for API Key in Maintenance settings"
+      ],
+      French: [
+        "Sécurité API Sous-titres : Déplacement des identifiants vers les paramètres sécurisés",
+        "Affinage UI : Correction du débordement dans la recherche de sous-titres",
+        "OSD Épuré : Réduction de la taille de l'OSD pour une expérience plus discrète",
+        "Confidentialité : Ajout d'un bouton de visibilité pour la clé API"
+      ],
+      Spanish: [
+        "Seguridad de API de Subtítulos: Credenciales movidas a ajustes de almacenamiento seguro",
+        "Refinamiento de UI: Corregido el desbordamiento en el buscador de subtítulos",
+        "OSD Pulido: Reducción del tamaño del OSD para una experiencia más sutil",
+        "Privacidad: Añadido conmutador de visibilidad para la clave API"
+      ]
+    }
+  },
+  {
     version: "0.1.4",
     date: "2026-05-10",
     changes: {

@@ -68,8 +68,8 @@ const translations = {
     'source': 'Source',
     'report.issue': 'Report Issue',
     'about.subtitle': 'Redefining the Media Experience',
-    'about.story': 'Lieb was created out of a personal need for a more controllable and customizable media experience. It focuses on providing a clean, high-performance environment for those who want their player to stay out of the way while respecting the details of the media.',
-    'about.tech': 'Built on top of MPV and Rust, it offers studio-grade rendering and deep subtitle management. Lieb remains an open-source project dedicated to privacy, speed, and a distraction-free viewing experience.',
+    'about.story': 'Lieb Player was created out of a personal need for a more controllable and customizable media experience. It focuses on providing a clean, high-performance environment for those who want their player to stay out of the way while respecting the details of the media.',
+    'about.tech': 'Built on top of MPV and Rust, it offers studio-grade rendering and deep subtitle management. Lieb Player remains an open-source project dedicated to privacy, speed, and a distraction-free viewing experience.',
     
     // Shortcuts
     'sc.play_pause': 'Play / Pause',
@@ -200,8 +200,8 @@ const translations = {
     'source': 'Source',
     'report.issue': 'Signaler',
     'about.subtitle': 'Redéfinir l\'expérience média',
-    'about.story': 'Lieb a été créé à partir d\'un besoin personnel pour une expérience médiatique plus contrôlable et personnalisable. Il se concentre sur la fourniture d\'un environnement propre et performant pour ceux qui veulent que leur lecteur s\'efface tout en respectant les détails du média.',
-    'about.tech': 'Basé sur MPV et Rust, il offre un rendu de qualité studio et une gestion approfondie des sous-titres. Lieb reste un projet open-source dédié à la vie privée, à la rapidité et à une expérience de visionnage sans distraction.',
+    'about.story': 'Lieb Player a été créé à partir d\'un besoin personnel pour une expérience médiatique plus contrôlable et personnalisable. Il se concentre sur la fourniture d\'un environnement propre et performant pour ceux qui veulent que leur lecteur s\'efface tout en respectant les détails du média.',
+    'about.tech': 'Basé sur MPV et Rust, il offre un rendu de qualité studio et une gestion approfondie des sous-titres. Lieb Player reste un projet open-source dédié à la vie privée, à la rapidité et à une expérience de visionnage sans distraction.',
     
     'sc.play_pause': 'Lecture / Pause',
     'sc.fullscreen': 'Plein écran',
@@ -329,8 +329,8 @@ const translations = {
     'source': 'Fuente',
     'report.issue': 'Reportar',
     'about.subtitle': 'Redefiniendo la experiencia mediática',
-    'about.story': 'Lieb fue creado a partir de una necesidad personal de una experiencia multimedia más controlable y personalizable. Se centra en proporcionar un entorno limpio y de alto rendimiento para aquellos que quieren que su reproductor no estorbe mientras se respetan los detalles del medio.',
-    'about.tech': 'Basado en MPV y Rust, ofrece renderizado de calidad de estudio y gestión avanzada de subtítulos. Lieb sigue siendo un proyecto de código abierto dedicado a la privacidad, la velocidad y una experiencia de visualización sin distracciones.',
+    'about.story': 'Lieb Player fue creado a partir de una necesidad personal de una experiencia multimedia más controlable y personalizable. Se centra en proporcionar un entorno limpio y de alto rendimiento para aquellos que quieren que su reproductor no estorbe mientras se respetan los detalles del medio.',
+    'about.tech': 'Basado en MPV y Rust, ofrece renderizado de calidad de estudio y gestión avanzada de subtítulos. Lieb Player sigue siendo un proyecto de código abierto dedicado a la privacidad, la velocidad y una experiencia de visualización sin distracciones.',
     
     'sc.play_pause': 'Reproducir / Pausa',
     'sc.fullscreen': 'Pantalla completa',

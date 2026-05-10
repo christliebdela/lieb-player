@@ -856,7 +856,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                         <div className="flex items-start gap-8 mb-8">
                           <div className="w-16 h-16 flex-shrink-0"><img src="/lieb-player-icon.png" alt="Lieb Player" className="w-full h-full object-contain" /></div>
                           <div className="flex-1 pt-1">
-                            <div className="flex items-center gap-3 mb-1"><h2 className="text-xl font-bold text-foreground tracking-tighter uppercase">Lieb Media Player</h2></div>
+                            <div className="flex items-center gap-3 mb-1"><h2 className="text-xl font-bold text-foreground tracking-tighter uppercase">Lieb Player</h2></div>
                             <p className="text-[10px] text-muted font-bold uppercase tracking-[0.3em]">{t('about.subtitle' as any)}</p>
                           </div>
                         </div>

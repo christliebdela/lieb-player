@@ -503,12 +503,12 @@ function MainPlayer() {
         <div className="absolute inset-0 flex flex-col items-center justify-center z-0 pointer-events-none">
           <img 
             src="/lieb-player-icon.png" 
-            alt="Lieb" 
+            alt="Lieb Player" 
             className="w-[clamp(48px,6vw,80px)] h-auto object-contain opacity-15 grayscale"
           />
           <div className="mt-8 text-center">
             <h1 className="text-[11px] font-black text-foreground tracking-[0.5em] uppercase opacity-[0.08]">
-              Lieb
+              Lieb Player
             </h1>
             <p className="mt-3 text-[9px] text-muted font-bold uppercase tracking-[0.3em]">
               {t('drop.media')}
@@ -567,7 +567,7 @@ function MainPlayer() {
             <div className="flex items-center gap-2.5 px-3 py-1.5 hover:bg-white/5 rounded-lg transition-all pointer-events-none">
               <img src="/lieb-player-icon.png" alt="Logo" className="w-3.5 h-3.5 object-contain hue-rotate-[var(--accent-hue)]" />
               <span className="text-accent text-[10px] tracking-[0.15em] font-bold uppercase">
-                Lieb
+                Lieb Player
               </span>
             </div>
 
