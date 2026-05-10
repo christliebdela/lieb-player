@@ -1,7 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Play, Film, Library, Trash2, ListMusic, ChevronRight, FilePlus, FolderPlus, Globe } from 'lucide-react';
+import { X, Play, Film, Folder, FolderOpen, Trash2, ChevronRight, FilePlus, FolderPlus, Globe } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { listen, emit } from '@tauri-apps/api/event';
 import { showActionOSD } from '../../utils/osd';
@@ -20,6 +20,7 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
   
   const [urlInput, setUrlInput] = React.useState('');
   const [showUrlInput, setShowUrlInput] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState('');
 
   const handleAddFiles = async () => {
     try {
@@ -219,6 +220,12 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
     return parts.length > 1 ? parts[parts.length - 1].toUpperCase() : 'FILE';
   };
 
+  const filteredPlaylist = playlist.filter(track => {
+    const fileName = getFileName(track.path).toLowerCase();
+    const query = searchQuery.toLowerCase();
+    return fileName.includes(query) || track.path.toLowerCase().includes(query);
+  });
+
   if (!isLibraryOpen && !standalone) return null;
 
   const panel = (
@@ -231,7 +238,7 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
             <header className="h-12 px-6 flex items-center justify-between border-b border-border-subtle shrink-0" data-tauri-drag-region>
               <div className="flex items-center gap-3 pointer-events-none">
                 <div className="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center text-accent ring-1 ring-accent/20">
-                  <ListMusic size={14} />
+                  <Folder size={14} />
                 </div>
                 <div className="flex flex-col justify-center">
                   <h2 className="text-[13px] font-semibold text-foreground leading-tight tracking-tight">{t('library.title')}</h2>
@@ -242,6 +249,24 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
               </div>
 
               <div className="flex items-center gap-3">
+                <div className="relative group">
+                  <FolderOpen size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-accent transition-colors" />
+                  <input 
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder={t('library.search')}
+                    className="h-8 w-96 bg-foreground/[0.04] border border-border-subtle rounded-lg pl-9 pr-3 text-[11px] focus:outline-none focus:ring-1 focus:ring-accent/20 focus:border-accent/30 transition-all placeholder:text-muted/40"
+                  />
+                  {searchQuery && (
+                    <button 
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted hover:text-foreground p-1 cursor-pointer"
+                    >
+                      <X size={12} />
+                    </button>
+                  )}
+                </div>
                 <button 
                   onClick={handleClose}
                   className="w-7 h-7 flex items-center justify-center hover:bg-white/10 rounded-lg transition-colors text-muted hover:text-foreground cursor-pointer"
@@ -290,8 +315,8 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
               </AnimatePresence>
 
               <div className="flex flex-col gap-1.5">
-                {playlist.length > 0 ? (
-                  playlist.map((track, index) => (
+                {filteredPlaylist.length > 0 ? (
+                  filteredPlaylist.map((track, index) => (
                     <motion.div
                       key={index}
                       initial={{ opacity: 0, x: -10 }}
@@ -354,11 +379,13 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
                 ) : (
                   <div className="flex-1 flex flex-col items-center justify-center text-center py-24 px-12">
                     <div className="w-20 h-20 bg-foreground/[0.05] rounded-3xl flex items-center justify-center text-muted mb-6 border border-border-subtle">
-                      <Library size={40} strokeWidth={1} />
+                      <FolderOpen size={40} strokeWidth={1} />
                     </div>
-                    <h3 className="text-sm font-bold text-muted tracking-tight">{t('library.empty')}</h3>
+                    <h3 className="text-sm font-bold text-muted tracking-tight">
+                      {searchQuery ? 'No matches found' : t('library.empty')}
+                    </h3>
                     <p className="text-[11px] text-muted leading-relaxed mt-2 max-w-[240px]">
-                      {t('library.empty.desc')}
+                      {searchQuery ? `We couldn't find anything matching "${searchQuery}"` : t('library.empty.desc')}
                     </p>
                   </div>
                 )}

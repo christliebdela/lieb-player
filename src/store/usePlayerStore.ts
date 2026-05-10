@@ -106,6 +106,10 @@ interface PlayerState {
   setAutoUpdateInstall: (install: boolean) => void;
   setDownloadProgress: (progress: number | null) => void;
   setHasUpdate: (has: boolean) => void;
+  attachSubtitlesToTrack: (path: string, subPaths: string[]) => void;
+  customEqPresets: { name: string; bands: number[] }[];
+  addCustomEqPreset: (name: string, bands: number[]) => void;
+  removeCustomEqPreset: (name: string) => void;
 }
 
 export const usePlayerStore = create<PlayerState>()(
@@ -151,6 +155,7 @@ export const usePlayerStore = create<PlayerState>()(
       downloadProgress: null,
       hasUpdate: false,
       settingsActiveTab: 'general',
+      customEqPresets: [],
 
       setSettingsActiveTab: (tab) => set({ settingsActiveTab: tab }),
       customPresets: [],
@@ -192,9 +197,15 @@ export const usePlayerStore = create<PlayerState>()(
         const state = get();
         if (state.currentTrack) {
           emit('lieb-stop');
-          set({ currentTrack: null, duration: 0, currentTime: 0, isPlaying: false });
         }
-        set({ playlist: [] });
+        set({ 
+          playlist: [], 
+          currentTrack: null, 
+          duration: 0, 
+          currentTime: 0, 
+          isPlaying: false,
+          metadata: { title: '', description: '', episode: '', season: '' }
+        });
       },
       setSettingsOpen: (open) => set({ isSettingsOpen: open }),
       setLibraryOpen: (open) => set({ isLibraryOpen: open }),
@@ -253,9 +264,25 @@ export const usePlayerStore = create<PlayerState>()(
       setAutoUpdateInstall: (autoUpdateInstall) => set({ autoUpdateInstall }),
       setDownloadProgress: (downloadProgress) => set({ downloadProgress }),
       setHasUpdate: (hasUpdate) => set({ hasUpdate }),
+      attachSubtitlesToTrack: (path, subPaths) => set((state) => ({
+        playlist: state.playlist.map((item) => {
+          if (item.path === path) {
+            const existing = item.subs || [];
+            const combined = Array.from(new Set([...existing, ...subPaths]));
+            return { ...item, subs: combined };
+          }
+          return item;
+        })
+      })),
+      addCustomEqPreset: (name, bands) => set((state) => ({
+        customEqPresets: [...state.customEqPresets, { name, bands }].slice(-10)
+      })),
+      removeCustomEqPreset: (name) => set((state) => ({
+        customEqPresets: state.customEqPresets.filter(p => p.name !== name)
+      })),
     }),
     {
-      name: 'lieb-player-storage',
+      name: import.meta.env.DEV ? 'lieb-player-storage-dev' : 'lieb-player-storage',
       partialize: (state) => ({
         volume: state.volume,
         isMuted: state.isMuted,
@@ -279,6 +306,7 @@ export const usePlayerStore = create<PlayerState>()(
         seekInterval: state.seekInterval,
         metadata: state.metadata,
         streamingQuality: state.streamingQuality,
+        customEqPresets: state.customEqPresets,
       }),
     }
   )
@@ -287,8 +315,13 @@ export const usePlayerStore = create<PlayerState>()(
 
 // Cross-window synchronization for Tauri webviews
 if (typeof window !== 'undefined') {
+  const isDev = import.meta.env.DEV;
+  const storageKey = isDev ? 'lieb-player-storage-dev' : 'lieb-player-storage';
+  window.console.log(`>>> [Store] Initializing with key: ${storageKey} (isDev: ${isDev})`);
+
   window.addEventListener('storage', (e) => {
-    if (e.key === 'lieb-player-storage') {
+    if (e.key === storageKey) {
+      window.console.log(`>>> [Store] Storage Event Received for: ${e.key} | New Value detected`);
       usePlayerStore.persist.rehydrate();
     }
   });

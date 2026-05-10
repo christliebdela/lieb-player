@@ -57,12 +57,12 @@ const EQ_PRESETS = [
 const SegmentedControl = ({ options, value, onChange }: { 
   options: string[]; value: string; onChange: (v: string) => void 
 }) => (
-  <div className="flex bg-foreground/[0.04] rounded-lg p-0.5 border border-border-subtle">
+  <div className="flex bg-foreground/[0.04] rounded-lg p-0.5 border border-border-subtle h-8">
     {options.map((opt) => (
       <button
         key={opt}
         onClick={() => onChange(opt)}
-        className={`relative px-3 py-1.5 text-[10px] font-semibold rounded-md transition-all cursor-pointer ${
+        className={`relative px-3 flex items-center h-full text-[10px] font-semibold rounded-md transition-all cursor-pointer ${
           value === opt
             ? 'text-white'
             : 'text-muted hover:text-foreground'
@@ -233,7 +233,17 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
     } catch (err: any) {
       console.error('Update error:', err);
       setUpdateStatus('error');
-      setErrorMsg(err.toString());
+      
+      // Simplify the error message for the user
+      const msg = err.toString().toLowerCase();
+      if (msg.includes('fetch') || msg.includes('network') || msg.includes('connection') || msg.includes('request')) {
+        setErrorMsg('Connection Error: Unable to reach update server');
+      } else if (msg.includes('permission') || msg.includes('allow')) {
+        setErrorMsg('Permission Error: Updater access denied');
+      } else {
+        setErrorMsg('Update Error: Something went wrong');
+      }
+
       setTimeout(() => {
         setUpdateStatus('idle');
         setErrorMsg(null);
@@ -373,7 +383,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                     transition={{ duration: 0.2, ease: "easeOut" }}
                   >
                     {activeTab === 'general' && (
-                      <div className="space-y-8 pt-2">
+                      <div className="space-y-8 pt-6">
                         <div className="divide-y divide-border-subtle/30">
                           <SettingCard label={t('language' as any)} description={t('language.desc' as any)}>
                             <SegmentedControl 
@@ -410,7 +420,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                     )}
 
                     {activeTab === 'interface' && (
-                      <div className="space-y-8 pt-2">
+                      <div className="space-y-8 pt-6">
                         <div className="divide-y divide-border-subtle/30">
                           <div className="py-6">
                             <div className="flex items-center gap-2 mb-5">
@@ -601,11 +611,11 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                     )}
 
                     {activeTab === 'video' && (
-                      <div className="space-y-8 pt-2">
+                      <div className="space-y-8 pt-6">
                         <div className="divide-y divide-border-subtle/30">
                           <SettingCard label={t('rendering.backend' as any)} description={t('rendering.backend.desc' as any)}>
                             <div className="flex items-center gap-2">
-                              <span className="px-1.5 py-0.5 rounded-[4px] bg-amber-500/10 text-amber-500 text-[8px] font-bold uppercase tracking-wider border border-amber-500/20">{t('restart.required' as any)}</span>
+                              <span className="px-3 h-8 flex items-center rounded-lg bg-amber-500/10 text-amber-500 text-[9px] font-bold uppercase tracking-wider border border-amber-500/20 shrink-0">{t('restart.required' as any)}</span>
                               <SegmentedControl options={['GPU-Next', 'D3D11', 'Vulkan']} value={renderingBackend.toUpperCase()} onChange={(v) => setRenderingBackend(v.toLowerCase() as any)} />
                             </div>
                           </SettingCard>
@@ -642,32 +652,132 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                     )}
 
                     {activeTab === 'equalizer' && (
-                      <div className="space-y-8 pt-[18px]">
-                        <div className="flex flex-wrap gap-1.5">
-                          {EQ_PRESETS.map((preset) => (
-                            <button key={preset.name} onClick={() => applyPreset(preset.bands)} className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all cursor-pointer ${JSON.stringify(equalizer) === JSON.stringify(preset.bands) ? 'bg-accent text-white' : 'bg-foreground/[0.04] text-muted hover:bg-foreground/[0.08] hover:text-foreground'}`}>{preset.name}</button>
-                          ))}
-                          <button onClick={resetEqualizer} className="px-3 py-1.5 rounded-lg text-[11px] font-medium text-muted hover:text-foreground transition-colors cursor-pointer ml-auto">{t('reset' as any)}</button>
+                      <div className="flex flex-col h-[500px] space-y-4 pt-6">
+                        <div className="flex justify-between w-full">
+                          {EQ_PRESETS.map((preset) => {
+                            const isActive = JSON.stringify(equalizer) === JSON.stringify(preset.bands);
+                            return (
+                              <button 
+                                key={preset.name} 
+                                onClick={() => applyPreset(preset.bands)} 
+                                className={`px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-tight transition-all cursor-pointer border ${
+                                  isActive
+                                  ? 'bg-accent border-accent text-white shadow-lg shadow-accent/20' 
+                                  : 'bg-foreground/[0.03] border-border-subtle text-muted hover:bg-foreground/[0.06] hover:text-foreground'
+                                }`}
+                              >
+                                {preset.name}
+                              </button>
+                            );
+                          })}
                         </div>
-                        <div className="flex-1 flex items-stretch gap-1 min-h-[220px] p-4 rounded-xl bg-foreground/[0.01] border border-border-subtle">
+                        
+
+                        <div className="flex-1 flex items-stretch gap-1.5 p-6 rounded-2xl bg-foreground/[0.015] border border-border-subtle shadow-inner">
                           {BANDS.map((band, idx) => (
-                            <div key={band.freq} className="flex-1 flex flex-col items-center gap-2 group relative">
-                              <div className="text-[9px] font-mono font-semibold text-accent opacity-0 group-hover:opacity-100 transition-opacity h-4 flex items-center">{equalizer[idx] > 0 ? '+' : ''}{equalizer[idx]}</div>
-                              <div className="flex-1 w-full flex flex-col items-center relative">
-                                <div className="w-[6px] h-full bg-foreground/[0.04] rounded-full relative overflow-hidden">
-                                  <div className="absolute bottom-0 w-full bg-accent/60 rounded-full transition-all group-hover:bg-accent" style={{ height: `${((equalizer[idx] + 20) / 40) * 100}%` }} />
-                                </div>
-                                <input type="range" min="-20" max="20" step="0.5" value={equalizer[idx]} onChange={(e) => updateEqualizer(idx, parseFloat(e.target.value))} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" style={{ appearance: 'slider-vertical', writingMode: 'vertical-lr' } as any} />
+                            <div key={band.freq} className="flex-1 flex flex-col items-center gap-3 group relative">
+                              <div className="text-[9px] font-mono font-bold text-accent opacity-0 group-hover:opacity-100 transition-all transform translate-y-1 group-hover:translate-y-0 h-4 flex items-center">
+                                {equalizer[idx] > 0 ? '+' : ''}{equalizer[idx]}
                               </div>
-                              <span className="text-[9px] font-medium text-muted/60 group-hover:text-foreground transition-colors">{band.label}</span>
+                              <div className="flex-1 w-full flex flex-col items-center relative">
+                                <div className="w-2 h-full bg-foreground/[0.04] rounded-full relative overflow-hidden ring-1 ring-inset ring-black/5">
+                                  <div 
+                                    className="absolute bottom-0 w-full bg-gradient-to-t from-accent to-accent/40 rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(var(--accent-rgb),0.3)]" 
+                                    style={{ height: `${((equalizer[idx] + 20) / 40) * 100}%` }} 
+                                  />
+                                </div>
+                                <input 
+                                  type="range" 
+                                  min="-20" 
+                                  max="20" 
+                                  step="0.5" 
+                                  value={-equalizer[idx]} 
+                                  onChange={(e) => updateEqualizer(idx, -parseFloat(e.target.value))} 
+                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+                                  style={{ appearance: 'slider-vertical', writingMode: 'vertical-lr' } as any} 
+                                />
+                              </div>
+                              <div className="flex flex-col items-center gap-0.5">
+                                <span className="text-[10px] font-bold text-foreground/80">{band.label}</span>
+                                <span className="text-[8px] font-medium text-muted/40 uppercase tracking-tighter">Hz</span>
+                              </div>
                             </div>
                           ))}
+                        </div>
+
+                        {/* Custom Presets Section */}
+                        <div className="pt-2">
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted/60">Your Presets</span>
+                            <div className="flex items-center gap-2">
+                              <input 
+                                type="text" 
+                                id="eq-preset-name"
+                                placeholder="Preset Name"
+                                className="bg-foreground/[0.04] border border-border-subtle rounded-lg px-3 h-[32px] text-[12px] w-40 focus:outline-none focus:border-accent/30 transition-all placeholder:text-muted/40"
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    const input = e.target as HTMLInputElement;
+                                    if (input.value) {
+                                      usePlayerStore.getState().addCustomEqPreset(input.value, [...equalizer]);
+                                      input.value = '';
+                                    }
+                                  }
+                                }}
+                              />
+                              <button 
+                                onClick={() => {
+                                  const input = document.getElementById('eq-preset-name') as HTMLInputElement;
+                                  if (input.value) {
+                                    usePlayerStore.getState().addCustomEqPreset(input.value, [...equalizer]);
+                                    input.value = '';
+                                  }
+                                }}
+                                className="px-4 h-[32px] bg-accent/10 hover:bg-accent/20 text-accent text-[10px] font-bold uppercase rounded-lg border border-accent/20 transition-all shadow-sm active:scale-95 flex items-center justify-center"
+                              >
+                                Save
+                              </button>
+                            </div>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {usePlayerStore.getState().customEqPresets.map((preset) => (
+                              <div key={preset.name} className="group relative">
+                                <button 
+                                  onClick={() => applyPreset(preset.bands)}
+                                  className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase border transition-all cursor-pointer ${
+                                    JSON.stringify(equalizer) === JSON.stringify(preset.bands)
+                                    ? 'bg-accent/20 border-accent/30 text-accent'
+                                    : 'bg-foreground/[0.02] border-border-subtle text-muted hover:text-foreground'
+                                  }`}
+                                >
+                                  {preset.name}
+                                </button>
+                                <button 
+                                  onClick={() => usePlayerStore.getState().removeCustomEqPreset(preset.name)}
+                                  className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[8px]"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            ))}
+                            {usePlayerStore.getState().customEqPresets.length === 0 && (
+                              <p className="text-[10px] text-muted italic font-medium">No custom presets saved yet...</p>
+                            )}
+
+                            <button 
+                              onClick={resetEqualizer} 
+                              className="ml-auto flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-red-500/60 hover:text-red-500 hover:bg-red-500/5 rounded-lg transition-all cursor-pointer"
+                            >
+                              <RotateCcw size={10} />
+                              {t('reset' as any)}
+                            </button>
+                          </div>
                         </div>
                       </div>
                     )}
 
                     {activeTab === 'shortcuts' && (
-                      <div className="space-y-8 pt-3">
+                      <div className="space-y-8 pt-6">
                         <div className="divide-y divide-border-subtle/30">
                         {shortcuts.map((s, idx) => (
                           <div key={idx} className="flex items-center justify-between py-3">
@@ -701,7 +811,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                     )}
 
                     {activeTab === 'maintenance' && (
-                      <div className="space-y-8 pt-2">
+                      <div className="space-y-8 pt-6">
                         <div className="divide-y divide-white/[0.04]">
                           {/* Updates Section */}
                           <div className="py-4 space-y-4">

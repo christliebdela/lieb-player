@@ -1,10 +1,10 @@
 {
-  "version": "0.1.0",
-  "notes": "Initial Alpha Release of Lieb Player. \n- Unified Maintenance Tab\n- Automated Update System\n- Responsive UI Scaling",
-  "pub_date": "2026-05-09T21:36:00Z",
+  "version": "0.1.1",
+  "notes": "v0.1.1: UI/UX Refinements\n- Custom EQ Presets with Persistent Storage\n- Enhanced iconography (Folder-based Library)\n- Improved library search width\n- Robust manual window dragging\n- Fixed Fullscreen/Maximize conflicts",
+  "pub_date": "2026-05-10T00:54:00Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRNERDZjMrZFFiTWxmaE0rLzBqQW0rdW5raWVRQUdKRmZlSE12L1BpRmswdXMydWg0TjdVOUVkdkp6YWxON21zWWlFOHJLN1F5UDM5ZHN3Yy8xRzBhNmNXbDRCUEtrQXdJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4MzYyNDI2CWZpbGU6TGllYl8wLjEuMF94NjRfZW4tVVMubXNpCkJoRnRCbktJSWxYQ2FKYk5NTm85aVR3ZTBhM0hsc3lBRmZScGU0V1NhQktNOTF6MVJZL3A1WFlrcXpuQVlYT3ZIVHpaZ2g4SWo3d1NjMmdndDI1VkFRPT0K",
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRNERDZjMrZFFiTWhKVVFZck8xazh0eXVOTGRTWWVoK1V2c2dNMW40OVhGdVBDRDBYbjFrYWhPNG8wdDlGTG0yQXkxK0MraHErT0gzb2JiQW8yTTVHTUk1RlRsclV4RVFvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4MzcwNDAzCWZpbGU6TGllYl8wLjEuMF94NjRfZW4tVVMubXNpCjBlbnFGWXJQNVFEeng0dGM3ZDFsRGY3MTBoeEFhZWpNYkRmS3RNYm9ReStJczVWQlZpbzI2MjYxZTljK3YxY1JLVHNuYUxlOEgvV1VrMGpIdE1vTkJ3PT0K",
       "url": "https://github.com/christliebdela/lieb-player/releases/download/v0.1.0-alpha/Lieb_0.1.0_x64_en-US.msi"
     }
   }

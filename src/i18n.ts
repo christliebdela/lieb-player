@@ -93,6 +93,7 @@ const translations = {
     'library.clear': 'Clear',
     'library.add.file': 'Add File',
     'library.add.folder': 'Add Folder',
+    'library.search': 'Search library...',
 
     // Actions
     'captions.on': 'Captions On',
@@ -130,7 +131,7 @@ const translations = {
     'update.auto_install.desc': 'Relaunch and install when ready',
     'update.checking': 'Checking for updates...',
     'update.available': 'New version available!',
-    'update.uptodate': 'Lieb is up to date',
+    'update.uptodate': 'Lieb Player is up to date',
     'update.downloading': 'Downloading update...',
   },
   French: {
@@ -218,6 +219,7 @@ const translations = {
     'library.clear': 'Effacer',
     'library.add.file': 'Ajouter Fichier',
     'library.add.folder': 'Ajouter Dossier',
+    'library.search': 'Rechercher...',
 
     'captions.on': 'Sous-titres activés',
     'captions.off': 'Sous-titres désactivés',
@@ -254,7 +256,7 @@ const translations = {
     'update.auto_install.desc': 'Redémarrer et installer quand prêt',
     'update.checking': 'Vérification...',
     'update.available': 'Nouvelle version disponible !',
-    'update.uptodate': 'Lieb est à jour',
+    'update.uptodate': 'Lieb Player est à jour',
     'update.downloading': 'Téléchargement...',
   },
   Spanish: {
@@ -342,6 +344,7 @@ const translations = {
     'library.clear': 'Limpiar',
     'library.add.file': 'Añadir Archivo',
     'library.add.folder': 'Añadir Carpeta',
+    'library.search': 'Buscar...',
 
     'captions.on': 'Subtítulos activados',
     'captions.off': 'Subtítulos desactivados',
@@ -378,7 +381,7 @@ const translations = {
     'update.auto_install.desc': 'Reiniciar e instalar cuando esté listo',
     'update.checking': 'Buscando actualizaciones...',
     'update.available': '¡Nueva versión disponible!',
-    'update.uptodate': 'Lieb está actualizado',
+    'update.uptodate': 'Lieb Player está actualizado',
     'update.downloading': 'Descargando...',
   },
 };

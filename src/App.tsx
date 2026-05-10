@@ -162,15 +162,20 @@ function MainPlayer() {
   }, [accentColor]);
 
   useEffect(() => {
-    if (hasMedia) {
-      const timer = setTimeout(() => {
-        document.documentElement.style.setProperty('--body-bg', 'transparent');
-      }, 500);
-      return () => clearTimeout(timer);
+    // Force transparency as soon as we have a track or are playing to avoid "dark screen"
+    const shouldBeTransparent = hasMedia || !!currentTrack || isPlaying;
+    
+    if (shouldBeTransparent) {
+      // Set both the CSS variable and the direct style for maximum compatibility
+      document.documentElement.style.setProperty('--body-bg', 'transparent');
+      document.body.style.backgroundColor = 'transparent';
+      document.documentElement.style.backgroundColor = 'transparent';
     } else {
       document.documentElement.style.setProperty('--body-bg', 'var(--background)');
+      document.body.style.backgroundColor = '';
+      document.documentElement.style.backgroundColor = '';
     }
-  }, [hasMedia]);
+  }, [hasMedia, isPlaying, currentTrack]);
 
   const subsEnabled = usePlayerStore(s => s.subsEnabled);
   useEffect(() => {
@@ -221,10 +226,8 @@ function MainPlayer() {
         const update = await check();
         if (update) {
           setHasUpdate(true);
-          window.console.log('>>> [Update] New version available:', update.version);
 
           if (autoUpdateDownload) {
-            window.console.log('>>> [Update] Starting auto-download...');
             let downloaded = 0;
             let total = 0;
             await update.downloadAndInstall((event) => {
@@ -275,13 +278,17 @@ function MainPlayer() {
     const setupListeners = async () => {
       unlistenRefs.play = await listen('lieb-play', async (event: any) => {
         const { path, subs } = event.payload;
-        window.console.log('>>> [App] RECEIVED lieb-play:', path);
+        window.console.log('>>> [App] EVENT: lieb-play received for', path);
         if (path) {
           await command('loadfile', [path, 'replace']);
+          // Give MPV a moment to initialize the file before adding subs
           if (subs && subs.length > 0) {
-            for (const sub of subs) {
-              await command('sub-add', [sub, 'select']);
-            }
+            window.console.log('>>> [App] SUB-LOAD: Adding', subs.length, 'subtitles');
+            setTimeout(async () => {
+              for (const sub of subs) {
+                await command('sub-add', [sub, 'select']).catch(() => {});
+              }
+            }, 500);
           }
           await command('set', ['pause', 'no']);
         }
@@ -318,9 +325,11 @@ function MainPlayer() {
               const firstTrack = pairedPlaylist[0];
               await command('loadfile', [firstTrack.path, 'replace']);
               if (firstTrack.subs && firstTrack.subs.length > 0) {
-                for (const sub of firstTrack.subs) {
-                  await command('sub-add', [sub, 'select']);
-                }
+                setTimeout(async () => {
+                  for (const sub of firstTrack.subs) {
+                    await command('sub-add', [sub, 'select']).catch(() => {});
+                  }
+                }, 500);
               }
               await command('set', ['pause', 'no']);
               currentState.setCurrentTrack(firstTrack.path);
@@ -330,6 +339,14 @@ function MainPlayer() {
                 await command('loadfile', [pairedPlaylist[i].path, 'append']);
               }
               setShowControls(true);
+            } else if (subs.length > 0 && currentState.currentTrack) {
+              // Handle standalone subtitle drops onto existing media
+              window.console.log('>>> [App] Dropped subtitles onto playing media');
+              for (const sub of subs) {
+                await command('sub-add', [sub, 'select']).catch(() => {});
+              }
+              // Sync to store so library shows the CC badge
+              currentState.attachSubtitlesToTrack(currentState.currentTrack, subs);
             }
           } catch (err) {
             window.console.error('>>> [App] Drag-drop error:', err);
@@ -388,15 +405,14 @@ function MainPlayer() {
   return (
     <div 
       className={`relative w-full h-screen overflow-hidden font-inter select-none ${hasMedia ? 'bg-transparent' : 'bg-background'}`}
-      style={{ cursor: !showControls && isPlaying ? 'none' : 'auto' }}
+      style={{ cursor: !showControls && isPlaying ? 'none' : 'grab' }}
       onMouseMove={handleMouseMove}
-      onDoubleClick={handleFullscreenToggle}
     >
       <VideoCanvas onToggleFullscreen={handleFullscreenToggle} />
       <ActionOSD />
 
       <AnimatePresence>
-        {((!hasMedia && isPlaying) || (isBuffering && isPlaying)) && (
+        {((!hasMedia && isPlaying && currentTrack?.startsWith('http')) || (isBuffering && isPlaying)) && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -480,7 +496,6 @@ function MainPlayer() {
           className={`p-1 flex justify-between items-center transition-all duration-500 ${
             showControls ? 'pointer-events-auto' : 'pointer-events-none'
           }`}
-          data-tauri-drag-region={!isFullscreen ? "true" : undefined}
         >
           <div className="flex items-center gap-1.5">
             <div className="flex items-center gap-2.5 px-3 py-1.5 opacity-40 hover:opacity-100 transition-opacity pointer-events-none">
@@ -516,7 +531,7 @@ function MainPlayer() {
           <WindowControls />
         </header>
 
-        <div className="flex-1 w-full" data-tauri-drag-region={!isFullscreen ? "true" : undefined} />
+        <div className="flex-1 w-full" />
 
         <div className="px-4 pb-12 flex items-end justify-between pointer-events-none relative flex-1">
           <div className="max-w-md pb-4">
@@ -551,7 +566,9 @@ function MainPlayer() {
       <ResizeGrip position="bl" show={showControls && !isBlocking} />
       <ResizeGrip position="br" show={showControls && !isBlocking} />
       {isBlocking && (
-        <div className="fixed inset-0 z-[100] bg-transparent pointer-events-auto" />
+        <div 
+          className={`absolute inset-0 bg-transparent pointer-events-auto ${isFullscreen ? 'cursor-none' : 'cursor-grab active:cursor-grabbing'}`}
+        />
       )}
     </div>
   );

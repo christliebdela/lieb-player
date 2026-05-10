@@ -25,10 +25,7 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
     if (initialized.current) return;
     initialized.current = true;
 
-    // Crucial: Set background to transparent for MPV to show through
-    document.body.style.setProperty('background-color', 'transparent', 'important');
-    document.documentElement.style.setProperty('background-color', 'transparent', 'important');
-    document.documentElement.style.setProperty('--body-bg', 'transparent', 'important');
+    // Background transparency is managed by App.tsx based on media state
 
 
 
@@ -203,19 +200,16 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
               case 'path': 
                 if (data) {
                   const newPath = String(data);
+                  window.console.log('>>> [VideoCanvas] MPV path changed to:', newPath);
                   const s = usePlayerStore.getState();
                   s.setCurrentTrack(newPath);
-                  const t = s.playlist.find(it => it.path === newPath);
-                  if (t && t.subs && t.subs.length > 0) {
-                    for (const sub of t.subs) {
-                      await command('sub-add', [sub, 'select']);
-                    }
-                  }
+                  // Subs are handled by App.tsx lieb-play or drag-drop listeners
                 }
                 break;
               case 'track-list': {
                 const tracks = data as any[];
                 if (Array.isArray(tracks)) {
+                  window.console.log('>>> [VideoCanvas] MPV track-list updated:', tracks.length, 'tracks total');
                   const hasSubs = tracks.some(t => t.type === 'sub');
                   usePlayerStore.getState().setHasSubtitles(hasSubs);
                 }
@@ -224,6 +218,7 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
               case 'video-params/w':
               case 'dwidth':
                 if (typeof data === 'number' && data > 0) {
+                  window.console.log('>>> [VideoCanvas] MPV width detected:', data);
                   pendingW = data;
                   if (pendingH > 0) resizeWindowToVideo(pendingW, pendingH);
                 }
@@ -231,12 +226,14 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
               case 'video-params/h':
               case 'dheight':
                 if (typeof data === 'number' && data > 0) {
+                  window.console.log('>>> [VideoCanvas] MPV height detected:', data);
                   pendingH = data;
                   if (pendingW > 0) resizeWindowToVideo(pendingW, pendingH);
                 }
                 break;
               case 'eof-reached':
                 if (data === true) {
+                  window.console.log('>>> [VideoCanvas] MPV reached EOF');
                   const s = usePlayerStore.getState();
                   if (s.loopMode === 'off') {
                     command('seek', [0, 'absolute']);
@@ -245,6 +242,7 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
                 }
                 break;
               case 'core-idle':
+                window.console.log('>>> [VideoCanvas] MPV core-idle:', data);
                 usePlayerStore.getState().setBuffering(data as boolean);
                 break;
             }
@@ -302,17 +300,20 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
 
   return (
     <div 
-      className="absolute inset-0 bg-transparent pointer-events-auto"
+      className={`absolute inset-0 bg-transparent pointer-events-auto ${isFullscreen ? 'cursor-none' : 'cursor-grab active:cursor-grabbing'}`}
       onContextMenu={handleRightClick}
+      onMouseDown={(e) => {
+        if (e.button === 0 && e.detail === 1 && !isFullscreen) {
+          getCurrentWindow().startDragging();
+        }
+      }}
       onDoubleClick={(e) => {
         e.stopPropagation();
         onToggleFullscreen?.();
       }}
-      data-tauri-drag-region={!isFullscreen ? "true" : undefined}
     >
       <video-player 
         class="w-full h-full bg-transparent" 
-        data-tauri-drag-region={!isFullscreen ? "true" : undefined}
       />
     </div>
   );
