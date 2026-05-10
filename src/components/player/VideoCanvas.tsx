@@ -11,7 +11,11 @@ const OBSERVED_PROPERTIES = [
   'track-list', 'core-idle', 'buffering-percentage'
 ] as const;
 
-export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onToggleFullscreen }) => {
+export const VideoCanvas: React.FC<{ 
+  onToggleFullscreen?: () => void;
+  onMouseMove?: () => void;
+  showControls: boolean;
+}> = ({ onToggleFullscreen, onMouseMove, showControls }) => {
   const { 
     setDuration, setCurrentTime, setPlaying, 
     setMetadata, setVolume, setMuted, 
@@ -300,8 +304,11 @@ export const VideoCanvas: React.FC<{ onToggleFullscreen?: () => void }> = ({ onT
 
   return (
     <div 
-      className={`absolute inset-0 bg-transparent pointer-events-auto ${isFullscreen ? 'cursor-none' : 'cursor-grab active:cursor-grabbing'}`}
+      className={`absolute inset-0 bg-transparent pointer-events-auto ${
+        !showControls ? 'cursor-none' : (isFullscreen ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing')
+      }`}
       onContextMenu={handleRightClick}
+      onMouseMove={onMouseMove}
       onMouseDown={(e) => {
         if (e.button === 0 && e.detail === 1 && !isFullscreen) {
           getCurrentWindow().startDragging();

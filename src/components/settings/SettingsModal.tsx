@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Sliders, Monitor, Keyboard, Info, ExternalLink, Activity, Palette, Moon, Wrench, Trash2, RotateCcw, Globe } from 'lucide-react';
+import { X, Sliders, Monitor, Keyboard, Info, ExternalLink, Activity, Palette, Moon, Wrench, Trash2, RotateCcw, Globe, History } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { useTranslation } from '../../i18n';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,10 +10,11 @@ import { check, Update } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
 import { getVersion } from '@tauri-apps/api/app';
 import { showActionOSD } from '../../utils/osd';
+import { changelog } from '../../data/changelog';
 
 const isMainWindow = () => getCurrentWindow().label === 'main';
 
-type Tab = 'general' | 'interface' | 'video' | 'audio' | 'equalizer' | 'shortcuts' | 'about' | 'maintenance';
+type Tab = 'general' | 'interface' | 'video' | 'audio' | 'equalizer' | 'shortcuts' | 'about' | 'maintenance' | 'changelog';
 
 const BANDS = [
   { freq: '31', label: '31' },
@@ -323,6 +324,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
     { id: 'equalizer', label: t('equalizer' as any), icon: Activity },
     { id: 'shortcuts', label: t('shortcuts' as any), icon: Keyboard },
     { id: 'maintenance', label: t('maintenance' as any), icon: Wrench },
+    { id: 'changelog', label: t('changelog' as any), icon: History },
     { id: 'about', label: t('about' as any), icon: Info },
   ];
 
@@ -406,8 +408,8 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
               </div>
 
               <div className="mt-auto pt-3 border-t border-border-subtle">
-                <div className="flex items-center gap-2 px-3 py-1.5 text-[10px] text-muted font-mono">
-                  v{appVersion}
+                <div className="flex items-center gap-2 px-3 py-1.5 text-[10px] text-muted/60 font-medium">
+                  Version: v{appVersion}
                 </div>
               </div>
             </div>
@@ -841,7 +843,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                         <div className="flex items-start gap-8 mb-8">
                           <div className="w-16 h-16 flex-shrink-0"><img src="/lieb-player-icon.png" alt="Lieb Player" className="w-full h-full object-contain" /></div>
                           <div className="flex-1 pt-1">
-                            <div className="flex items-center gap-3 mb-1"><h2 className="text-xl font-black text-foreground tracking-tighter uppercase">Lieb</h2><span className="px-1.5 py-0.5 rounded-[2px] bg-foreground text-background text-[8px] font-black tracking-[0.2em] uppercase">Alpha 0.1</span></div>
+                            <div className="flex items-center gap-3 mb-1"><h2 className="text-xl font-bold text-foreground tracking-tighter uppercase">Lieb Media Player</h2></div>
                             <p className="text-[10px] text-muted font-bold uppercase tracking-[0.3em]">{t('about.subtitle' as any)}</p>
                           </div>
                         </div>
@@ -985,6 +987,53 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                               <div className="space-y-0.5"><h4 className="text-[13px] font-medium text-foreground/90">{t('reset.app' as any)}</h4><p className="text-[11px] text-muted leading-relaxed font-medium">{t('reset.app.desc' as any)}</p></div>
                             </div>
                             <button onClick={() => setShowConfirm(true)} className="px-4 py-2 rounded-lg bg-red-500 text-white text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer shadow-lg shadow-red-500/10 hover:brightness-110">{t('reset.app' as any)}</button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeTab === 'changelog' && (
+                      <div className="space-y-8 pt-6">
+                        <div className="relative">
+                          {/* Vertical Line */}
+                          <div className="absolute left-[11px] top-2 bottom-4 w-0.5 bg-foreground/5 rounded-full" />
+                          
+                          <div className="space-y-10">
+                            {changelog.map((entry, idx) => (
+                              <div key={idx} className="relative pl-10 group">
+                                {/* Dot */}
+                                <div className={`absolute left-0 top-1.5 w-6 h-6 rounded-full border-2 bg-background flex items-center justify-center z-10 transition-colors ${
+                                  idx === 0 ? 'border-accent shadow-[0_0_10px_rgba(var(--accent-rgb),0.3)]' : 'border-border-subtle group-hover:border-accent/40'
+                                }`}>
+                                  <div className={`w-2 h-2 rounded-full ${idx === 0 ? 'bg-accent' : 'bg-muted/40 group-hover:bg-accent/40'}`} />
+                                </div>
+
+                                <div className="space-y-3">
+                                  <div className="flex items-center gap-3">
+                                    <h3 className={`text-[15px] font-black tracking-tight ${idx === 0 ? 'text-foreground' : 'text-foreground/70'}`}>
+                                      v{entry.version}
+                                    </h3>
+                                    <span className="text-[10px] text-muted font-bold tracking-widest uppercase py-0.5 px-2 bg-foreground/[0.03] rounded-md border border-border-subtle/30">
+                                      {entry.date}
+                                    </span>
+                                    {idx === 0 && (
+                                      <span className="text-[9px] font-black text-accent uppercase tracking-widest bg-accent/10 px-2 py-0.5 rounded-md border border-accent/20">
+                                        {t('latest' as any)}
+                                      </span>
+                                    )}
+                                  </div>
+                                  
+                                  <ul className="space-y-2.5">
+                                    {(entry.changes[appLanguage as keyof typeof entry.changes] || entry.changes.English).map((change, cIdx) => (
+                                      <li key={cIdx} className="flex items-start gap-3 text-[12px] text-muted leading-relaxed font-medium">
+                                        <div className="w-1 h-1 rounded-full bg-accent/40 mt-2 shrink-0" />
+                                        {change}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              </div>
+                            ))}
                           </div>
                         </div>
                       </div>

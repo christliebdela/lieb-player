@@ -1,7 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Play, Film, Folder, FolderOpen, Trash2, ChevronRight, FilePlus, FolderPlus, Globe } from 'lucide-react';
+import { X, Play, Film, Folder, FolderOpen, Trash2, ChevronRight, FilePlus, FolderPlus, Globe, ArrowDownAZ, Clock, Music, FileStack, ArrowDownWideNarrow, ArrowUpWideNarrow, Youtube } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { listen, emit } from '@tauri-apps/api/event';
 import { showActionOSD } from '../../utils/osd';
@@ -14,13 +14,16 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
   const { 
     isLibraryOpen, setLibraryOpen, 
     playlist, addToPlaylist, removeFromPlaylist, clearPlaylist,
-    currentTrack, setCurrentTrack, setPlaying 
+    currentTrack, setCurrentTrack, setPlaying,
+    isBlocking, setBlocking
   } = usePlayerStore();
   const { t } = useTranslation();
   
   const [urlInput, setUrlInput] = React.useState('');
   const [showUrlInput, setShowUrlInput] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
+  const [sortBy, setSortBy] = React.useState<'name' | 'date' | 'type'>('date');
+  const [sortOrder, setSortOrder] = React.useState<'asc' | 'desc'>('desc');
 
   const handleAddFiles = async () => {
     try {
@@ -125,20 +128,36 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
 
   const handlePlayUrl = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    window.console.log('>>> [UI] handlePlayUrl:', urlInput);
     if (!urlInput.trim()) return;
+    
+    const url = urlInput.trim();
+    setBlocking(true);
+
     try {
-      const url = urlInput.trim();
-      await emit('lieb-play', { path: url, subs: [] });
-      addToPlaylist(url, []);
-      setCurrentTrack(url);
-      setPlaying(true);
-      showActionOSD('Streaming URL', 'globe');
+      if (url.includes('list=') || url.includes('/playlist?')) {
+        showActionOSD('Fetching Playlist...', 'globe');
+        const { invoke } = await import('@tauri-apps/api/core');
+        const items = await invoke('fetch_playlist_info', { url }) as any[];
+        
+        for (const item of items) {
+          const videoUrl = item.url || `https://www.youtube.com/watch?v=${item.id}`;
+          const title = item.title || 'YouTube Video';
+          addToPlaylist(videoUrl, [], title);
+        }
+        showActionOSD(`Loaded ${items.length} items`, 'film');
+      } else {
+        // Single video
+        addToPlaylist(url, []);
+        showActionOSD('URL Loaded', 'globe');
+      }
+      
       setUrlInput('');
       setShowUrlInput(false);
-      handleClose();
     } catch (err) {
       window.console.error('>>> [UI] Failed to stream URL:', err);
+      showActionOSD('Fetch Failed', 'x');
+    } finally {
+      setBlocking(false);
     }
   };
 
@@ -220,7 +239,27 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
     return parts.length > 1 ? parts[parts.length - 1].toUpperCase() : 'FILE';
   };
 
-  const filteredPlaylist = playlist.filter(track => {
+  const sortedPlaylist = React.useMemo(() => {
+    return [...playlist].sort((a, b) => {
+      let comparison = 0;
+      if (sortBy === 'name') {
+        const nameA = getFileName(a.path).toLowerCase();
+        const nameB = getFileName(b.path).toLowerCase();
+        comparison = nameA.localeCompare(nameB);
+      } else if (sortBy === 'type') {
+        const typeA = getFileExtension(a.path).toLowerCase();
+        const typeB = getFileExtension(b.path).toLowerCase();
+        comparison = typeA.localeCompare(typeB);
+      } else {
+        const dateA = a.addedAt || 0;
+        const dateB = b.addedAt || 0;
+        comparison = dateA - dateB;
+      }
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+  }, [playlist, sortBy, sortOrder]);
+
+  const filteredPlaylist = sortedPlaylist.filter(track => {
     const fileName = getFileName(track.path).toLowerCase();
     const query = searchQuery.toLowerCase();
     return fileName.includes(query) || track.path.toLowerCase().includes(query);
@@ -229,11 +268,48 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
   if (!isLibraryOpen && !standalone) return null;
 
   const panel = (
-    <div className={`bg-background overflow-hidden flex flex-col ${
+    <div className={`bg-background overflow-hidden flex flex-col relative ${
       standalone
         ? 'w-full h-screen'
         : 'w-full max-w-[780px] h-[520px] rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:shadow-[0_0_40px_rgba(0,0,0,0.3)] border border-border-subtle'
     }`}>
+            {/* Loading Overlay */}
+            <AnimatePresence>
+              {isBlocking && (
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute inset-0 z-[100] bg-background flex items-center justify-center pointer-events-auto"
+                  >
+                  <div className="flex flex-col items-center gap-6">
+                    <div className="relative flex items-center justify-center">
+                      {/* Soft Atmospheric Glow */}
+                      <motion.div
+                        animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                        className="absolute w-24 h-24 rounded-full bg-accent/20 blur-2xl"
+                      />
+                      {/* Pulsing Branded Logo */}
+                      <motion.img 
+                        src="/lieb-player-icon.png" 
+                        alt="Loading..."
+                        animate={{ scale: [0.9, 1.1, 0.9] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                        className="w-16 h-16 relative z-10 drop-shadow-[0_0_15px_rgba(var(--accent-rgb),0.5)]"
+                      />
+                    </div>
+                    <motion.p 
+                      animate={{ opacity: [0.4, 1, 0.4] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      className="text-[10px] font-black uppercase tracking-[0.4em] text-accent text-center"
+                    >
+                      Loading Your Media
+                    </motion.p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
             {/* Header */}
             <header className="h-12 px-6 flex items-center justify-between border-b border-border-subtle shrink-0" data-tauri-drag-region>
               <div className="flex items-center gap-3 pointer-events-none">
@@ -267,9 +343,56 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
                     </button>
                   )}
                 </div>
+
+                <div className="flex items-center gap-1 bg-foreground/[0.04] border border-border-subtle rounded-lg p-0.5">
+                  <button 
+                    onClick={() => {
+                      if (sortBy === 'name') setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                      else { setSortBy('name'); setSortOrder('asc'); }
+                    }}
+                    className={`p-1.5 rounded-md transition-all cursor-pointer ${sortBy === 'name' ? 'bg-accent/10 text-accent' : 'text-muted hover:text-foreground'}`}
+                    title={sortBy === 'name' ? (sortOrder === 'asc' ? 'Name (A-Z)' : 'Name (Z-A)') : 'Sort by Name'}
+                  >
+                    <ArrowDownAZ size={14} className={sortBy === 'name' && sortOrder === 'desc' ? 'rotate-180 transition-transform' : 'transition-transform'} />
+                  </button>
+                  <button 
+                    onClick={() => {
+                      if (sortBy === 'date') setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                      else { setSortBy('date'); setSortOrder('desc'); }
+                    }}
+                    className={`p-1.5 rounded-md transition-all cursor-pointer ${sortBy === 'date' ? 'bg-accent/10 text-accent' : 'text-muted hover:text-foreground'}`}
+                    title={sortBy === 'date' ? (sortOrder === 'asc' ? 'Oldest first' : 'Newest first') : 'Sort by Date'}
+                  >
+                    <Clock size={14} className={sortBy === 'date' && sortOrder === 'asc' ? 'rotate-180 transition-transform' : 'transition-transform'} />
+                  </button>
+                  <button 
+                    onClick={() => {
+                      if (sortBy === 'type') setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                      else { setSortBy('type'); setSortOrder('asc'); }
+                    }}
+                    className={`p-1.5 rounded-md transition-all cursor-pointer ${sortBy === 'type' ? 'bg-accent/10 text-accent' : 'text-muted hover:text-foreground'}`}
+                    title={sortBy === 'type' ? (sortOrder === 'asc' ? 'Type (A-Z)' : 'Type (Z-A)') : 'Sort by Type'}
+                  >
+                    <FileStack size={14} className={sortBy === 'type' && sortOrder === 'desc' ? 'rotate-180 transition-transform' : 'transition-transform'} />
+                  </button>
+                </div>
+
+                <div className="flex items-center bg-foreground/[0.04] border border-border-subtle rounded-lg p-0.5 ml-[-4px]">
+                  <button 
+                    onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                    className="p-1.5 rounded-md transition-all cursor-pointer text-muted hover:text-accent hover:bg-accent/5"
+                    title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
+                  >
+                    {sortOrder === 'asc' ? (
+                      <ArrowDownWideNarrow size={14} />
+                    ) : (
+                      <ArrowUpWideNarrow size={14} />
+                    )}
+                  </button>
+                </div>
                 <button 
                   onClick={handleClose}
-                  className="w-7 h-7 flex items-center justify-center hover:bg-white/10 rounded-lg transition-colors text-muted hover:text-foreground cursor-pointer"
+                  className="h-8 w-8 flex items-center justify-center bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all cursor-pointer"
                 >
                   <X size={16} />
                 </button>
@@ -277,7 +400,7 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
             </header>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 flex flex-col">
               {/* Top Search & Stream Bar (Toggleable) */}
               <AnimatePresence>
                 {showUrlInput && (
@@ -302,7 +425,7 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
                       <div className="flex items-center gap-2">
                         {urlInput.trim() && (
                           <button type="submit" className="text-accent hover:text-accent-hover font-bold text-[10px] uppercase tracking-widest px-2 cursor-pointer">
-                            Play
+                            Load
                           </button>
                         )}
                         <button type="button" onClick={() => setShowUrlInput(false)} className="text-muted hover:text-foreground p-1">
@@ -314,7 +437,7 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
                 )}
               </AnimatePresence>
 
-              <div className="flex flex-col gap-1.5">
+              <div className="flex-1 min-h-0 flex flex-col gap-1.5">
                 {filteredPlaylist.length > 0 ? (
                   filteredPlaylist.map((track, index) => (
                     <motion.div
@@ -333,9 +456,17 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
                         className="flex-1 flex items-center gap-4 min-w-0 cursor-pointer text-left"
                       >
                         <div className="relative w-11 h-11 shrink-0 rounded-lg bg-foreground/[0.08] border border-border-subtle flex items-center justify-center text-muted group-hover:text-accent group-hover:border-accent/20 transition-all">
-                          <Film size={20} />
-                          <div className="absolute -bottom-1.5 -right-1.5 px-1.5 py-0.5 bg-background rounded-md border border-border-subtle text-[7px] font-black tracking-wider text-muted">
-                            {getFileExtension(track.path)}
+                          {['MP3', 'WAV', 'FLAC', 'M4A', 'OGG', 'OPUS', 'AAC', 'WMA'].includes(getFileExtension(track.path)) ? (
+                            <Music size={20} />
+                          ) : (
+                            <Film size={20} />
+                          )}
+                          <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-background rounded-lg border border-border-subtle flex items-center justify-center shadow-xl">
+                            {track.path.includes('youtube.com') || track.path.includes('youtu.be') ? (
+                              <Youtube size={16} className="text-red-500" />
+                            ) : (
+                              <span className="text-[7px] font-black text-muted uppercase">{getFileExtension(track.path)}</span>
+                            )}
                           </div>
                         </div>
                         
@@ -344,11 +475,6 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
                             <h4 className="text-[13px] text-foreground/80 font-medium truncate group-hover:text-accent transition-colors">
                               {getFileName(track.path)}
                             </h4>
-                            {track.subs.length > 0 && (
-                              <span className="px-1.5 py-0.5 rounded-md bg-accent/10 border border-accent/20 text-accent text-[8px] font-bold">
-                                {track.subs.length} SUBS
-                              </span>
-                            )}
                           </div>
                           <p className="text-muted text-[10px] mt-0.5 truncate font-mono">
                             {track.path}
@@ -377,10 +503,13 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
                     </motion.div>
                   ))
                 ) : (
-                  <div className="flex-1 flex flex-col items-center justify-center text-center py-24 px-12">
-                    <div className="w-20 h-20 bg-foreground/[0.05] rounded-3xl flex items-center justify-center text-muted mb-6 border border-border-subtle">
-                      <FolderOpen size={40} strokeWidth={1} />
-                    </div>
+                  <div className="flex-1 flex flex-col items-center justify-center text-center px-12">
+                    <button 
+                      onClick={handleAddFolder}
+                      className="w-20 h-20 bg-foreground/[0.05] hover:bg-accent/10 rounded-3xl flex items-center justify-center text-muted hover:text-accent mb-6 border border-border-subtle hover:border-accent/30 transition-all duration-300 group cursor-pointer"
+                    >
+                      <FolderOpen size={40} strokeWidth={1} className="group-hover:scale-110 transition-transform duration-300" />
+                    </button>
                     <h3 className="text-sm font-bold text-muted tracking-tight">
                       {searchQuery ? 'No matches found' : t('library.empty')}
                     </h3>

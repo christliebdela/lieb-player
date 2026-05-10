@@ -38,6 +38,39 @@ async fn generate_thumbnail(path: String, time: f64) -> Result<String, String> {
     }
 }
 
+#[tauri::command]
+async fn fetch_playlist_info(url: String) -> Result<Vec<serde_json::Value>, String> {
+    use std::process::Command;
+    use std::os::windows::process::CommandExt;
+
+    let output = Command::new("yt-dlp")
+        .args(&[
+            "--flat-playlist",
+            "-J",
+            "--quiet",
+            "--no-warnings",
+            &url,
+        ])
+        .creation_flags(0x08000000) // CREATE_NO_WINDOW
+        .output();
+
+    match output {
+        Ok(out) if out.status.success() => {
+            let json: serde_json::Value = serde_json::from_slice(&out.stdout)
+                .map_err(|e| e.to_string())?;
+            
+            if let Some(entries) = json.get("entries").and_then(|e| e.as_array()) {
+                Ok(entries.clone())
+            } else {
+                // Single video fallback
+                Ok(vec![json])
+            }
+        },
+        Ok(out) => Err(String::from_utf8_lossy(&out.stderr).to_string()),
+        Err(e) => Err(e.to_string()),
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     use tauri::Emitter;
@@ -75,7 +108,7 @@ pub fn run() {
             }
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![generate_thumbnail])
+        .invoke_handler(tauri::generate_handler![generate_thumbnail, fetch_playlist_info])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -443,7 +443,7 @@ export const MainControls: React.FC = () => {
               setSubsEnabled(next);
               showActionOSD(next ? t('captions.on') : t('captions.off'), 'subtitles');
             }}
-            className={`transition-all cursor-pointer group ${subsEnabled ? 'text-accent' : hasMedia ? 'text-muted hover:text-accent' : 'text-muted/40 cursor-default'}`}
+            className={`transition-all cursor-pointer group ${hasMedia ? (subsEnabled ? 'text-accent' : 'text-muted hover:text-accent') : 'text-muted/40 cursor-default'}`}
           >
             <Subtitles size={18} className="group-hover:scale-110 transition-transform" />
           </button>
@@ -566,7 +566,7 @@ export const MainControls: React.FC = () => {
       className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none"
       onWheel={handleWheel}
     >
-      <div className={`w-full relative bg-surface/30 backdrop-blur-3xl border-t border-border-subtle shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all duration-500 ${
+      <div className={`w-full relative bg-surface/70 backdrop-blur-3xl border-t border-border-subtle transition-all duration-500 ${
         showControls ? 'pointer-events-auto' : 'pointer-events-none'
       }`}>
         <div 

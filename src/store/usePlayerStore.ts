@@ -9,6 +9,13 @@ interface Metadata {
   season: string;
 }
 
+interface PlaylistItem {
+  path: string; 
+  subs: string[]; 
+  title?: string; 
+  addedAt: number;
+}
+
 interface PlayerState {
   isPlaying: boolean;
   volume: number;
@@ -16,7 +23,7 @@ interface PlayerState {
   currentTime: number;
   isMuted: boolean;
   currentTrack: string | null;
-  playlist: { path: string; subs: string[]; title?: string }[];
+  playlist: PlaylistItem[];
   isSettingsOpen: boolean;
   isLibraryOpen: boolean;
   isSubSearchOpen: boolean;
@@ -63,8 +70,8 @@ interface PlayerState {
   setCurrentTime: (time: number) => void;
   setMuted: (muted: boolean) => void;
   setCurrentTrack: (track: string | null) => void;
-  setPlaylist: (playlist: { path: string; subs: string[] }[]) => void;
-  addToPlaylist: (path: string, subs?: string[]) => void;
+  setPlaylist: (playlist: PlaylistItem[]) => void;
+  addToPlaylist: (path: string, subs?: string[], title?: string) => void;
   removeFromPlaylist: (track: string) => void;
   clearPlaylist: () => void;
   setSettingsOpen: (open: boolean) => void;
@@ -177,10 +184,10 @@ export const usePlayerStore = create<PlayerState>()(
       setMuted: (muted) => set({ isMuted: muted }),
       setCurrentTrack: (track) => set({ currentTrack: track }),
       setPlaylist: (playlist) => set({ playlist }),
-      addToPlaylist: (path, subs = []) => set((state) => {
+      addToPlaylist: (path, subs = [], title) => set((state) => {
         // Prevent duplicates
         if (state.playlist.find(p => p.path === path)) return state;
-        return { playlist: [...state.playlist, { path, subs }] };
+        return { playlist: [...state.playlist, { path, subs, title, addedAt: Date.now() }] };
       }),
       removeFromPlaylist: (path) => {
         const state = get();
@@ -188,7 +195,7 @@ export const usePlayerStore = create<PlayerState>()(
         
         if (state.currentTrack === path) {
           emit('lieb-stop');
-          set({ currentTrack: null, duration: 0, currentTime: 0, isPlaying: false });
+          set({ currentTrack: null, duration: 0, currentTime: 0, isPlaying: false, hasSubtitles: false });
         }
         
         set({ playlist: newPlaylist });
@@ -204,6 +211,7 @@ export const usePlayerStore = create<PlayerState>()(
           duration: 0, 
           currentTime: 0, 
           isPlaying: false,
+          hasSubtitles: false,
           metadata: { title: '', description: '', episode: '', season: '' }
         });
       },

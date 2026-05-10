@@ -11,6 +11,7 @@ const translations = {
     'shortcuts': 'Shortcuts',
     'about': 'About',
     'maintenance': 'Maintenance',
+    'changelog': 'Changelog',
     'hardware.accel': 'Hardware Acceleration',
     'hardware.accel.desc': 'Use GPU for video decoding',
     'remember.position': 'Remember Position',
@@ -66,7 +67,7 @@ const translations = {
     'feedback': 'Feedback',
     'source': 'Source',
     'report.issue': 'Report Issue',
-    'about.subtitle': 'Modern Media Architecture',
+    'about.subtitle': 'Redefining the Media Experience',
     'about.story': 'Lieb was created out of a personal need for a more controllable and customizable media experience. It focuses on providing a clean, high-performance environment for those who want their player to stay out of the way while respecting the details of the media.',
     'about.tech': 'Built on top of MPV and Rust, it offers studio-grade rendering and deep subtitle management. Lieb remains an open-source project dedicated to privacy, speed, and a distraction-free viewing experience.',
     
@@ -87,7 +88,7 @@ const translations = {
     // Library
     'library.title': 'Your Library',
     'library.empty': 'Your library is empty',
-    'library.empty.desc': 'Drag and drop your favorite media files or folders here to start your collection.',
+    'library.empty.desc': 'Drag and drop media files, folders or paste URLs to start your collection.',
     'library.file': 'Media File',
     'library.files': 'Media Files',
     'library.clear': 'Clear',
@@ -133,6 +134,7 @@ const translations = {
     'update.available': 'New version available!',
     'update.uptodate': 'Lieb Player is up to date',
     'update.downloading': 'Downloading update...',
+    'latest': 'Latest',
   },
   French: {
     'drop.media': 'Déposez un média pour jouer',
@@ -143,6 +145,7 @@ const translations = {
     'shortcuts': 'Raccourcis',
     'about': 'À propos',
     'maintenance': 'Maintenance',
+    'changelog': 'Historique',
     'hardware.accel': 'Accélération matérielle',
     'hardware.accel.desc': 'Utiliser le GPU pour décoder',
     'remember.position': 'Mémoriser la position',
@@ -194,7 +197,7 @@ const translations = {
     'feedback': 'Commentaires',
     'source': 'Source',
     'report.issue': 'Signaler',
-    'about.subtitle': 'Architecture Média Moderne',
+    'about.subtitle': 'Redéfinir l\'expérience média',
     'about.story': 'Lieb a été créé à partir d\'un besoin personnel pour une expérience médiatique plus contrôlable et personnalisable. Il se concentre sur la fourniture d\'un environnement propre et performant pour ceux qui veulent que leur lecteur s\'efface tout en respectant les détails du média.',
     'about.tech': 'Basé sur MPV et Rust, il offre un rendu de qualité studio et une gestion approfondie des sous-titres. Lieb reste un projet open-source dédié à la vie privée, à la rapidité et à une expérience de visionnage sans distraction.',
     
@@ -213,7 +216,7 @@ const translations = {
 
     'library.title': 'Votre Bibliothèque',
     'library.empty': 'Votre bibliothèque est vide',
-    'library.empty.desc': 'Glissez-déposez vos fichiers ou dossiers ici pour commencer votre collection.',
+    'library.empty.desc': 'Glissez-déposez vos fichiers, dossiers ou collez des URLs pour commencer votre collection.',
     'library.file': 'Fichier média',
     'library.files': 'Fichiers média',
     'library.clear': 'Effacer',
@@ -258,6 +261,7 @@ const translations = {
     'update.available': 'Nouvelle version disponible !',
     'update.uptodate': 'Lieb Player est à jour',
     'update.downloading': 'Téléchargement...',
+    'latest': 'Dernier',
   },
   Spanish: {
     'drop.media': 'Suelta un archivo para jugar',
@@ -268,6 +272,7 @@ const translations = {
     'shortcuts': 'Atajos',
     'about': 'Acerca de',
     'maintenance': 'Mantenimiento',
+    'changelog': 'Historial',
     'hardware.accel': 'Aceleración por hardware',
     'hardware.accel.desc': 'Usar GPU para decodificar',
     'remember.position': 'Recordar posición',
@@ -319,7 +324,7 @@ const translations = {
     'feedback': 'Comentarios',
     'source': 'Fuente',
     'report.issue': 'Reportar',
-    'about.subtitle': 'Arquitectura de Medios Moderna',
+    'about.subtitle': 'Redefiniendo la experiencia mediática',
     'about.story': 'Lieb fue creado a partir de una necesidad personal de una experiencia multimedia más controlable y personalizable. Se centra en proporcionar un entorno limpio y de alto rendimiento para aquellos que quieren que su reproductor no estorbe mientras se respetan los detalles del medio.',
     'about.tech': 'Basado en MPV y Rust, ofrece renderizado de calidad de estudio y gestión avanzada de subtítulos. Lieb sigue siendo un proyecto de código abierto dedicado a la privacidad, la velocidad y una experiencia de visualización sin distracciones.',
     
@@ -338,7 +343,7 @@ const translations = {
 
     'library.title': 'Tu Biblioteca',
     'library.empty': 'Tu biblioteca está vacía',
-    'library.empty.desc': 'Arrastra y suelta tus archivos multimedia o carpetas aquí para comenzar tu colección.',
+    'library.empty.desc': 'Arrastra y suelta archivos, carpetas o pega URLs para comenzar tu colección.',
     'library.file': 'Archivo multimedia',
     'library.files': 'Archivos multimedia',
     'library.clear': 'Limpiar',
@@ -383,6 +388,7 @@ const translations = {
     'update.available': '¡Nueva versión disponible!',
     'update.uptodate': 'Lieb Player está actualizado',
     'update.downloading': 'Descargando...',
+    'latest': 'Último',
   },
 };
 

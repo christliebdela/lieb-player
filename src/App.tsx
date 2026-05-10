@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { Music } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { VideoCanvas } from './components/player/VideoCanvas';
 import { MainControls } from './components/controls/MainControls';
@@ -318,7 +319,7 @@ function MainPlayer() {
                   const subBase = s.split(/[\\/]/).pop()?.split('.').slice(0, -1).join('.') || '';
                   return subBase.toLowerCase().includes(base.toLowerCase()) || base.toLowerCase().includes(subBase.toLowerCase());
                 });
-                return { path: m, subs: attachedSubs };
+                return { path: m, subs: attachedSubs, addedAt: Date.now() };
               });
 
               setPlaylist(pairedPlaylist);
@@ -358,7 +359,7 @@ function MainPlayer() {
         const filePath = event.payload as string;
         window.console.log('>>> [App] RECEIVED open-file:', filePath);
         if (filePath) {
-          setPlaylist([{ path: filePath, subs: [] }]);
+          setPlaylist([{ path: filePath, subs: [], addedAt: Date.now() }]);
           try {
             await command('loadfile', [filePath, 'replace']);
             await command('set', ['pause', 'no']);
@@ -404,11 +405,17 @@ function MainPlayer() {
 
   return (
     <div 
-      className={`relative w-full h-screen overflow-hidden font-inter select-none ${hasMedia ? 'bg-transparent' : 'bg-background'}`}
-      style={{ cursor: !showControls && isPlaying ? 'none' : 'grab' }}
+      className={`relative w-full h-screen overflow-hidden font-inter select-none ${hasMedia ? 'bg-transparent' : 'bg-background'} ${
+        !showControls ? 'cursor-none' : (isFullscreen ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing')
+      }`}
       onMouseMove={handleMouseMove}
     >
-      <VideoCanvas onToggleFullscreen={handleFullscreenToggle} />
+      <VideoCanvas 
+        onToggleFullscreen={handleFullscreenToggle} 
+        onMouseMove={handleMouseMove}
+        showControls={showControls}
+      />
+      
       <ActionOSD />
 
       <AnimatePresence>
@@ -489,18 +496,56 @@ function MainPlayer() {
         </div>
       )}
 
+      {/* Audio Mode Overlay */}
+      {isPlaying && ['MP3', 'WAV', 'FLAC', 'M4A', 'OGG', 'OPUS', 'AAC', 'WMA'].includes(currentTrack?.split('.').pop()?.toUpperCase() || '') && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-0 bg-background/20 backdrop-blur-3xl overflow-hidden">
+          {/* Pulsing Aura */}
+          <motion.div 
+            animate={{ 
+              scale: [1, 1.1, 1],
+              opacity: [0.15, 0.25, 0.15]
+            }}
+            transition={{ 
+              duration: 4, 
+              repeat: Infinity, 
+              ease: "easeInOut" 
+            }}
+            className="absolute w-[400px] h-[400px] rounded-full bg-accent/20 blur-[100px]"
+          />
+          
+          <div className="relative flex flex-col items-center">
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="w-32 h-32 rounded-3xl bg-foreground/[0.03] border border-border-subtle flex items-center justify-center text-accent/40 shadow-2xl backdrop-blur-xl"
+            >
+              <Music size={48} strokeWidth={1} />
+            </motion.div>
+            
+            <div className="mt-8 text-center">
+              <h2 className="text-[13px] font-bold text-foreground/80 tracking-tight max-w-[300px] truncate">
+                {metadata.title || (currentTrack?.split(/[\\/]/).pop())}
+              </h2>
+              <p className="text-[9px] text-muted font-bold uppercase tracking-[0.3em] mt-2">
+                Audio Playback
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className={`relative z-10 h-full w-full flex flex-col pointer-events-none transition-opacity duration-500 ${
         showControls ? 'opacity-100' : 'opacity-0'
       }`}>
         <header 
-          className={`p-1 flex justify-between items-center transition-all duration-500 ${
-            showControls ? 'pointer-events-auto' : 'pointer-events-none'
+          className={`p-1 flex justify-between items-center transition-all duration-500 relative z-20 ${
+            showControls ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
           }`}
         >
           <div className="flex items-center gap-1.5">
-            <div className="flex items-center gap-2.5 px-3 py-1.5 opacity-40 hover:opacity-100 transition-opacity pointer-events-none">
-              <img src="/lieb-player-icon.png" alt="Logo" className="w-3.5 h-3.5 object-contain" />
-              <span className="text-foreground text-[10px] tracking-[0.15em] font-bold uppercase">
+            <div className="flex items-center gap-2.5 px-3 py-1.5 hover:bg-white/5 rounded-lg transition-all pointer-events-none">
+              <img src="/lieb-player-icon.png" alt="Logo" className="w-3.5 h-3.5 object-contain hue-rotate-[var(--accent-hue)]" />
+              <span className="text-accent text-[10px] tracking-[0.15em] font-bold uppercase">
                 Lieb
               </span>
             </div>
@@ -567,7 +612,7 @@ function MainPlayer() {
       <ResizeGrip position="br" show={showControls && !isBlocking} />
       {isBlocking && (
         <div 
-          className={`absolute inset-0 bg-transparent pointer-events-auto ${isFullscreen ? 'cursor-none' : 'cursor-grab active:cursor-grabbing'}`}
+          className="absolute inset-0 bg-transparent pointer-events-auto"
         />
       )}
     </div>

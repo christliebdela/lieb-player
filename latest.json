@@ -1,11 +1,11 @@
 {
-  "version": "0.1.1",
-  "notes": "v0.1.1: UI/UX Refinements\n- Custom EQ Presets with Persistent Storage\n- Enhanced iconography (Folder-based Library)\n- Improved library search width\n- Robust manual window dragging\n- Fixed Fullscreen/Maximize conflicts",
-  "pub_date": "2026-05-10T01:18:30Z",
+  "version": "0.1.2",
+  "notes": "v0.1.2: Playlist & Audio Mode Update\n- Full YouTube Playlist Support\n- Premium Audio Mode Overlay with pulsing aura\n- Minimalist Source Badges (YouTube/Web)\n- Smart Loading States in Library\n- Advanced Library Sorting & Direction Toggle\n- Upgraded Icon System (Lucide v0.477+)\n - Addition of Changelog in settings.",
+  "pub_date": "2026-05-10T11:15:30Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRNERDZjMrZFFiTWs2MmhXN1pCZVE1VDg4cnNTNktrNWthdFlVcmVvN09pV2lOSDhtRkRMVHE3cElnVTcwdG1FZ2JCdjBkaCszalY2cFhySElpZi9abTJoZnJUdldJWVF3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4Mzc1ODg4CWZpbGU6TGllYl8wLjEuMF94NjRfZW4tVVMubXNpCjFQMEx6ajIxZXZUOVRGQldzSmRjbklWRXM2dk1yR1JTZ2dLNHpqems3cGNzNG5sWWxpbDZoY2s4ODBwRVlLQmlTUi9yMkpucVJwc05EdjhDemV6QkRnPT0K",
-      "url": "https://github.com/christliebdela/lieb-player/releases/download/v0.1.1/Lieb_0.1.1_x64_en-US.msi"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRNERDZjMrZFFiTXRwTW1NSGQvQWorbnA5TVo0cXpMbDFUc3phdUI0UWM5cmxmM3MvMEdOVHBscmozOXc1b0FFT1FybDJnMVRHRytNZWxZcS9GOWpCbnA0WU9CNWNLOVFFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4NDEzMjM4CWZpbGU6TGllYl8wLjEuMF94NjRfZW4tVVMubXNpCnRUZkNIQlQwYzJwUjZ2VWJjY2VRYURRNHEvcWdSMnNsQU1ydmlPYnF1VkFIV3hKRkdLR0xDWFFWNWRLbGNGemxtUXR0S1hjOU1XRTE0NDFldWxsU0F3PT0K",
+      "url": "https://github.com/christliebdela/lieb-player/releases/download/v0.1.2/Lieb_0.1.2_x64_en-US.msi"
     }
   }
 }
