@@ -149,6 +149,7 @@ export const VideoCanvas: React.FC<{
           '--ao=wasapi',
           '--audio-stream-silence=yes',
           '--audio-wait-open=0.5',
+          '--prefetch-playlist-next=yes',
         ];
 
         if (state.renderingBackend !== 'gpu-next') {
@@ -239,9 +240,10 @@ export const VideoCanvas: React.FC<{
                 if (data === true) {
                   window.console.log('>>> [VideoCanvas] MPV reached EOF');
                   const s = usePlayerStore.getState();
-                  if (s.loopMode === 'off') {
-                    command('seek', [0, 'absolute']);
-                    setProperty('pause', true);
+                  // In 'one' mode, MPV handles looping internally via loop-file property.
+                  // For 'off' or 'all', we manage the playlist progression here.
+                  if (s.loopMode !== 'one') {
+                    s.playNext(true);
                   }
                 }
                 break;

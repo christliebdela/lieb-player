@@ -151,12 +151,32 @@ const ResizeGrip: React.FC<{ position: 'tl' | 'tr' | 'bl' | 'br', show: boolean 
 function MainPlayer() {
   const { 
     metadata, duration, setPlaylist, volume, isMuted, 
-    showVolumeOSD, accentColor,
+    showVolumeOSD, accentColor, playlist,
     isFullscreen, setFullscreen, setPlaying, setShowControls, isPlaying, showControls,
-    isBlocking, currentTrack, setCurrentTrack, isEngineReady, isBuffering
+    isBlocking, currentTrack, setCurrentTrack, isEngineReady, isBuffering, currentTime
   } = usePlayerStore();
   const { t } = useTranslation();
   const hasMedia = duration > 0;
+  const hasPrefetched = useRef<string | null>(null);
+
+  // Seamless Prefetching Logic
+  useEffect(() => {
+    if (duration > 0 && (duration - currentTime) < 30) {
+      const currentIndex = playlist.findIndex(p => p.path === currentTrack);
+      if (currentIndex !== -1 && currentIndex < playlist.length - 1) {
+        const nextTrack = playlist[currentIndex + 1];
+        if (hasPrefetched.current !== nextTrack.path) {
+          window.console.log('>>> [App] PREFETCH: Seamlessly buffering next track', nextTrack.path);
+          command('loadfile', [nextTrack.path, 'append']).catch(() => {});
+          hasPrefetched.current = nextTrack.path;
+        }
+      }
+    }
+    // Reset prefetch status when a new track starts or we seek back
+    if (currentTime < 5) {
+      hasPrefetched.current = null;
+    }
+  }, [currentTime, duration, currentTrack, playlist]);
 
   useEffect(() => {
     document.documentElement.style.setProperty('--accent', accentColor);
@@ -419,7 +439,7 @@ function MainPlayer() {
       <ActionOSD />
 
       <AnimatePresence>
-        {((!hasMedia && isPlaying && currentTrack?.startsWith('http')) || (isBuffering && isPlaying)) && (
+        {((!hasMedia && isPlaying && currentTrack?.startsWith('http')) || (isBuffering && isPlaying && currentTime < 2)) && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

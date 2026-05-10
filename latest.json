@@ -1,11 +1,11 @@
 {
-  "version": "0.1.2",
-  "notes": "v0.1.2: Playlist & Audio Mode Update\n- Full YouTube Playlist Support\n- Premium Audio Mode Overlay with pulsing aura\n- Minimalist Source Badges (YouTube/Web)\n- Smart Loading States in Library\n- Advanced Library Sorting & Direction Toggle\n- Upgraded Icon System (Lucide v0.477+)\n - Addition of Changelog in settings.",
-  "pub_date": "2026-05-10T11:15:30Z",
+  "version": "0.1.3",
+  "notes": "v0.1.3: Seamless Streaming & UI Scaling Update\n- Gapless Playback: Intelligent 30s background prefetching for web streams\n- Seamless Handover: Smooth track transitions without loading screens\n- Proportional UI Scaling: Control bar now scales perfectly to any window size\n- Detailed Error Reporting: Transparent feedback for failed updates\n- Localized History: Multi-language support for the in-app Changelog\n- Optimized Cursor Management for better focus",
+  "pub_date": "2026-05-10T12:30:00Z",
   "platforms": {
     "windows-x86_64": {
       "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRNERDZjMrZFFiTXUzVjAyK09XYUIvUXBwVmdmaDYzM2hDblA2L2FRelVQZlVMN3lMeVVOVUwzSkpocnVFZVZRVVhxd1cvMk1vMHFycFRSTjZPT2p2QmRrbERWb003akFNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4NDE0MjQyCWZpbGU6TGllYl8wLjEuMF94NjRfZW4tVVMubXNpCnlrUGdhb0RHMWtjR1VuRzk5bEJZQXVOVVpXUTQ1d3oxNzBJVElBYXVWSVpGQTlnd2lYVEJLQzFFb1FtWjArTlM5WHF5RDZ5ZGY1N3ZJRkZ0OFdYSkRBPT0K",
-      "url": "https://github.com/christliebdela/lieb-player/releases/download/v0.1.2/Lieb_0.1.2_x64_en-US.msi"
+      "url": "https://github.com/christliebdela/lieb-player/releases/download/v0.1.3/Lieb_0.1.3_x64_en-US.msi"
     }
   }
 }

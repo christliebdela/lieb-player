@@ -117,6 +117,8 @@ interface PlayerState {
   customEqPresets: { name: string; bands: number[] }[];
   addCustomEqPreset: (name: string, bands: number[]) => void;
   removeCustomEqPreset: (name: string) => void;
+  playNext: (isAuto?: boolean) => void;
+  playPrevious: () => void;
 }
 
 export const usePlayerStore = create<PlayerState>()(
@@ -288,6 +290,47 @@ export const usePlayerStore = create<PlayerState>()(
       removeCustomEqPreset: (name) => set((state) => ({
         customEqPresets: state.customEqPresets.filter(p => p.name !== name)
       })),
+      playNext: (isAuto = false) => {
+        const { playlist, currentTrack, loopMode } = get();
+        if (playlist.length === 0) return;
+        
+        const currentIndex = playlist.findIndex(p => p.path === currentTrack);
+        let nextIndex = currentIndex + 1;
+        
+        if (nextIndex >= playlist.length) {
+          if (loopMode === 'all') {
+            nextIndex = 0;
+          } else {
+            // End of playlist and loop is off
+            if (isAuto) {
+              emit('lieb-stop');
+              set({ isPlaying: false });
+            }
+            return; 
+          }
+        }
+        
+        const nextTrack = playlist[nextIndex];
+        emit('lieb-play', { path: nextTrack.path, subs: nextTrack.subs });
+      },
+      playPrevious: () => {
+        const { playlist, currentTrack, loopMode } = get();
+        if (playlist.length === 0) return;
+        
+        const currentIndex = playlist.findIndex(p => p.path === currentTrack);
+        let prevIndex = currentIndex - 1;
+        
+        if (prevIndex < 0) {
+          if (loopMode === 'all') {
+            prevIndex = playlist.length - 1;
+          } else {
+            return;
+          }
+        }
+        
+        const prevTrack = playlist[prevIndex];
+        emit('lieb-play', { path: prevTrack.path, subs: prevTrack.subs });
+      },
     }),
     {
       name: import.meta.env.DEV ? 'lieb-player-storage-dev' : 'lieb-player-storage',

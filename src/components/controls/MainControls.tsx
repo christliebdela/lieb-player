@@ -10,7 +10,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getCurrentWindow, PhysicalSize, PhysicalPosition, currentMonitor } from '@tauri-apps/api/window';
 import { invoke, convertFileSrc } from '@tauri-apps/api/core';
 import { command, setProperty } from 'tauri-plugin-mpv-api';
-import { emit } from '@tauri-apps/api/event';
 import { showActionOSD } from '../../utils/osd';
 import { useTranslation } from '../../i18n';
 
@@ -50,13 +49,14 @@ export const MainControls: React.FC = () => {
     isFullscreen, setFullscreen,
     showControls,
     loopMode, setLoopMode,
-    playlist, currentTrack, setCurrentTrack,
+    playlist, currentTrack, 
     scrollMode,
     aspectRatio,
     subsEnabled, setSubsEnabled,
     seekInterval,
     controlBarLayout,
-    hasUpdate
+    hasUpdate,
+    playNext, playPrevious
   } = usePlayerStore();
   const { t } = useTranslation();
 
@@ -245,20 +245,23 @@ export const MainControls: React.FC = () => {
   const isSmall = winWidth < 650;
   const isTiny = winWidth < 450;
 
+  // Proportional scale factor based on 800px baseline
+  const uiScale = Math.max(0.75, Math.min(1, winWidth / 800));
+
   const renderPlaybackGroup = (isCenteredLayout = false) => (
-    <div className={`flex items-center ${isSmall ? 'gap-3' : 'gap-6'}`}>
-      <div className={`flex items-center ${isSmall ? 'gap-2' : 'gap-4'}`}>
+    <div 
+      className="flex items-center"
+      style={{ 
+        gap: `${(isSmall ? 12 : 24) * uiScale}px`,
+        transform: `scale(${uiScale})`,
+        transformOrigin: 'left center'
+      }}
+    >
+      <div className="flex items-center" style={{ gap: `${(isSmall ? 8 : 16) * uiScale}px` }}>
         {hasPlaylist && (
           <Tooltip content="Previous (P)">
             <button 
-              onClick={async () => {
-                const idx = playlist.findIndex(t => t.path === currentTrack);
-                if (idx > 0) {
-                  const prev = playlist[idx - 1];
-                  await emit('lieb-play', { path: prev.path, subs: prev.subs });
-                  setCurrentTrack(prev.path);
-                }
-              }}
+              onClick={() => playPrevious()}
               className={`text-muted hover:text-accent transition-all cursor-pointer group/btn ${playlist.findIndex(t => t.path === currentTrack) <= 0 ? 'opacity-30 cursor-default pointer-events-none' : ''}`}
             >
               <SkipBack size={18} className="group-hover/btn:scale-110 transition-transform" />
@@ -275,7 +278,7 @@ export const MainControls: React.FC = () => {
               }}
               className="text-muted hover:text-accent transition-all cursor-pointer relative group/btn"
             >
-              <Rewind size={isSmall ? 18 : 22} className="group-hover/btn:scale-110 transition-transform" />
+              <Rewind size={(isSmall ? 18 : 22) * uiScale} className="group-hover/btn:scale-110 transition-transform" />
             </button>
           </Tooltip>
         </div>
@@ -295,9 +298,9 @@ export const MainControls: React.FC = () => {
         >
           <div className="group-hover:scale-110 transition-transform flex items-center justify-center">
             {isPlaying ? (
-              <Pause size={isCenteredLayout ? (isSmall ? 22 : 28) : (isSmall ? 20 : 24)} strokeWidth={1.5} fill="currentColor" />
+              <Pause size={(isCenteredLayout ? (isSmall ? 22 : 28) : (isSmall ? 20 : 24)) * uiScale} strokeWidth={1.5} fill="currentColor" />
             ) : (
-              <Play size={isCenteredLayout ? (isSmall ? 22 : 28) : (isSmall ? 20 : 24)} strokeWidth={1.5} fill="currentColor" className="ml-0.5" />
+              <Play size={(isCenteredLayout ? (isSmall ? 22 : 28) : (isSmall ? 20 : 24)) * uiScale} strokeWidth={1.5} fill="currentColor" className="ml-0.5" />
             )}
           </div>
         </button>
@@ -313,7 +316,7 @@ export const MainControls: React.FC = () => {
               }}
               className="text-muted hover:text-accent transition-all cursor-pointer relative group/btn"
             >
-              <FastForward size={isSmall ? 18 : 22} className="group-hover/btn:scale-110 transition-transform" />
+              <FastForward size={(isSmall ? 18 : 22) * uiScale} className="group-hover/btn:scale-110 transition-transform" />
             </button>
           </Tooltip>
         </div>
@@ -321,17 +324,10 @@ export const MainControls: React.FC = () => {
         {hasPlaylist && (
           <Tooltip content="Next (N)">
             <button 
-              onClick={async () => {
-                const idx = playlist.findIndex(t => t.path === currentTrack);
-                if (idx !== -1 && idx < playlist.length - 1) {
-                  const next = playlist[idx + 1];
-                  await emit('lieb-play', { path: next.path, subs: next.subs });
-                  setCurrentTrack(next.path);
-                }
-              }}
+              onClick={() => playNext()}
               className={`text-muted hover:text-accent transition-all cursor-pointer group/btn ${playlist.findIndex(t => t.path === currentTrack) >= playlist.length - 1 ? 'opacity-30 cursor-default pointer-events-none' : ''}`}
             >
-              <SkipForward size={18} className="group-hover/btn:scale-110 transition-transform" />
+              <SkipForward size={18 * uiScale} className="group-hover/btn:scale-110 transition-transform" />
             </button>
           </Tooltip>
         )}
@@ -340,7 +336,14 @@ export const MainControls: React.FC = () => {
   );
 
   const renderVolumeGroup = () => (
-    <div className={`flex items-center ${isSmall ? 'gap-2' : 'gap-4'} group/volume relative ${!hasMedia ? 'opacity-20 pointer-events-none' : ''}`}>
+    <div 
+      className={`flex items-center group/volume relative ${!hasMedia ? 'opacity-20 pointer-events-none' : ''}`}
+      style={{ 
+        gap: `${(isSmall ? 8 : 16) * uiScale}px`,
+        transform: `scale(${uiScale})`,
+        transformOrigin: 'right center'
+      }}
+    >
       <Tooltip content={isMuted ? 'Unmute (M)' : 'Mute (M)'}>
         <button 
           onClick={() => setProperty('mute', !isMuted)}
@@ -385,7 +388,14 @@ export const MainControls: React.FC = () => {
   );
 
   const renderSecondaryUtilities = () => (
-    <div className={`flex items-center ${isSmall ? 'gap-3' : 'gap-6'}`}>
+    <div 
+      className={`flex items-center`}
+      style={{ 
+        gap: `${(isSmall ? 12 : 24) * uiScale}px`,
+        transform: `scale(${uiScale})`,
+        transformOrigin: 'right center'
+      }}
+    >
       <Tooltip content={`Loop: ${loopMode}`}>
         <button 
           disabled={!hasMedia}
@@ -462,7 +472,14 @@ export const MainControls: React.FC = () => {
   );
 
   const renderGlobalUtilities = () => (
-    <div className={`flex items-center ${isSmall ? 'gap-3' : 'gap-6'}`}>
+    <div 
+      className={`flex items-center`}
+      style={{ 
+        gap: `${(isSmall ? 12 : 24) * uiScale}px`,
+        transform: `scale(${uiScale})`,
+        transformOrigin: 'right center'
+      }}
+    >
       <Tooltip content={hasUpdate ? 'Update Available!' : 'Settings (S)'} align="right">
         <button 
           onClick={() => openWindow('settings', 'Settings', 800, 560)}

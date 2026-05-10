@@ -10,6 +10,36 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: "0.1.3",
+    date: "2026-05-10",
+    changes: {
+      English: [
+        "Seamless Streaming: 30s background prefetching for gapless playback",
+        "Proportional UI Scaling: Controls now scale perfectly to any window size",
+        "Detailed Error Reporting: Specific feedback for update failures",
+        "Multi-language Changelog: Full translations for version history",
+        "Optimized cursor management for better distraction-free viewing",
+        "Refined loading states to avoid flashing during background loads"
+      ],
+      French: [
+        "Streaming Fluide : Préchargement de 30s pour une lecture sans coupure",
+        "Mise à l'échelle Proportionnelle : Les contrôles s'adaptent à toute taille",
+        "Rapports d'Erreur Détaillés : Retours précis sur les échecs de mise à jour",
+        "Historique Multilingue : Traductions complètes de l'historique",
+        "Gestion optimisée du curseur pour une visionnage sans distraction",
+        "États de chargement affinés pour éviter les clignotements"
+      ],
+      Spanish: [
+        "Streaming Fluido: Precarga de 30s para reproducción sin pausas",
+        "Escalado Proporcional: Controles que se adaptan a cualquier tamaño",
+        "Informes de Errores Detallados: Feedback específico en actualizaciones",
+        "Historial Multilingüe: Traducciones completas del historial de versiones",
+        "Gestión de cursor optimizada para una visualización sin distracciones",
+        "Estados de carga refinados para evitar parpadeos"
+      ]
+    }
+  },
+  {
     version: "0.1.2",
     date: "2026-05-10",
     changes: {
@@ -41,7 +71,7 @@ export const changelog: ChangelogEntry[] = [
   },
   {
     version: "0.1.1",
-    date: "2026-05-09",
+    date: "2026-05-08",
     changes: {
       English: [
         "Optimized video rendering performance",
@@ -68,7 +98,7 @@ export const changelog: ChangelogEntry[] = [
   },
   {
     version: "0.1.0",
-    date: "2026-05-09",
+    date: "2026-05-07",
     changes: {
       English: [
         "Initial Alpha release",
