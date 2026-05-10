@@ -233,10 +233,17 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
           }
         });
         setUpdateStatus('ready');
-      } catch (err) {
+      } catch (err: any) {
         console.error('Download error:', err);
         setUpdateStatus('error');
-        setErrorMsg('Download failed');
+        const msg = err.toString().toLowerCase();
+        if (msg.includes('signature')) {
+          setErrorMsg('Security Error: Signature verification failed');
+        } else if (msg.includes('connection') || msg.includes('timeout')) {
+          setErrorMsg('Network Error: Connection timed out');
+        } else {
+          setErrorMsg(`Download failed: ${err.toString()}`);
+        }
       }
       return;
     }
@@ -921,9 +928,10 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                                 disabled={updateStatus === 'checking' || (updateStatus === 'available' && downloadProgress !== null)}
                                 className={`w-full px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all border ${
                                   updateStatus === 'checking' ? 'bg-accent/10 border-accent/20 text-accent animate-pulse' :
-                                  updateStatus === 'available' ? 'bg-accent border-accent text-white shadow-lg shadow-accent/20' :
+                                  updateStatus === 'available' ? 'bg-accent border-accent text-white shadow-lg shadow-accent/20 cursor-pointer' :
+                                  updateStatus === 'ready' ? 'bg-accent border-accent text-white shadow-lg shadow-accent/20 cursor-pointer' :
                                   updateStatus === 'uptodate' ? 'bg-green-500/10 border-green-500/20 text-green-500' :
-                                  updateStatus === 'error' ? 'bg-red-500/10 border-red-500/20 text-red-500' :
+                                  updateStatus === 'error' ? 'bg-red-500/10 border-red-500/20 text-red-500 cursor-pointer' :
                                   'bg-foreground/[0.03] border-border-subtle text-muted hover:text-accent hover:border-accent/20 cursor-pointer'
                                 }`}
                               >
