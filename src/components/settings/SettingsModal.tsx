@@ -6,8 +6,9 @@ import { useTranslation } from '../../i18n';
 import { motion, AnimatePresence } from 'framer-motion';
 import { setProperty } from 'tauri-plugin-mpv-api';
 import { getCurrentWindow } from '@tauri-apps/api/window';
-import { check } from '@tauri-apps/plugin-updater';
+import { check, Update } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
+import { getVersion } from '@tauri-apps/api/app';
 import { showActionOSD } from '../../utils/osd';
 
 const isMainWindow = () => getCurrentWindow().label === 'main';
@@ -195,22 +196,29 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
 
   const [showPicker, setShowPicker] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'available' | 'uptodate' | 'error'>('idle');
+  const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'available' | 'downloading' | 'ready' | 'uptodate' | 'error'>('idle');
 
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [appVersion, setAppVersion] = useState<string>('0.1.0-alpha');
+  const [pendingUpdate, setPendingUpdate] = useState<Update | null>(null);
+
+  React.useEffect(() => {
+    getVersion().then(v => setAppVersion(v));
+  }, []);
 
   const handleCheckUpdate = async () => {
-    setUpdateStatus('checking');
-    setErrorMsg(null);
-    try {
-      const update = await check();
-      if (update) {
-        setHasUpdate(true);
-        setUpdateStatus('available');
-        
+    // If update is ready to install
+    if (updateStatus === 'ready') {
+      await relaunch();
+      return;
+    }
+
+    // If update is available but not downloaded, and user clicks "Download Update"
+    if (updateStatus === 'available' && pendingUpdate && downloadProgress === null) {
+      try {
         let downloaded = 0;
         let total = 0;
-        await update.downloadAndInstall((event) => {
+        await pendingUpdate.downloadAndInstall((event) => {
           switch (event.event) {
             case 'Started':
               total = event.data.contentLength || 0;
@@ -223,8 +231,47 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
               break;
           }
         });
+        setUpdateStatus('ready');
+      } catch (err) {
+        console.error('Download error:', err);
+        setUpdateStatus('error');
+        setErrorMsg('Download failed');
+      }
+      return;
+    }
+
+    setUpdateStatus('checking');
+    setErrorMsg(null);
+    try {
+      const update = await check();
+      if (update) {
+        setHasUpdate(true);
+        setUpdateStatus('available');
+        setPendingUpdate(update);
         
-        await relaunch();
+        // Auto-download if enabled
+        if (autoUpdateDownload) {
+          let downloaded = 0;
+          let total = 0;
+          await update.downloadAndInstall((event) => {
+            switch (event.event) {
+              case 'Started':
+                total = event.data.contentLength || 0;
+                break;
+              case 'Progress':
+                downloaded += event.data.chunkLength;
+                if (total > 0) {
+                  setDownloadProgress((downloaded / total) * 100);
+                }
+                break;
+            }
+          });
+          setUpdateStatus('ready');
+          
+          if (autoUpdateInstall) {
+            await relaunch();
+          }
+        }
       } else {
         setHasUpdate(false);
         setUpdateStatus('uptodate');
@@ -360,7 +407,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
 
               <div className="mt-auto pt-3 border-t border-border-subtle">
                 <div className="flex items-center gap-2 px-3 py-1.5 text-[10px] text-muted font-mono">
-                  v0.1.0-alpha
+                  v{appVersion}
                 </div>
               </div>
             </div>
@@ -879,7 +926,8 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                                 }`}
                               >
                                 {updateStatus === 'checking' ? t('update.checking' as any) :
-                                 updateStatus === 'available' ? (downloadProgress !== null ? `${Math.round(downloadProgress)}%` : 'Update Now') :
+                                 updateStatus === 'available' ? (downloadProgress !== null ? `${Math.round(downloadProgress)}%` : 'Download Update') :
+                                 updateStatus === 'ready' ? 'Relaunch & Install' :
                                  updateStatus === 'uptodate' ? t('update.uptodate' as any) :
                                  updateStatus === 'error' ? 'Error' :
                                  'Check for Update'}
