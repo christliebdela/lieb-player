@@ -34,7 +34,7 @@ All notable changes to this project will be documented in this file.
 - Polished UI typography and branding elements
 - Removed redundant badges from library titles
 
-## [0.1.1] - 2026-05-08
+## [0.1.1] - 2026-05-09
 ### Added
 - Subtitle sync adjustments
 - New dark mode color palette
@@ -46,7 +46,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Window resizing aspect ratio constraints
 
-## [0.1.0] - 2026-05-07
+## [0.1.0] - 2026-05-09
 ### Added
 - Initial Alpha release
 - Core MPV and Rust media engine integration
