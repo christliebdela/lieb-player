@@ -186,7 +186,8 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
     clearPlaylist,
     settingsActiveTab,
     autoResize, setAutoResize,
-    osApiKey, setOsApiKey
+    osApiKey, setOsApiKey,
+    hasUpdate
   } = usePlayerStore();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>(settingsActiveTab as Tab);
@@ -411,7 +412,12 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                       : 'text-muted hover:text-foreground hover:bg-foreground/[0.04]'
                     }`}
                   >
-                    <tab.icon size={15} strokeWidth={activeTab === tab.id ? 2.5 : 1.5} />
+                    <div className="relative">
+                      <tab.icon size={15} strokeWidth={activeTab === tab.id ? 2.5 : 1.5} />
+                      {tab.id === 'maintenance' && hasUpdate && (
+                        <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-accent border border-background shadow-[0_0_8px_rgba(var(--accent-rgb),0.5)]" />
+                      )}
+                    </div>
                     {tab.label}
                   </button>
                 ))}
