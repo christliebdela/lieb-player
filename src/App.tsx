@@ -433,6 +433,7 @@ function MainPlayer() {
       onContextMenu={async (e) => {
         e.preventDefault();
         const s = usePlayerStore.getState();
+        if (!s.isEngineReady) return;
         if (s.duration > 0) {
           if (s.currentTime >= s.duration - 0.2) {
             await command('seek', [0, 'absolute']);

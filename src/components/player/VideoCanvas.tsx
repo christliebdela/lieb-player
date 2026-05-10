@@ -149,7 +149,6 @@ export const VideoCanvas: React.FC<{
           '--ao=wasapi',
           '--audio-stream-silence=yes',
           '--audio-wait-open=0.5',
-          '--prefetch-playlist-next=yes',
         ];
 
         if (state.renderingBackend !== 'gpu-next') {
@@ -161,6 +160,7 @@ export const VideoCanvas: React.FC<{
           args,
           observedProperties: OBSERVED_PROPERTIES,
         });
+        await setProperty('prefetch-playlist-next', 'yes').catch(() => {});
         console.log('Lieb Player: Engine Core Ready');
 
         // Set engine ready before applying props
