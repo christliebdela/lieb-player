@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.1.3] - 2026-05-10
+## [0.1.4] - 2026-05-10
 ### Added
 - Smart Resume: Play/Spacebar now automatically resumes the last played track and position
 - Right-Click to Play: Trigger playback/resume via right-click on the player canvas
@@ -11,16 +11,16 @@ All notable changes to this project will be documented in this file.
 - Detailed Error Reporting: Specific feedback for update failures (Signature, Network, etc.)
 - Multi-language Changelog: Full translations for version history in settings
 
-### Changed
-- Unified playback logic across Spacebar, Play button, and mouse interactions
-- Refined loading overlay logic to avoid flashing during background transitions
-- Optimized cursor management in windowed and fullscreen modes
-- Updated skip buttons to use centralized store actions
-
 ### Fixed
+- CRITICAL: Stabilized engine initialization to prevent 'Poison Error' and startup crashes
 - Fixed layout clutter on small windows via proportional scaling engine
 - Resolved issue where auto-play would stop after one track for library streams
 - Fixed missing 'Loop All' progression for library items
+
+## [0.1.3] - 2026-05-10 [REPLACED BY 0.1.4]
+### Added
+- Initial implementation of Smart Resume and Right-Click Play (Improved in 0.1.4)
+- Initial implementation of Seamless Streaming (Stabilized in 0.1.4)
 
 ## [0.1.2] - 2026-05-10
 ### Added

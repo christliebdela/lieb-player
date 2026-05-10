@@ -10,35 +10,56 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
-    version: "0.1.3",
+    version: "0.1.4",
     date: "2026-05-10",
     changes: {
       English: [
+        "CRITICAL: Stabilized engine initialization to prevent startup crashes",
         "Smart Resume: Play/Spacebar now automatically resumes last track and position",
         "Right-Click to Play: Trigger playback/resume via right-click on canvas",
         "Seamless Streaming: 30s background prefetching for gapless playback",
         "Proportional UI Scaling: Controls now scale perfectly to any window size",
         "Detailed Error Reporting: Specific feedback for update failures",
-        "Multi-language Changelog: Full translations for version history",
-        "Refined loading states to avoid flashing during background loads"
+        "Multi-language Changelog: Full translations for version history"
       ],
       French: [
+        "CRITIQUE : Stabilisation de l'initialisation du moteur pour éviter les plantages",
         "Reprise Intelligente : Lecture/Espace reprend automatiquement la piste et la position",
         "Clic-Droit pour Jouer : Déclenchez la lecture via un clic-droit sur le canevas",
         "Streaming Fluide : Préchargement de 30s pour une lecture sans coupure",
         "Mise à l'échelle Proportionnelle : Les contrôles s'adaptent à toute taille",
         "Rapports d'Erreur Détaillés : Retours précis sur les échecs de mise à jour",
-        "Historique Multilingue : Traductions complètes de l'historique",
-        "États de chargement affinés pour éviter les clignotements"
+        "Historique Multilingue : Traductions complètes de l'historique"
       ],
       Spanish: [
+        "CRÍTICO: Estabilización de la inicialización del motor para evitar fallos",
         "Reanudación Inteligente: Play/Espacio reanuda automáticamente pista y posición",
         "Clic-Derecho para Reproducir: Activa la reproducción con clic-derecho en el lienzo",
         "Streaming Fluido: Precarga de 30s para reproducción sin pausas",
         "Escalado Proporcional: Controles que se adaptan a cualquier tamaño",
         "Informes de Errores Detallados: Feedback específico en actualizaciones",
-        "Historial Multilingüe: Traducciones completas del historial de versiones",
-        "Estados de carga refinados para evitar parpadeos"
+        "Historial Multilingüe: Traducciones completas del historial de versiones"
+      ]
+    }
+  },
+  {
+    version: "0.1.3",
+    date: "2026-05-10",
+    changes: {
+      English: [
+        "Initial implementation of Smart Resume and Right-Click Play",
+        "Initial implementation of Seamless Streaming prefetching",
+        "Note: This version is replaced by 0.1.4 for stability."
+      ],
+      French: [
+        "Implémentation initiale de la Reprise Intelligente et du Clic-Droit",
+        "Implémentation initiale du préchargement pour le Streaming Fluide",
+        "Note : Cette version est remplacée par la 0.1.4 pour la stabilité."
+      ],
+      Spanish: [
+        "Implementación inicial de Reanudación Inteligente y Clic-Derecho",
+        "Implementación inicial de precarga para Streaming Fluido",
+        "Nota: Esta versión es reemplazada por la 0.1.4 por estabilidad."
       ]
     }
   },

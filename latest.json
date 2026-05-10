@@ -1,11 +1,11 @@
 {
-  "version": "0.1.3",
-  "notes": "v0.1.3: Seamless Streaming & Smart Playback Update\n- Smart Resume: Play/Spacebar now automatically resumes your last track and position\n- Seamless Streaming: 30s background prefetching for gapless web playback\n- Right-Click to Play: Quick mouse-driven playback trigger on the player canvas\n- Proportional UI Scaling: Controls now scale perfectly to any window size\n- Detailed Error Reporting: Specific feedback for update failures\n- Localized History: Multi-language support for the in-app Changelog",
-  "pub_date": "2026-05-10T12:40:00Z",
+  "version": "0.1.4",
+  "notes": "v0.1.4: Engine Stabilization & Smart Playback Update\n- CRITICAL: Fixed engine initialization crash ('Poison Error') on some systems\n- Smart Resume: Play/Spacebar now automatically resumes your last track and position\n- Seamless Streaming: Safer background prefetching for gapless playback\n- Right-Click to Play: Quick mouse-driven playback trigger on the player canvas\n- Proportional UI Scaling: Controls now scale perfectly to any window size\n- Detailed Error Reporting: Transparent feedback for failed updates\n- Localized History: Multi-language support for the in-app Changelog",
+  "pub_date": "2026-05-10T13:00:00Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRNERDZjMrZFFiTWhSRVNBY292UnJTbjFUUGk4N211OGlVV2FnQ2d3TTZSK0l2dGN3K1FZdUhIKzVnY3RpNXZaSzhzd3h6SUp4b0tlZExHaHhPVkFvcnJMWFZHbmxRZGdvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4NDE3MTk2CWZpbGU6TGllYl8wLjEuM194NjRfZW4tVVMubXNpCmh1b1ZjMFBOTnFLNERIWmgwcVVub2Q3TEVIT2NtamlFeFh4ZHE0bUMwVkM0Z2d6Z1JLbmc2Skp0WE1DeFRVVGMxajhobWpqdEw4MUlPL05Va2ZVaEFBPT0K",
-      "url": "https://github.com/christliebdela/lieb-player/releases/download/v0.1.3/Lieb_0.1.3_x64_en-US.msi"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRNERDZjMrZFFiTXJlTTEvZDhyZW1ZV3cxclZCQkh0SWJoM0FUbm93N09pZjQwU0xFZVM1dEJDMmZsUk03MCtjVDhiQjByaHRpT2tNMjArMnRodGZwak16TUJDNXhuZEFzPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4NDE4MTAwCWZpbGU6TGllYl8wLjEuNF94NjRfZW4tVVMubXNpCkVYNFh0QUEvWGp3UldPSnI1NFB0Qm1Mb3NSTGYvRTY5YlJEM0tKRmNCTUMzdzlmanFCR2NvRXVBRzh4aVFWY2k0b0ljdzBOQlZLSzJ5NG1YM3JZUURBPT0K",
+      "url": "https://github.com/christliebdela/lieb-player/releases/download/v0.1.4/Lieb_0.1.4_x64_en-US.msi"
     }
   }
 }
