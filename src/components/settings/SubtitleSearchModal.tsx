@@ -18,7 +18,7 @@ interface SubtitleResult {
 }
 
 export const SubtitleSearchModal: React.FC<{ standalone?: boolean }> = ({ standalone }) => {
-  const { currentTrack, isSubSearchOpen, setSubSearchOpen } = usePlayerStore();
+  const { currentTrack, isSubSearchOpen, setSubSearchOpen, osApiKey } = usePlayerStore();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SubtitleResult[]>([]);
   const [loading, setLoading] = useState(false);
@@ -40,9 +40,9 @@ export const SubtitleSearchModal: React.FC<{ standalone?: boolean }> = ({ standa
     try {
       const response = await fetch(`https://api.opensubtitles.com/api/v1/subtitles?query=${encodeURIComponent(searchQuery)}`, {
         headers: {
-          'Api-Key': 'YOUR_API_KEY_HERE',
+          'Api-Key': osApiKey,
           'Content-Type': 'application/json',
-          'User-Agent': 'LiebPlayer v0.1.0'
+          'User-Agent': 'LiebPlayer'
         }
       });
       
@@ -68,9 +68,9 @@ export const SubtitleSearchModal: React.FC<{ standalone?: boolean }> = ({ standa
       const dlResponse = await fetch('https://api.opensubtitles.com/api/v1/download', {
         method: 'POST',
         headers: {
-          'Api-Key': 'YOUR_API_KEY_HERE',
+          'Api-Key': osApiKey,
           'Content-Type': 'application/json',
-          'User-Agent': 'LiebPlayer v0.1.0'
+          'User-Agent': 'LiebPlayer'
         },
         body: JSON.stringify({ file_id: fileId })
       });
@@ -128,14 +128,14 @@ export const SubtitleSearchModal: React.FC<{ standalone?: boolean }> = ({ standa
           />
           <button 
             type="submit"
-            className="absolute right-3 top-1/2 -translate-y-1/2 bg-accent text-black text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-lg hover:scale-105 active:scale-95 transition-all shadow-[0_0_15px_rgba(var(--accent-rgb),0.3)]"
+            className="absolute right-3 top-1/2 -translate-y-1/2 bg-accent text-black text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-lg hover:scale-105 active:scale-95 transition-all shadow-[0_0_15px_rgba(var(--accent-rgb),0.3)] cursor-pointer"
           >
             Search
           </button>
         </form>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 pb-6 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto px-6 pb-6 overflow-x-hidden custom-scrollbar">
         {loading ? (
           <div className="h-full flex flex-col items-center justify-center text-muted gap-4">
             <Loader2 className="animate-spin text-accent" size={32} />

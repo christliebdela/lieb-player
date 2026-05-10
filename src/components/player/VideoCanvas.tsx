@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { command, init, observeProperties, setProperty } from 'tauri-plugin-mpv-api';
 import { getCurrentWindow, PhysicalSize, currentMonitor } from '@tauri-apps/api/window';
+import { emit } from '@tauri-apps/api/event';
 import { showActionOSD } from '../../utils/osd';
 import { useTranslation } from '../../i18n';
 
@@ -19,11 +20,18 @@ export const VideoCanvas: React.FC<{
   const { 
     setDuration, setCurrentTime, setPlaying, 
     setMetadata, setVolume, setMuted, 
-    setAspectRatio, isFullscreen 
+    setAspectRatio, isFullscreen, autoResize
   } = usePlayerStore();
   const { t } = useTranslation();
   const initialized = useRef(false);
   const resizeDebounceTimer = useRef<number | null>(null);
+  const [isDragging, setIsDragging] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleGlobalMouseUp = () => setIsDragging(false);
+    window.addEventListener('mouseup', handleGlobalMouseUp);
+    return () => window.removeEventListener('mouseup', handleGlobalMouseUp);
+  }, []);
 
   useEffect(() => {
     if (initialized.current) return;
@@ -41,13 +49,18 @@ export const VideoCanvas: React.FC<{
     const resizeWindowToVideo = async (videoW: number, videoH: number) => {
       if (videoW === lastVideoW && videoH === lastVideoH) return;
       
+      // Update aspect ratio for UI scaling regardless of autoResize
+      setAspectRatio(videoW / videoH);
+
+      // Skip actual window resizing if disabled
+      if (!autoResize) return;
+      
       const performResize = async () => {
         lastVideoW = videoW;
         lastVideoH = videoH;
 
         try {
           const appWindow = getCurrentWindow();
-          setAspectRatio(videoW / videoH);
 
           if (await appWindow.isMaximized() || isFullscreen) {
             return;
@@ -297,22 +310,33 @@ export const VideoCanvas: React.FC<{
     };
   }, [setDuration, setCurrentTime, setPlaying, setMetadata, setVolume, setMuted, setAspectRatio]);
 
-  const handleRightClick = (e: React.MouseEvent) => {
+  const handleRightClick = async (e: React.MouseEvent) => {
     e.preventDefault();
-    command('cycle', ['pause']);
-    const state = usePlayerStore.getState();
-    showActionOSD(!state.isPlaying ? t('play') : t('pause'), !state.isPlaying ? 'play' : 'pause');
+    const s = usePlayerStore.getState();
+    if (!s.isEngineReady) return;
+    
+    if (s.duration > 0) {
+      if (s.currentTime >= s.duration - 0.2) {
+        await command('seek', [0, 'absolute']);
+      }
+      await command('cycle', ['pause']);
+      showActionOSD(!s.isPlaying ? t('play') : t('pause'), !s.isPlaying ? 'play' : 'pause');
+    } else if (s.playlist.length > 0) {
+      const trackToPlay = s.playlist.find(p => p.path === s.currentTrack) || s.playlist[0];
+      await emit('lieb-play', { path: trackToPlay.path, subs: trackToPlay.subs });
+    }
   };
 
   return (
     <div 
       className={`absolute inset-0 bg-transparent pointer-events-auto ${
-        !showControls ? 'cursor-none' : (isFullscreen ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing')
+        !showControls ? 'cursor-none' : (isFullscreen ? 'cursor-pointer' : (isDragging ? 'cursor-grabbing' : 'cursor-grab'))
       }`}
       onContextMenu={handleRightClick}
       onMouseMove={onMouseMove}
       onMouseDown={(e) => {
         if (e.button === 0 && e.detail === 1 && !isFullscreen) {
+          setIsDragging(true);
           getCurrentWindow().startDragging();
         }
       }}

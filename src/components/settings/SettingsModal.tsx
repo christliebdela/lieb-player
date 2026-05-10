@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Sliders, Monitor, Keyboard, Info, ExternalLink, Activity, Palette, Moon, Wrench, Trash2, RotateCcw, Globe, History } from 'lucide-react';
+import { X, Sliders, Monitor, Keyboard, Info, ExternalLink, Activity, Palette, Moon, Wrench, Trash2, RotateCcw, Globe, History, Key, Eye, EyeOff } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { useTranslation } from '../../i18n';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -184,7 +184,9 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
     seekInterval, setSeekInterval,
     streamingQuality, setStreamingQuality,
     clearPlaylist,
-    settingsActiveTab
+    settingsActiveTab,
+    autoResize, setAutoResize,
+    osApiKey, setOsApiKey
   } = usePlayerStore();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>(settingsActiveTab as Tab);
@@ -197,6 +199,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
 
   const [showPicker, setShowPicker] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showApiKey, setShowApiKey] = useState(false);
   const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'available' | 'downloading' | 'ready' | 'uptodate' | 'error'>('idle');
 
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -684,6 +687,9 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                           <SettingCard label={t('deband' as any)} description={t('deband.desc' as any)}>
                             <Toggle checked={deband} onChange={setDeband} />
                           </SettingCard>
+                          <SettingCard label={t('auto.resize' as any)} description={t('auto.resize.desc' as any)}>
+                            <Toggle checked={autoResize} onChange={setAutoResize} />
+                          </SettingCard>
 
                           <div className="pt-6 mt-6 border-t border-border-subtle/30">
                             <div className="flex items-center gap-2 mb-4">
@@ -741,17 +747,17 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                                     className="absolute bottom-0 w-full bg-gradient-to-t from-accent to-accent/40 rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(var(--accent-rgb),0.3)]" 
                                     style={{ height: `${((equalizer[idx] + 20) / 40) * 100}%` }} 
                                   />
+                                  <input 
+                                    type="range" 
+                                    min="-20" 
+                                    max="20" 
+                                    step="0.5" 
+                                    value={-equalizer[idx]} 
+                                    onChange={(e) => updateEqualizer(idx, -parseFloat(e.target.value))} 
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+                                    style={{ writingMode: 'vertical-lr', direction: 'rtl' } as any} 
+                                  />
                                 </div>
-                                <input 
-                                  type="range" 
-                                  min="-20" 
-                                  max="20" 
-                                  step="0.5" 
-                                  value={-equalizer[idx]} 
-                                  onChange={(e) => updateEqualizer(idx, -parseFloat(e.target.value))} 
-                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
-                                  style={{ appearance: 'slider-vertical', writingMode: 'vertical-lr' } as any} 
-                                />
                               </div>
                               <div className="flex flex-col items-center gap-0.5">
                                 <span className="text-[10px] font-bold text-foreground/80">{band.label}</span>
@@ -869,8 +875,40 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                     {activeTab === 'maintenance' && (
                       <div className="space-y-8 pt-6">
                         <div className="divide-y divide-white/[0.04]">
+                          {/* Subtitle Provider Section */}
+                          <div className="py-4 space-y-4 pb-8">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Globe size={13} className="text-accent" />
+                              <h4 className="text-[10px] font-black text-accent uppercase tracking-[0.2em]">Subtitle Provider</h4>
+                            </div>
+                            <div className="space-y-4">
+                              <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">OpenSubtitles API Key</label>
+                                <div className="relative group/input">
+                                  <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-muted/40 group-focus-within/input:text-accent transition-colors" size={14} />
+                                  <input 
+                                    type={showApiKey ? "text" : "password"}
+                                    value={osApiKey}
+                                    onChange={(e) => setOsApiKey(e.target.value)}
+                                    placeholder="Enter API Key..."
+                                    className="w-full bg-foreground/[0.02] border border-border-subtle rounded-xl py-3 pl-11 pr-12 text-[12px] text-foreground focus:border-accent/40 outline-none transition-all"
+                                  />
+                                  <button 
+                                    onClick={() => setShowApiKey(!showApiKey)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-muted/40 hover:text-accent transition-colors cursor-pointer"
+                                  >
+                                    {showApiKey ? <EyeOff size={14} /> : <Eye size={14} />}
+                                  </button>
+                                </div>
+                              </div>
+                              <p className="text-[10px] text-muted/60 leading-relaxed font-medium px-1">
+                                Required for online subtitle search. Get your free key at <a href="https://www.opensubtitles.com" target="_blank" className="text-accent hover:underline">OpenSubtitles.com</a>
+                              </p>
+                            </div>
+                          </div>
+
                           {/* Updates Section */}
-                          <div className="py-4 space-y-4">
+                          <div className="py-4 space-y-4 pt-8">
                             <h4 className="text-[10px] font-black text-accent uppercase tracking-[0.2em] mb-4">Updates</h4>
                             <div className="space-y-4">
                               <div className="flex items-center justify-between group">

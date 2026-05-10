@@ -135,6 +135,8 @@ const translations = {
     'update.uptodate': 'Lieb Player is up to date',
     'update.downloading': 'Downloading update...',
     'latest': 'Latest',
+    'auto.resize': 'Auto-Resize Window',
+    'auto.resize.desc': 'Resize window to match video aspect ratio',
   },
   French: {
     'drop.media': 'Déposez un média pour jouer',
@@ -262,6 +264,8 @@ const translations = {
     'update.uptodate': 'Lieb Player est à jour',
     'update.downloading': 'Téléchargement...',
     'latest': 'Dernier',
+    'auto.resize': 'Redimensionnement auto',
+    'auto.resize.desc': 'Ajuster la fenêtre au ratio de la vidéo',
   },
   Spanish: {
     'drop.media': 'Suelta un archivo para jugar',
@@ -389,6 +393,8 @@ const translations = {
     'update.uptodate': 'Lieb Player está actualizado',
     'update.downloading': 'Descargando...',
     'latest': 'Último',
+    'auto.resize': 'Redimensionar auto',
+    'auto.resize.desc': 'Ajustar ventana al ratio del vídeo',
   },
 };
 

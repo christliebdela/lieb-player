@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { 
   Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, 
   Maximize, Minimize, Settings, FolderOpen, Subtitles,
-  Rewind, FastForward, Repeat, Repeat1, PictureInPicture2,
+  Rewind, FastForward, Search, Repeat, Repeat1, PictureInPicture2,
   Camera, Film
 } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
@@ -465,12 +465,14 @@ export const MainControls: React.FC = () => {
           </button>
           
           {hasMedia && (
-            <button 
-              onClick={() => openWindow('subtitle-search', 'Online Subtitles', 600, 500)}
-              className="ml-2 text-[8px] font-black uppercase tracking-tighter text-muted hover:text-accent transition-colors cursor-pointer border border-white/5 px-1 rounded"
-            >
-              Search
-            </button>
+            <Tooltip content="Search Online Subtitles">
+              <button 
+                onClick={() => openWindow('subtitle-search', 'Online Subtitles', 600, 500)}
+                className="ml-2 p-1 text-muted hover:text-accent transition-all cursor-pointer border border-white/5 rounded-lg hover:bg-white/5 active:scale-90"
+              >
+                <Search size={12} strokeWidth={3} />
+              </button>
+            </Tooltip>
           )}
         </div>
       </Tooltip>
@@ -589,7 +591,7 @@ export const MainControls: React.FC = () => {
       className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none"
       onWheel={handleWheel}
     >
-      <div className={`w-full relative bg-surface/70 backdrop-blur-3xl border-t border-border-subtle transition-all duration-500 ${
+      <div className={`w-full relative bg-surface/70 backdrop-blur-3xl border-t border-border-subtle transition-all duration-500 cursor-default ${
         showControls ? 'pointer-events-auto' : 'pointer-events-none'
       }`}>
         <div 

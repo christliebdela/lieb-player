@@ -42,6 +42,10 @@ interface PlayerState {
   hwAcceleration: boolean;
   rememberPosition: boolean;
   autoPlay: boolean;
+  autoResize: boolean;
+  osApiKey: string;
+  setOsApiKey: (key: string) => void;
+  setAutoResize: (autoResize: boolean) => void;
   renderingBackend: 'gpu-next' | 'd3d11' | 'vulkan';
   interpolation: boolean;
   deband: boolean;
@@ -150,6 +154,10 @@ export const usePlayerStore = create<PlayerState>()(
       hwAcceleration: true,
       rememberPosition: true,
       autoPlay: true,
+      autoResize: false,
+      osApiKey: '2zPtI90PvlSnS5jwBHXK6BWiJB5C6Uhd',
+      setOsApiKey: (osApiKey) => set({ osApiKey }),
+      setAutoResize: (autoResize) => set({ autoResize }),
       renderingBackend: 'gpu-next',
       interpolation: true,
       deband: true,
@@ -347,6 +355,9 @@ export const usePlayerStore = create<PlayerState>()(
         hwAcceleration: state.hwAcceleration,
         rememberPosition: state.rememberPosition,
         autoPlay: state.autoPlay,
+        autoResize: state.autoResize,
+        osApiKey: state.osApiKey,
+        setAutoResize: state.setAutoResize,
         renderingBackend: state.renderingBackend,
         interpolation: state.interpolation,
         deband: state.deband,

@@ -11,7 +11,7 @@ import { SubtitleSearchModal } from './components/settings/SubtitleSearchModal';
 import { usePlayerStore } from './store/usePlayerStore';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useTranslation } from './i18n';
-import { listen, emit } from '@tauri-apps/api/event';
+import { listen } from '@tauri-apps/api/event';
 import { command, setProperty } from 'tauri-plugin-mpv-api';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { showActionOSD } from './utils/osd';
@@ -287,6 +287,7 @@ function MainPlayer() {
       .catch(err => console.warn('Lieb: Script guard hit:', err));
     getCurrentWindow().center();
 
+
     const handleContextMenu = (e: MouseEvent) => e.preventDefault();
     document.addEventListener('contextmenu', handleContextMenu);
 
@@ -409,7 +410,6 @@ function MainPlayer() {
       const next = !isFullscreen;
       await getCurrentWindow().setFullscreen(next);
       setFullscreen(next);
-      const { showActionOSD } = await import('./utils/osd');
       showActionOSD(next ? t('fullscreen.on') : t('fullscreen.off'), 'maximize');
     } catch (err) {
       console.error(' Lieb: Fullscreen toggle error:', err);
@@ -430,21 +430,6 @@ function MainPlayer() {
         !showControls ? 'cursor-none' : (isFullscreen ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing')
       }`}
       onMouseMove={handleMouseMove}
-      onContextMenu={async (e) => {
-        e.preventDefault();
-        const s = usePlayerStore.getState();
-        if (!s.isEngineReady) return;
-        if (s.duration > 0) {
-          if (s.currentTime >= s.duration - 0.2) {
-            await command('seek', [0, 'absolute']);
-          }
-          await command('cycle', ['pause']);
-          showActionOSD(!s.isPlaying ? t('play') : t('pause'), !s.isPlaying ? 'play' : 'pause');
-        } else if (s.playlist.length > 0) {
-          const trackToPlay = s.playlist.find(p => p.path === s.currentTrack) || s.playlist[0];
-          await emit('lieb-play', { path: trackToPlay.path, subs: trackToPlay.subs });
-        }
-      }}
     >
       <VideoCanvas 
         onToggleFullscreen={handleFullscreenToggle} 
@@ -574,7 +559,7 @@ function MainPlayer() {
         showControls ? 'opacity-100' : 'opacity-0'
       }`}>
         <header 
-          className={`p-1 flex justify-between items-center transition-all duration-500 relative z-20 ${
+          className={`p-1 flex justify-between items-center transition-all duration-500 relative z-20 cursor-default ${
             showControls ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
           }`}
         >
