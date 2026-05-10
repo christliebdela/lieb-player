@@ -11,9 +11,10 @@ import { SubtitleSearchModal } from './components/settings/SubtitleSearchModal';
 import { usePlayerStore } from './store/usePlayerStore';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useTranslation } from './i18n';
-import { listen } from '@tauri-apps/api/event';
+import { listen, emit } from '@tauri-apps/api/event';
 import { command, setProperty } from 'tauri-plugin-mpv-api';
 import { getCurrentWindow } from '@tauri-apps/api/window';
+import { showActionOSD } from './utils/osd';
 import { Volume2, VolumeX, Volume1, Download } from 'lucide-react';
 import { check } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
@@ -429,6 +430,20 @@ function MainPlayer() {
         !showControls ? 'cursor-none' : (isFullscreen ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing')
       }`}
       onMouseMove={handleMouseMove}
+      onContextMenu={async (e) => {
+        e.preventDefault();
+        const s = usePlayerStore.getState();
+        if (s.duration > 0) {
+          if (s.currentTime >= s.duration - 0.2) {
+            await command('seek', [0, 'absolute']);
+          }
+          await command('cycle', ['pause']);
+          showActionOSD(!s.isPlaying ? t('play') : t('pause'), !s.isPlaying ? 'play' : 'pause');
+        } else if (s.playlist.length > 0) {
+          const trackToPlay = s.playlist.find(p => p.path === s.currentTrack) || s.playlist[0];
+          await emit('lieb-play', { path: trackToPlay.path, subs: trackToPlay.subs });
+        }
+      }}
     >
       <VideoCanvas 
         onToggleFullscreen={handleFullscreenToggle} 

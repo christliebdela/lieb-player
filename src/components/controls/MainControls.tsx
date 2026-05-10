@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getCurrentWindow, PhysicalSize, PhysicalPosition, currentMonitor } from '@tauri-apps/api/window';
 import { invoke, convertFileSrc } from '@tauri-apps/api/core';
 import { command, setProperty } from 'tauri-plugin-mpv-api';
+import { emit } from '@tauri-apps/api/event';
 import { showActionOSD } from '../../utils/osd';
 import { useTranslation } from '../../i18n';
 
@@ -286,8 +287,13 @@ export const MainControls: React.FC = () => {
 
       <Tooltip content={isPlaying ? t('pause') : t('play')}>
         <button 
-          disabled={!hasMedia}
+          disabled={!hasMedia && playlist.length === 0}
           onClick={async () => {
+            if (!hasMedia && playlist.length > 0) {
+              const trackToPlay = playlist.find(p => p.path === currentTrack) || playlist[0];
+              await emit('lieb-play', { path: trackToPlay.path, subs: trackToPlay.subs });
+              return;
+            }
             if (duration > 0 && currentTime >= duration - 0.2) {
               await command('seek', [0, 'absolute']);
             }

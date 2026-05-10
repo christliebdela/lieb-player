@@ -92,17 +92,21 @@ export const useKeyboardShortcuts = () => {
       const hasMedia = duration > 0;
 
       switch (e.code) {
-        case 'Space':
+        case 'Space': {
           e.preventDefault();
-          if (hasMedia) {
-            const state = usePlayerStore.getState();
-            if (state.duration > 0 && state.currentTime >= state.duration - 0.2) {
+          const s = usePlayerStore.getState();
+          if (s.duration > 0) {
+            if (s.currentTime >= s.duration - 0.2) {
               await command('seek', [0, 'absolute']);
             }
             await command('cycle', ['pause']);
-            showActionOSD(!state.isPlaying ? t('play') : t('pause'), !state.isPlaying ? 'play' : 'pause');
+            showActionOSD(!s.isPlaying ? t('play') : t('pause'), !s.isPlaying ? 'play' : 'pause');
+          } else if (s.playlist.length > 0) {
+            const trackToPlay = s.playlist.find(p => p.path === s.currentTrack) || s.playlist[0];
+            await emit('lieb-play', { path: trackToPlay.path, subs: trackToPlay.subs });
           }
           break;
+        }
         case 'KeyF': {
           const appWindow = getCurrentWindow();
           const nextFullscreen = !isFullscreen;
@@ -121,23 +125,11 @@ export const useKeyboardShortcuts = () => {
           openWindow('settings', 'Settings', 800, 560);
           break;
         case 'KeyN': {
-          const { playlist, currentTrack, setCurrentTrack } = usePlayerStore.getState();
-          const idx = playlist.findIndex(t => t.path === currentTrack);
-          if (idx !== -1 && idx < playlist.length - 1) {
-            const next = playlist[idx + 1];
-            await emit('lieb-play', { path: next.path, subs: next.subs });
-            setCurrentTrack(next.path);
-          }
+          usePlayerStore.getState().playNext();
           break;
         }
         case 'KeyP': {
-          const { playlist, currentTrack, setCurrentTrack } = usePlayerStore.getState();
-          const idx = playlist.findIndex(t => t.path === currentTrack);
-          if (idx > 0) {
-            const prev = playlist[idx - 1];
-            await emit('lieb-play', { path: prev.path, subs: prev.subs });
-            setCurrentTrack(prev.path);
-          }
+          usePlayerStore.getState().playPrevious();
           break;
         }
         case 'ArrowRight':

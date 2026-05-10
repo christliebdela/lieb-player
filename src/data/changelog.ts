@@ -14,27 +14,30 @@ export const changelog: ChangelogEntry[] = [
     date: "2026-05-10",
     changes: {
       English: [
+        "Smart Resume: Play/Spacebar now automatically resumes last track and position",
+        "Right-Click to Play: Trigger playback/resume via right-click on canvas",
         "Seamless Streaming: 30s background prefetching for gapless playback",
         "Proportional UI Scaling: Controls now scale perfectly to any window size",
         "Detailed Error Reporting: Specific feedback for update failures",
         "Multi-language Changelog: Full translations for version history",
-        "Optimized cursor management for better distraction-free viewing",
         "Refined loading states to avoid flashing during background loads"
       ],
       French: [
+        "Reprise Intelligente : Lecture/Espace reprend automatiquement la piste et la position",
+        "Clic-Droit pour Jouer : Déclenchez la lecture via un clic-droit sur le canevas",
         "Streaming Fluide : Préchargement de 30s pour une lecture sans coupure",
         "Mise à l'échelle Proportionnelle : Les contrôles s'adaptent à toute taille",
         "Rapports d'Erreur Détaillés : Retours précis sur les échecs de mise à jour",
         "Historique Multilingue : Traductions complètes de l'historique",
-        "Gestion optimisée du curseur pour une visionnage sans distraction",
         "États de chargement affinés pour éviter les clignotements"
       ],
       Spanish: [
+        "Reanudación Inteligente: Play/Espacio reanuda automáticamente pista y posición",
+        "Clic-Derecho para Reproducir: Activa la reproducción con clic-derecho en el lienzo",
         "Streaming Fluido: Precarga de 30s para reproducción sin pausas",
         "Escalado Proporcional: Controles que se adaptan a cualquier tamaño",
         "Informes de Errores Detallados: Feedback específico en actualizaciones",
         "Historial Multilingüe: Traducciones completas del historial de versiones",
-        "Gestión de cursor optimizada para una visualización sin distracciones",
         "Estados de carga refinados para evitar parpadeos"
       ]
     }

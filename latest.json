@@ -1,7 +1,7 @@
 {
   "version": "0.1.3",
-  "notes": "v0.1.3: Seamless Streaming & UI Scaling Update\n- Gapless Playback: Intelligent 30s background prefetching for web streams\n- Seamless Handover: Smooth track transitions without loading screens\n- Proportional UI Scaling: Control bar now scales perfectly to any window size\n- Detailed Error Reporting: Transparent feedback for failed updates\n- Localized History: Multi-language support for the in-app Changelog\n- Optimized Cursor Management for better focus",
-  "pub_date": "2026-05-10T12:30:00Z",
+  "notes": "v0.1.3: Seamless Streaming & Smart Playback Update\n- Smart Resume: Play/Spacebar now automatically resumes your last track and position\n- Seamless Streaming: 30s background prefetching for gapless web playback\n- Right-Click to Play: Quick mouse-driven playback trigger on the player canvas\n- Proportional UI Scaling: Controls now scale perfectly to any window size\n- Detailed Error Reporting: Specific feedback for update failures\n- Localized History: Multi-language support for the in-app Changelog",
+  "pub_date": "2026-05-10T12:40:00Z",
   "platforms": {
     "windows-x86_64": {
       "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRNERDZjMrZFFiTXUzVjAyK09XYUIvUXBwVmdmaDYzM2hDblA2L2FRelVQZlVMN3lMeVVOVUwzSkpocnVFZVZRVVhxd1cvMk1vMHFycFRSTjZPT2p2QmRrbERWb003akFNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4NDE0MjQyCWZpbGU6TGllYl8wLjEuMF94NjRfZW4tVVMubXNpCnlrUGdhb0RHMWtjR1VuRzk5bEJZQXVOVVpXUTQ1d3oxNzBJVElBYXVWSVpGQTlnd2lYVEJLQzFFb1FtWjArTlM5WHF5RDZ5ZGY1N3ZJRkZ0OFdYSkRBPT0K",
