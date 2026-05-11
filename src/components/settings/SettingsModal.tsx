@@ -206,6 +206,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [appVersion, setAppVersion] = useState<string>('0.1.0-alpha');
   const [pendingUpdate, setPendingUpdate] = useState<Update | null>(null);
+  const [availableVersion, setAvailableVersion] = useState<string | null>(null);
 
   React.useEffect(() => {
     getVersion().then(v => setAppVersion(v));
@@ -218,9 +219,11 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
       return;
     }
 
-    // If update is available but not downloaded, and user clicks "Download Update"
-    if (updateStatus === 'available' && pendingUpdate && downloadProgress === null) {
+    // If update is available but not downloaded, or if we had an error and want to retry
+    if ((updateStatus === 'available' || updateStatus === 'error') && pendingUpdate && downloadProgress === null) {
       setDownloadProgress(0); // Show immediate feedback
+      setUpdateStatus('available'); // Reset status from error to available
+      setErrorMsg(null);
       try {
         let downloaded = 0;
         let total = 0;
@@ -241,6 +244,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
       } catch (err: any) {
         console.error('Download error:', err);
         setUpdateStatus('error');
+        setDownloadProgress(null); // Reset for retry
         const msg = err.toString().toLowerCase();
         if (msg.includes('signature')) {
           setErrorMsg('Security Error: Signature verification failed');
@@ -261,6 +265,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
         setHasUpdate(true);
         setUpdateStatus('available');
         setPendingUpdate(update);
+        setAvailableVersion(update.version);
         
         // Auto-download if enabled
         if (autoUpdateDownload) {
@@ -976,7 +981,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                                   updateStatus === 'available' ? 'bg-accent border-accent text-white shadow-lg shadow-accent/20 cursor-pointer' :
                                   updateStatus === 'ready' ? 'bg-accent border-accent text-white shadow-lg shadow-accent/20 cursor-pointer' :
                                   updateStatus === 'uptodate' ? 'bg-green-500/10 border-green-500/20 text-green-500' :
-                                  updateStatus === 'error' ? 'bg-red-500/10 border-red-500/20 text-red-500 cursor-pointer' :
+                                  updateStatus === 'error' ? 'bg-red-500/10 border-red-400/20 text-red-400 hover:bg-red-500/20 cursor-pointer' :
                                   'bg-foreground/[0.03] border-border-subtle text-muted hover:text-accent hover:border-accent/20 cursor-pointer'
                                 }`}
                               >
@@ -1010,7 +1015,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                                         <Download size={12} className="animate-bounce" />
                                         {Math.round(downloadProgress)}%
                                       </>
-                                    ) : 'Download Update'
+                                    ) : (availableVersion ? `Download v${availableVersion}` : 'Download Update')
                                   ) :
                                   updateStatus === 'ready' ? 'Relaunch & Install' :
                                   updateStatus === 'uptodate' ? (
@@ -1019,7 +1024,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                                       {t('update.uptodate' as any)}
                                     </div>
                                   ) :
-                                  updateStatus === 'error' ? 'Error' :
+                                  updateStatus === 'error' ? 'Retry Download' :
                                   'Check for Update'}
                                 </span>
                               </button>
