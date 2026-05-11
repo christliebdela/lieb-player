@@ -77,6 +77,22 @@ pub fn run() {
     
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
+            use tauri::Manager;
+            use tauri::Emitter;
+
+            // Focus the main window when a new instance is started
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.set_focus();
+                let _ = window.unminimize();
+            }
+
+            // Handle new files opened via the second instance
+            if args.len() > 1 {
+                let file_path = args[1].clone();
+                let _ = app.emit("open-file", file_path);
+            }
+        }))
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_mpv::init())
