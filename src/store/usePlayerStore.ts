@@ -155,7 +155,7 @@ export const usePlayerStore = create<PlayerState>()(
       rememberPosition: true,
       autoPlay: true,
       autoResize: false,
-      osApiKey: '2zPtI90PvlSnS5jwBHXK6BWiJB5C6Uhd',
+      osApiKey: '',
       setOsApiKey: (osApiKey) => set({ osApiKey }),
       setAutoResize: (autoResize) => set({ autoResize }),
       renderingBackend: 'gpu-next',

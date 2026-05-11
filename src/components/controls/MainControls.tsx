@@ -402,7 +402,7 @@ export const MainControls: React.FC = () => {
         transformOrigin: 'right center'
       }}
     >
-      <Tooltip content={`Loop: ${loopMode}`}>
+      <Tooltip content={`${t('loop.mode')}: ${t(`loop.${loopMode}` as any)}`}>
         <button 
           disabled={!hasMedia}
           onClick={handleLoopCycle}
@@ -416,7 +416,7 @@ export const MainControls: React.FC = () => {
         </button>
       </Tooltip>
       
-      <Tooltip content="Library (L)">
+      <Tooltip content={t('library.tooltip')}>
         <button 
           onClick={() => openWindow('library', 'Library', 800, 600)}
           className="text-muted hover:text-accent transition-all cursor-pointer group"
@@ -425,7 +425,7 @@ export const MainControls: React.FC = () => {
         </button>
       </Tooltip>
 
-      <Tooltip content="Screenshot">
+      <Tooltip content={t('screenshot.tooltip')}>
         <button 
           disabled={!hasMedia}
           onClick={async (e) => {
@@ -434,7 +434,7 @@ export const MainControls: React.FC = () => {
             setTimeout(() => btn.classList.remove('text-accent'), 300);
             try {
               await command('screenshot');
-              showActionOSD('Screenshot Saved', 'camera');
+              showActionOSD(t('screenshot.saved'), 'camera');
             } catch (err) {
               console.error('Screenshot failed:', err);
             }
@@ -445,7 +445,7 @@ export const MainControls: React.FC = () => {
         </button>
       </Tooltip>
 
-      <Tooltip content={subsEnabled ? "Disable Subtitles" : "Enable Subtitles"}>
+      <Tooltip content={subsEnabled ? t('subs.disable') : t('subs.enable')}>
         <div className="flex items-center">
           <button 
             disabled={!hasMedia}
@@ -465,7 +465,7 @@ export const MainControls: React.FC = () => {
           </button>
           
           {hasMedia && (
-            <Tooltip content="Search Online Subtitles">
+            <Tooltip content={t('subs.search')}>
               <button 
                 onClick={() => openWindow('subtitle-search', 'Online Subtitles', 600, 500)}
                 className="ml-2 p-1 text-muted hover:text-accent transition-all cursor-pointer border border-white/5 rounded-lg hover:bg-white/5 active:scale-90"
@@ -488,7 +488,7 @@ export const MainControls: React.FC = () => {
         transformOrigin: 'right center'
       }}
     >
-      <Tooltip content={hasUpdate ? 'Update Available!' : 'Settings (S)'} align="right">
+      <Tooltip content={hasUpdate ? t('settings.update') : t('settings.tooltip')} align="right">
         <button 
           onClick={() => openWindow('settings', 'Settings', 800, 560)}
           className="text-muted hover:text-accent transition-all cursor-pointer group relative"
@@ -500,13 +500,13 @@ export const MainControls: React.FC = () => {
         </button>
       </Tooltip>
 
-      <Tooltip content={isPinned ? 'Unpin (Always on Top)' : 'Pin (Always on Top)'} align="right">
+      <Tooltip content={isPinned ? t('pip.unpin') : t('pip.pin')} align="right">
         <button 
           onClick={async () => {
             const next = !isPinned;
             await appWindow.setAlwaysOnTop(next);
             setIsPinned(next);
-            showActionOSD(next ? 'PiP Mode On' : 'PiP Mode Off', 'pip');
+            showActionOSD(next ? t('pip.on') : t('pip.off'), 'pip');
 
             if (next) {
               try {
@@ -534,7 +534,7 @@ export const MainControls: React.FC = () => {
         </button>
       </Tooltip>
 
-      <Tooltip content={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen (F)'} align="right">
+      <Tooltip content={isFullscreen ? t('fullscreen.exit') : t('fullscreen.enter')} align="right">
         <button 
           onClick={handleFullscreen}
           className={`transition-all cursor-pointer group ${isFullscreen ? 'text-accent' : 'text-muted hover:text-accent'}`}
@@ -572,7 +572,7 @@ export const MainControls: React.FC = () => {
   );
 
   const renderFullscreenOnly = () => (
-    <Tooltip content={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen (F)'} align="right">
+    <Tooltip content={isFullscreen ? t('fullscreen.exit') : t('fullscreen.enter')} align="right">
       <button 
         onClick={handleFullscreen}
         className={`transition-all cursor-pointer group ${isFullscreen ? 'text-accent' : 'text-muted hover:text-accent'}`}

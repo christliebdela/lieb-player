@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Sliders, Monitor, Keyboard, Info, ExternalLink, Activity, Palette, Moon, Wrench, Trash2, RotateCcw, Globe, History, Key, Eye, EyeOff } from 'lucide-react';
+import { X, Sliders, Monitor, Keyboard, Info, ExternalLink, Activity, Palette, Moon, Wrench, Trash2, RotateCcw, Globe, History, Key, Eye, EyeOff, Download } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { useTranslation } from '../../i18n';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -220,6 +220,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
 
     // If update is available but not downloaded, and user clicks "Download Update"
     if (updateStatus === 'available' && pendingUpdate && downloadProgress === null) {
+      setDownloadProgress(0); // Show immediate feedback
       try {
         let downloaded = 0;
         let total = 0;
@@ -885,18 +886,18 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                           <div className="py-4 space-y-4 pb-8">
                             <div className="flex items-center gap-2 mb-2">
                               <Globe size={13} className="text-accent" />
-                              <h4 className="text-[10px] font-black text-accent uppercase tracking-[0.2em]">Subtitle Provider</h4>
+                              <h4 className="text-[10px] font-black text-accent uppercase tracking-[0.2em]">{t('subs.provider' as any)}</h4>
                             </div>
                             <div className="space-y-4">
                               <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">OpenSubtitles API Key</label>
+                                <label className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">{t('subs.api_key' as any)}</label>
                                 <div className="relative group/input">
                                   <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-muted/40 group-focus-within/input:text-accent transition-colors" size={14} />
                                   <input 
                                     type={showApiKey ? "text" : "password"}
                                     value={osApiKey}
                                     onChange={(e) => setOsApiKey(e.target.value)}
-                                    placeholder="Enter API Key..."
+                                    placeholder={t('subs.api_key.placeholder' as any)}
                                     className="w-full bg-foreground/[0.02] border border-border-subtle rounded-xl py-3 pl-11 pr-12 text-[12px] text-foreground focus:border-accent/40 outline-none transition-all"
                                   />
                                   <button 
@@ -908,7 +909,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                                 </div>
                               </div>
                               <p className="text-[10px] text-muted/60 leading-relaxed font-medium px-1">
-                                Required for online subtitle search. Get your free key at <a href="https://www.opensubtitles.com" target="_blank" className="text-accent hover:underline">OpenSubtitles.com</a>
+                                {t('subs.api_key.desc' as any)} <a href="https://www.opensubtitles.com" target="_blank" className="text-accent hover:underline">OpenSubtitles.com</a>
                               </p>
                             </div>
                           </div>
@@ -970,8 +971,8 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                               <button 
                                 onClick={handleCheckUpdate}
                                 disabled={updateStatus === 'checking' || (updateStatus === 'available' && downloadProgress !== null)}
-                                className={`w-full px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all border ${
-                                  updateStatus === 'checking' ? 'bg-accent/10 border-accent/20 text-accent animate-pulse' :
+                                className={`w-full h-10 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all border relative overflow-hidden group/btn ${
+                                  updateStatus === 'checking' ? 'bg-accent/10 border-accent/20 text-accent' :
                                   updateStatus === 'available' ? 'bg-accent border-accent text-white shadow-lg shadow-accent/20 cursor-pointer' :
                                   updateStatus === 'ready' ? 'bg-accent border-accent text-white shadow-lg shadow-accent/20 cursor-pointer' :
                                   updateStatus === 'uptodate' ? 'bg-green-500/10 border-green-500/20 text-green-500' :
@@ -979,12 +980,48 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                                   'bg-foreground/[0.03] border-border-subtle text-muted hover:text-accent hover:border-accent/20 cursor-pointer'
                                 }`}
                               >
-                                {updateStatus === 'checking' ? t('update.checking' as any) :
-                                 updateStatus === 'available' ? (downloadProgress !== null ? `${Math.round(downloadProgress)}%` : 'Download Update') :
-                                 updateStatus === 'ready' ? 'Relaunch & Install' :
-                                 updateStatus === 'uptodate' ? t('update.uptodate' as any) :
-                                 updateStatus === 'error' ? 'Error' :
-                                 'Check for Update'}
+                                {updateStatus === 'checking' && (
+                                  <motion.div 
+                                    className="absolute inset-0 bg-accent/20"
+                                    animate={{ x: ['-100%', '100%'] }}
+                                    transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                                  />
+                                )}
+                                
+                                {downloadProgress !== null && updateStatus === 'available' && (
+                                  <motion.div 
+                                    className="absolute inset-y-0 left-0 bg-white/20"
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${downloadProgress}%` }}
+                                    transition={{ type: "spring", damping: 25, stiffness: 120 }}
+                                  />
+                                )}
+
+                                <span className="relative z-10 flex items-center justify-center gap-2">
+                                  {updateStatus === 'checking' ? (
+                                    <>
+                                      <RotateCcw size={12} className="animate-spin" />
+                                      {t('update.checking' as any)}
+                                    </>
+                                  ) :
+                                  updateStatus === 'available' ? (
+                                    downloadProgress !== null ? (
+                                      <>
+                                        <Download size={12} className="animate-bounce" />
+                                        {Math.round(downloadProgress)}%
+                                      </>
+                                    ) : 'Download Update'
+                                  ) :
+                                  updateStatus === 'ready' ? 'Relaunch & Install' :
+                                  updateStatus === 'uptodate' ? (
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
+                                      {t('update.uptodate' as any)}
+                                    </div>
+                                  ) :
+                                  updateStatus === 'error' ? 'Error' :
+                                  'Check for Update'}
+                                </span>
                               </button>
 
                               <AnimatePresence>
@@ -1000,29 +1037,6 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                                 )}
                               </AnimatePresence>
 
-                              <AnimatePresence>
-                                {downloadProgress !== null && (
-                                  <motion.div 
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: 'auto' }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                    className="mt-4 space-y-2"
-                                  >
-                                    <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-muted">
-                                      <span>{t('update.downloading' as any)}</span>
-                                      <span className="text-accent">{Math.round(downloadProgress)}%</span>
-                                    </div>
-                                    <div className="h-1.5 w-full bg-foreground/5 rounded-full overflow-hidden">
-                                      <motion.div 
-                                        className="h-full bg-accent shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)]"
-                                        initial={{ width: 0 }}
-                                        animate={{ width: `${downloadProgress}%` }}
-                                        transition={{ type: "spring", damping: 20, stiffness: 100 }}
-                                      />
-                                    </div>
-                                  </motion.div>
-                                )}
-                              </AnimatePresence>
                             </div>
                           </div>
 

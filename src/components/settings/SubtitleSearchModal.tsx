@@ -135,7 +135,7 @@ export const SubtitleSearchModal: React.FC<{ standalone?: boolean }> = ({ standa
         </form>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 pb-6 overflow-x-hidden custom-scrollbar">
+      <div className="flex-1 overflow-y-auto px-6 pr-8 pb-6 custom-scrollbar">
         {loading ? (
           <div className="h-full flex flex-col items-center justify-center text-muted gap-4">
             <Loader2 className="animate-spin text-accent" size={32} />
@@ -147,13 +147,13 @@ export const SubtitleSearchModal: React.FC<{ standalone?: boolean }> = ({ standa
             <p className="text-[10px] font-bold uppercase tracking-widest text-center">{error}</p>
           </div>
         ) : results.length > 0 ? (
-          <div className="grid gap-3">
+          <div className="flex flex-col gap-3">
             {results.map((result) => (
               <motion.div
                 key={result.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white/5 border border-white/5 rounded-xl p-4 flex items-center justify-between group hover:border-accent/30 hover:bg-white/[0.08] transition-all"
+                className="bg-white/5 border border-white/5 rounded-xl p-4 flex items-center justify-between group hover:border-accent/30 hover:bg-white/[0.08] transition-all mx-[1px]"
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-1">

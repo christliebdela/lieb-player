@@ -548,7 +548,7 @@ function MainPlayer() {
                 {metadata.title || (currentTrack?.split(/[\\/]/).pop())}
               </h2>
               <p className="text-[9px] text-muted font-bold uppercase tracking-[0.3em] mt-2">
-                Audio Playback
+                {t('app.playback')}
               </p>
             </div>
           </div>
@@ -589,7 +589,7 @@ function MainPlayer() {
                   >
                     <Download size={8} strokeWidth={4} />
                   </motion.div>
-                  <span className="text-[8px] font-black uppercase tracking-widest">Update</span>
+                  <span className="text-[8px] font-black uppercase tracking-widest">{t('app.update')}</span>
                 </motion.button>
               )}
             </AnimatePresence>
@@ -608,12 +608,12 @@ function MainPlayer() {
                 className="pointer-events-none"
               >
                 <h2 className="text-sm font-medium tracking-tight text-white/80 mb-1">
-                  {metadata.title || 'Unknown Title'}
+                  {metadata.title || t('metadata.unknown')}
                 </h2>
                 <div className="flex items-center gap-2 text-white/40 text-[9px] font-semibold uppercase tracking-[0.2em] mb-4">
-                  {metadata.season && <span>Season {metadata.season}</span>}
+                  {metadata.season && <span>{t('metadata.season')} {metadata.season}</span>}
                   {metadata.season && metadata.episode && <span className="w-1 h-1 rounded-full bg-white/10" />}
-                  {metadata.episode && <span>Episode {metadata.episode}</span>}
+                  {metadata.episode && <span>{t('metadata.episode')} {metadata.episode}</span>}
                   {(metadata.season || metadata.episode) && <span className="w-1 h-1 rounded-full bg-white/10" />}
                   <span>{formatDuration(duration)}</span>
                 </div>
