@@ -10,6 +10,33 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: "0.1.6",
+    date: "2026-05-11",
+    changes: {
+      English: [
+        "Rebranding: Officially renamed to 'Lieb Player' across the entire interface",
+        "Global Ready: 100% localization of all tooltips, metadata, and interface labels",
+        "Integrated Updates: New progress-aware update button with smooth animations",
+        "Security: Removed hardcoded API keys; each user now manages their own credentials",
+        "UI Polish: Fixed clipping in Subtitle Search and refined control bar layout"
+      ],
+      French: [
+        "Branding : Officiellement renommé 'Lieb Player' sur toute l'interface",
+        "Prêt pour l'international : Localisation à 100% des infobulles et étiquettes",
+        "Mises à jour intégrées : Nouveau bouton de progression pour les mises à jour",
+        "Sécurité : Suppression des clés API codées en dur ; chaque utilisateur gère ses accès",
+        "Affinage UI : Correction du rognage de la liste de sous-titres et layout amélioré"
+      ],
+      Spanish: [
+        "Branding: Renombrado oficialmente a 'Lieb Player' en toda la interfaz",
+        "Listo para el Mundo: Localización al 100% de globos de texto y etiquetas",
+        "Actualizaciones Integradas: Nuevo botón de progreso con animaciones fluidas",
+        "Seguridad: Se eliminaron las claves API predeterminadas; cada usuario gestiona las suyas",
+        "Pulido de UI: Corregido el recorte en la búsqueda de subtítulos y diseño refinado"
+      ]
+    }
+  },
+  {
     version: "0.1.5",
     date: "2026-05-10",
     changes: {

@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.6] - 2026-05-11
+### Changed
+- Rebranding: Officially renamed to 'Lieb Player' across the entire interface and metadata
+- Global Ready: 100% localization of all tooltips, metadata, and interface labels in English, French, and Spanish
+- Integrated Updates: New progress-aware update button with smooth animations and immediate feedback
+- Security: Removed hardcoded API keys; each user now manages their own unique credentials
+- UI Polish: Fixed clipping in Subtitle Search list and refined control bar layout
+
+## [0.1.5] - 2026-05-10
+### Added
+- Privacy: Added visibility toggle (Eye/EyeOff) for API Key in Maintenance settings
+- Sidebar Cues: Added a pulsing accent dot to the 'Maintenance' tab when an update is available
+
+### Changed
+- Secured Subtitle API: Move credentials to secure local storage settings
+- UI Refinement: Fixed overflow and clipping in the Subtitle Search modal
+- Polished OSD: Slimmed down Action OSD for a more subtle media experience
+
 ## [0.1.4] - 2026-05-10
 ### Added
 - Smart Resume: Play/Spacebar now automatically resumes the last played track and position
