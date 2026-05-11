@@ -18,7 +18,7 @@ interface SubtitleResult {
 }
 
 export const SubtitleSearchModal: React.FC<{ standalone?: boolean }> = ({ standalone }) => {
-  const { currentTrack, isSubSearchOpen, setSubSearchOpen, osApiKey } = usePlayerStore();
+  const { currentTrack, isSubSearchOpen, setSubSearchOpen, osApiKey, setSubsEnabled } = usePlayerStore();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SubtitleResult[]>([]);
   const [loading, setLoading] = useState(false);
@@ -61,9 +61,15 @@ export const SubtitleSearchModal: React.FC<{ standalone?: boolean }> = ({ standa
   };
 
   const handleDownload = async (result: SubtitleResult) => {
+    if (!osApiKey) {
+      showActionOSD('API Key Required', 'alert-circle');
+      return;
+    }
+
     setDownloadingId(result.id);
     try {
       const fileId = result.attributes.files[0].file_id;
+      window.console.log('>>> [Subtitles] Requesting download for file_id:', fileId);
       
       const dlResponse = await fetch('https://api.opensubtitles.com/api/v1/download', {
         method: 'POST',
@@ -77,9 +83,14 @@ export const SubtitleSearchModal: React.FC<{ standalone?: boolean }> = ({ standa
       
       const dlData = await dlResponse.json();
       if (dlData.link) {
+        window.console.log('>>> [Subtitles] Link received:', dlData.link);
         await command('sub-add', [dlData.link, 'select']);
+        setSubsEnabled(true);
         showActionOSD('Subtitle Attached', 'subtitles');
-        handleClose();
+        setTimeout(handleClose, 500);
+      } else {
+        window.console.warn('>>> [Subtitles] No link in response:', dlData);
+        showActionOSD('Download Failed', 'alert-circle');
       }
     } catch (err) {
       showActionOSD('Download Failed', 'alert-circle');
@@ -160,11 +171,11 @@ export const SubtitleSearchModal: React.FC<{ standalone?: boolean }> = ({ standa
                     <span className="px-1.5 py-0.5 bg-accent/10 border border-accent/20 text-accent text-[9px] font-bold rounded uppercase">
                       {result.attributes.language}
                     </span>
-                    <h4 className="text-[13px] text-foreground/90 font-medium truncate">
+                    <h4 className="text-[13px] text-foreground/90 font-medium truncate block overflow-hidden">
                       {result.attributes.release}
                     </h4>
                   </div>
-                  <p className="text-[10px] text-muted truncate opacity-60">
+                  <p className="text-[10px] text-muted truncate opacity-60 block overflow-hidden">
                     ID: {result.id} • {result.attributes.files[0].file_name}
                   </p>
                 </div>
@@ -172,7 +183,7 @@ export const SubtitleSearchModal: React.FC<{ standalone?: boolean }> = ({ standa
                 <button 
                   onClick={() => handleDownload(result)}
                   disabled={downloadingId !== null}
-                  className="ml-4 w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-muted hover:bg-accent hover:text-black transition-all cursor-pointer shadow-xl disabled:opacity-50"
+                  className="ml-4 w-10 h-10 shrink-0 rounded-full bg-white/5 flex items-center justify-center text-muted hover:bg-accent hover:text-black transition-all cursor-pointer shadow-xl disabled:opacity-50"
                 >
                   {downloadingId === result.id ? (
                     <Loader2 className="animate-spin" size={16} />

@@ -10,6 +10,39 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: "0.1.7",
+    date: "2026-05-11",
+    changes: {
+      English: [
+        "Single-Instance Policy: Enforced a single application process to prevent 'ghosting' and resource contention",
+        "Split Updater UI: New layout separating action buttons from status/progress information",
+        "Subtitle Stability: Fixed truncation and locked modal sizing for a consistent search experience",
+        "Auto-Injection: Chosen subtitles are now automatically attached and enabled in the player",
+        "Smart Audio Mode: Automatically hides the playback overlay when embedded cover art is detected",
+        "Intelligent Resizing: Proportional resizing from all 4 corners with clean, invisible hitboxes",
+        "Aesthetic Refinements: Integrated theme colors into the updater and improved UI legibility"
+      ],
+      French: [
+        "Politique d'instance unique : Processus unique forcé pour éviter le 'ghosting' et les conflits",
+        "UI du programme de mise à jour : Nouvelle disposition séparant les boutons d'action du statut",
+        "Stabilité des sous-titres : Correction de la troncature et verrouillage de la taille des fenêtres",
+        "Injection automatique : Les sous-titres choisis sont désormais automatiquement attachés et activés",
+        "Mode Audio intelligent : Masque l'overlay quand une pochette est détectée",
+        "Redimensionnement intelligent : Redimensionnement proportionnel aux 4 coins avec zones invisibles",
+        "Raffinements esthétiques : Intégration des couleurs du thème et amélioration de la lisibilité"
+      ],
+      Spanish: [
+        "Política de Instancia Única: Proceso único forzado para evitar el 'ghosting' y conflictos",
+        "UI del Actualizador: Nuevo diseño que separa los botones de acción del estado/progreso",
+        "Estabilidad de Subtítulos: Truncado corregido y bloqueo de tamaño de ventana para mayor estabilidad",
+        "Inyección Automática: Los subtítulos elegidos ahora se adjuntan y activan automáticamente",
+        "Modo Audio Inteligente: Oculta la superposición cuando se detecta la carátula",
+        "Redimensionamiento Inteligente: Escalado proporcional en las 4 esquinas con áreas invisibles",
+        "Refinamientos Estéticos: Integración de colores del tema y mejora de la legibilidad de la interfaz"
+      ]
+    }
+  },
+  {
     version: "0.1.6",
     date: "2026-05-11",
     changes: {

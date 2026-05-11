@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.7] - 2026-05-11
+### Added
+- Single-Instance Policy: Enforced a single application process to prevent 'ghosting' and resource contention
+- Split Updater UI: New layout separating action buttons from status/progress information
+- Subtitle Stability: Fixed truncation and locked modal sizing for a consistent search experience
+- Auto-Injection: Chosen subtitles are now automatically attached and enabled in the player
+- Smart Audio Mode: Automatically hides the playback overlay when embedded cover art is detected
+- Intelligent Resizing: Proportional resizing from all 4 corners with clean, invisible hitboxes
+- Aesthetic Refinements: Integrated theme colors into the updater and improved UI legibility
+
 ## [0.1.6] - 2026-05-11
 ### Changed
 - Rebranding: Officially renamed to 'Lieb Player' across the entire interface and metadata

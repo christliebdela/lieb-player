@@ -185,6 +185,7 @@ export const MainControls: React.FC = () => {
         decorations: false,
         transparent: true,
         alwaysOnTop: false,
+        resizable: false,
         parent: mainWin, 
       });
 

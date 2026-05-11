@@ -973,61 +973,105 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                             </div>
 
                             <div className="pt-2">
-                              <button 
-                                onClick={handleCheckUpdate}
-                                disabled={updateStatus === 'checking' || (updateStatus === 'available' && downloadProgress !== null)}
-                                className={`w-full h-10 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all border relative overflow-hidden group/btn ${
-                                  updateStatus === 'checking' ? 'bg-accent/10 border-accent/20 text-accent' :
-                                  updateStatus === 'available' ? 'bg-accent border-accent text-white shadow-lg shadow-accent/20 cursor-pointer' :
-                                  updateStatus === 'ready' ? 'bg-accent border-accent text-white shadow-lg shadow-accent/20 cursor-pointer' :
-                                  updateStatus === 'uptodate' ? 'bg-green-500/10 border-green-500/20 text-green-500' :
-                                  updateStatus === 'error' ? 'bg-red-500/10 border-red-400/20 text-red-400 hover:bg-red-500/20 cursor-pointer' :
-                                  'bg-foreground/[0.03] border-border-subtle text-muted hover:text-accent hover:border-accent/20 cursor-pointer'
-                                }`}
-                              >
-                                {updateStatus === 'checking' && (
-                                  <motion.div 
-                                    className="absolute inset-0 bg-accent/20"
-                                    animate={{ x: ['-100%', '100%'] }}
-                                    transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                                  />
-                                )}
-                                
-                                {downloadProgress !== null && updateStatus === 'available' && (
-                                  <motion.div 
-                                    className="absolute inset-y-0 left-0 bg-white/20"
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${downloadProgress}%` }}
-                                    transition={{ type: "spring", damping: 25, stiffness: 120 }}
-                                  />
-                                )}
+                              <div className="flex gap-3">
+                                {/* Action Button (Left) */}
+                                <button 
+                                  onClick={handleCheckUpdate}
+                                  disabled={updateStatus === 'checking' || (updateStatus === 'available' && downloadProgress !== null)}
+                                  className={`w-36 h-10 shrink-0 rounded-xl text-[11px] font-black uppercase tracking-[0.2em] transition-all border relative overflow-hidden group/btn ${
+                                    updateStatus === 'available' || updateStatus === 'ready' || updateStatus === 'error'
+                                    ? 'bg-accent border-accent text-white shadow-lg shadow-accent/20 cursor-pointer active:scale-95' 
+                                    : 'bg-foreground/[0.03] border-border-subtle text-muted hover:text-accent hover:border-accent/20 cursor-pointer active:scale-95'
+                                  }`}
+                                >
+                                  <span className="relative z-10 flex items-center justify-center gap-2">
+                                    {updateStatus === 'available' ? (
+                                      downloadProgress !== null ? <RotateCcw size={12} className="animate-spin" /> : <Download size={12} />
+                                    ) : updateStatus === 'ready' ? (
+                                      <RotateCcw size={12} />
+                                    ) : updateStatus === 'error' ? (
+                                      <RotateCcw size={12} />
+                                    ) : (
+                                      <RotateCcw size={12} className={updateStatus === 'checking' ? 'animate-spin' : 'group-hover/btn:rotate-180 transition-transform duration-500'} />
+                                    )}
+                                    
+                                    {updateStatus === 'available' ? (downloadProgress !== null ? 'Downloading' : 'Download') :
+                                     updateStatus === 'ready' ? 'Relaunch' :
+                                     updateStatus === 'error' ? 'Retry' :
+                                     updateStatus === 'checking' ? 'Checking' :
+                                     'Update'}
+                                  </span>
+                                </button>
 
-                                <span className="relative z-10 flex items-center justify-center gap-2">
-                                  {updateStatus === 'checking' ? (
-                                    <>
-                                      <RotateCcw size={12} className="animate-spin" />
-                                      {t('update.checking' as any)}
-                                    </>
-                                  ) :
-                                  updateStatus === 'available' ? (
-                                    downloadProgress !== null ? (
-                                      <>
-                                        <Download size={12} className="animate-bounce" />
-                                        {Math.round(downloadProgress)}%
-                                      </>
-                                    ) : (availableVersion ? `Download v${availableVersion}` : 'Download Update')
-                                  ) :
-                                  updateStatus === 'ready' ? 'Relaunch & Install' :
-                                  updateStatus === 'uptodate' ? (
-                                    <div className="flex items-center gap-2">
-                                      <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
-                                      {t('update.uptodate' as any)}
-                                    </div>
-                                  ) :
-                                  updateStatus === 'error' ? 'Retry Download' :
-                                  'Check for Update'}
-                                </span>
-                              </button>
+                                {/* Status Bar (Right) */}
+                                <div className={`flex-1 h-10 rounded-xl relative overflow-hidden flex items-center px-4 transition-all duration-500 ${
+                                  updateStatus === 'uptodate' ? 'bg-accent/10 border-accent/20' : 'bg-foreground/[0.03] border-border-subtle'
+                                }`}>
+                                  {downloadProgress !== null && updateStatus === 'available' && (
+                                    <motion.div 
+                                      className="absolute inset-y-0 left-0 bg-accent/10"
+                                      initial={{ width: 0 }}
+                                      animate={{ width: `${downloadProgress}%` }}
+                                      transition={{ type: "spring", damping: 25, stiffness: 120 }}
+                                    />
+                                  )}
+
+                                  {updateStatus === 'checking' && (
+                                    <motion.div 
+                                      className="absolute inset-0 bg-accent/[0.05]"
+                                      animate={{ x: ['-100%', '100%'] }}
+                                      transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                                    />
+                                  )}
+
+                                  <div className="relative z-10 flex items-center justify-between w-full">
+                                    <span className={`text-[11px] font-bold flex items-center gap-2 transition-colors duration-500 ${
+                                      updateStatus === 'uptodate' ? 'text-accent' : 'text-muted'
+                                    }`}>
+                                      {updateStatus === 'idle' && (
+                                        <>
+                                          <div className="w-1.5 h-1.5 rounded-full bg-muted/30" />
+                                          System ready
+                                        </>
+                                      )}
+                                      {updateStatus === 'checking' && (
+                                        <>
+                                          <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+                                          Checking for updates...
+                                        </>
+                                      )}
+                                      {updateStatus === 'available' && (
+                                        <>
+                                          <div className="w-1.5 h-1.5 rounded-full bg-accent shadow-[0_0_8px_rgba(var(--accent-rgb),0.5)]" />
+                                          {downloadProgress !== null ? `Downloading v${availableVersion}...` : `v${availableVersion} is available`}
+                                        </>
+                                      )}
+                                      {updateStatus === 'ready' && (
+                                        <>
+                                          <div className="w-1.5 h-1.5 rounded-full bg-accent shadow-[0_0_8px_rgba(var(--accent-rgb),0.5)]" />
+                                          Update ready to install
+                                        </>
+                                      )}
+                                      {updateStatus === 'uptodate' && (
+                                        <>
+                                          <div className="w-1.5 h-1.5 rounded-full bg-accent shadow-[0_0_8px_rgba(var(--accent-rgb),0.5)]" />
+                                          Lieb Player is up to date
+                                        </>
+                                      )}
+                                      {updateStatus === 'error' && (
+                                        <>
+                                          <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                                          Update failed
+                                        </>
+                                      )}
+                                    </span>
+
+                                    {downloadProgress !== null && updateStatus === 'available' && (
+                                      <span className="text-[10px] font-black text-accent">{Math.round(downloadProgress)}%</span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
 
                               <AnimatePresence>
                                 {updateStatus === 'error' && errorMsg && (
@@ -1041,7 +1085,6 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                                   </motion.p>
                                 )}
                               </AnimatePresence>
-
                             </div>
                           </div>
 

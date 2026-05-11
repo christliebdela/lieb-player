@@ -1,11 +1,11 @@
 {
-  "version": "0.1.6",
-  "notes": "v0.1.6: Branding & Global Polish\n- Rebranding: Officially renamed to 'Lieb Player' across the entire interface\n- Global Ready: 100% localization of all tooltips, metadata, and interface labels in English, French, and Spanish\n- UI Refinement: New integrated progress button for updates and fixed subtitle list clipping\n- Security: Removed hardcoded API keys; each user now manages their own credentials\n- Consistency: Standardized app name in all system manifests and metadata",
-  "pub_date": "2026-05-11T00:46:11Z",
+  "version": "0.1.7",
+  "notes": "v0.1.7: Production Finalization & UI Polish\n- Single-Instance Policy: Enforced a single application process to prevent 'ghosting' and resource contention\n- Split Updater UI: New layout separating action buttons from status/progress information\n- Subtitle Stability: Fixed truncation and locked modal sizing for a consistent search experience\n- Auto-Injection: Chosen subtitles are now automatically attached and enabled in the player\n- Smart Audio Mode: Automatically hides playback overlay when cover art is detected\n- Intelligent Resizing: Proportional resizing from all 4 corners with clean hitboxes",
+  "pub_date": "2026-05-11T02:05:00Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRNERDZjMrZFFiTXN5UWFFaHlqeFdJWXA5QUlQYXBhMHBsOTRNTDBpU3JPOWVDOFBvYj01dDhXVHNZU2wzVmhjNlY4cHhVZElXY21FcHJpdTkvN2VFNjIwcCt4ODcza0F3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4NDYwODUwCWZpbGU6TGllYiBQbGF5ZXJfMC4xLjZfeDY0X2VuLVVTLm1zaQpoRHJ2UWtzSkdrWHg4eHY4bkk0NjhCdXJWTlhkTFExWElyY254K0dDRHl2cU9rVElnYTJ0M1RkU3FLNXdUdTIrcXV5MDhrRTFMclhLUVpmZWhHT1FCUT09Cg==",
-      "url": "https://github.com/christliebdela/lieb-player/releases/download/v0.1.6/Lieb.Player_0.1.6_x64_en-US.msi"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRNERDZjMrZFFiTWlHVnBBalZwckM5R1h1dXh0NHVhSUphUVRidUIwUHRWVlRzTnNMNXMzKzJNRzc1ejYxUGwvVkFzc0pyK0FNVXNhT0lUL20wSWNKTTdibk0vdTEvdHdnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4NDY3MjM5CWZpbGU6TGllYiBQbGF5ZXJfMC4xLjdfeDY0X2VuLVVTLm1zaQpOVElDbWNuSEs4Y2FvaWdEQVhjMXdIbWFZYWw1dXhRWEFKUGdDWUoxQW9CeFJCNWNTL3JZUG5NbkdBdi9NRGJockNqNTQydjZBMmRvQUxsaFRkN2JDdz09Cg==",
+      "url": "https://github.com/christliebdela/lieb-player/releases/download/v0.1.7/Lieb.Player_0.1.7_x64_en-US.msi"
     }
   }
 }
