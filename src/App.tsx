@@ -60,19 +60,10 @@ const ResizeGrip: React.FC<{ position: 'tl' | 'tr' | 'bl' | 'br', show: boolean 
     }
   };
 
-  const getRotationClass = () => {
-    switch (position) {
-      case 'tl': return 'rotate-180';
-      case 'tr': return '-rotate-90';
-      case 'bl': return 'rotate-90';
-      case 'br': return '';
-    }
-  };
-
   return (
     <div 
-      className={`fixed z-[60] p-2 ${getPositionClass()} ${getCursor()} transition-opacity duration-500 ${
-        show ? 'opacity-20 hover:opacity-50' : 'opacity-0 pointer-events-none'
+      className={`fixed z-[60] p-3 ${getPositionClass()} ${getCursor()} ${
+        show ? 'pointer-events-auto' : 'pointer-events-none'
       }`}
       onPointerDown={async (e) => {
         e.preventDefault();
@@ -138,13 +129,7 @@ const ResizeGrip: React.FC<{ position: 'tl' | 'tr' | 'bl' | 'br', show: boolean 
         window.addEventListener('pointermove', onMove);
         window.addEventListener('pointerup', onUp);
       }}
-    >
-      <svg width="14" height="14" viewBox="0 0 14 14" className={`text-white/40 ${getRotationClass()}`}>
-        <line x1="12" y1="2" x2="2" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-        <line x1="12" y1="6" x2="6" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-        <line x1="12" y1="10" x2="10" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      </svg>
-    </div>
+    />
   );
 };
 
@@ -518,7 +503,7 @@ function MainPlayer() {
       )}
 
       {/* Audio Mode Overlay */}
-      {isPlaying && ['MP3', 'WAV', 'FLAC', 'M4A', 'OGG', 'OPUS', 'AAC', 'WMA'].includes(currentTrack?.split('.').pop()?.toUpperCase() || '') && (
+      {isPlaying && !metadata.hasArtwork && ['MP3', 'WAV', 'FLAC', 'M4A', 'OGG', 'OPUS', 'AAC', 'WMA'].includes(currentTrack?.split('.').pop()?.toUpperCase() || '') && (
         <div className="absolute inset-0 flex flex-col items-center justify-center z-0 bg-background/20 backdrop-blur-3xl overflow-hidden">
           {/* Pulsing Aura */}
           <motion.div 
@@ -629,8 +614,10 @@ function MainPlayer() {
         <MainControls />
       </div>
 
-      <ResizeGrip position="bl" show={showControls && !isBlocking} />
-      <ResizeGrip position="br" show={showControls && !isBlocking} />
+      <ResizeGrip position="tl" show={!isBlocking} />
+      <ResizeGrip position="tr" show={!isBlocking} />
+      <ResizeGrip position="bl" show={!isBlocking} />
+      <ResizeGrip position="br" show={!isBlocking} />
       {isBlocking && (
         <div 
           className="absolute inset-0 bg-transparent pointer-events-auto"

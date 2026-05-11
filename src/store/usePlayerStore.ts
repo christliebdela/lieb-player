@@ -5,8 +5,9 @@ import { emit } from '@tauri-apps/api/event';
 interface Metadata {
   title: string;
   description: string;
-  episode: string;
-  season: string;
+  episode?: string;
+  season?: string;
+  hasArtwork?: boolean;
 }
 
 interface PlaylistItem {
@@ -185,6 +186,7 @@ export const usePlayerStore = create<PlayerState>()(
         description: '',
         episode: '',
         season: '',
+        hasArtwork: false,
       },
 
       setPlaying: (playing) => set({ isPlaying: playing }),

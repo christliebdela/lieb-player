@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getCurrentWindow, PhysicalSize, PhysicalPosition, currentMonitor } from '@tauri-apps/api/window';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 import { invoke, convertFileSrc } from '@tauri-apps/api/core';
 import { command, setProperty } from 'tauri-plugin-mpv-api';
 import { emit } from '@tauri-apps/api/event';
@@ -52,7 +52,6 @@ export const MainControls: React.FC = () => {
     loopMode, setLoopMode,
     playlist, currentTrack, 
     scrollMode,
-    aspectRatio,
     subsEnabled, setSubsEnabled,
     seekInterval,
     controlBarLayout,
@@ -507,24 +506,6 @@ export const MainControls: React.FC = () => {
             await appWindow.setAlwaysOnTop(next);
             setIsPinned(next);
             showActionOSD(next ? t('pip.on') : t('pip.off'), 'pip');
-
-            if (next) {
-              try {
-                const monitor = await currentMonitor();
-                if (monitor) {
-                  const scaleFactor = await appWindow.scaleFactor();
-                  const targetW = Math.round((monitor.size.width / scaleFactor) * 0.3);
-                  const targetH = Math.round(targetW / aspectRatio);
-                  await appWindow.setSize(new PhysicalSize(Math.round(targetW * scaleFactor), Math.round(targetH * scaleFactor)));
-                  await new Promise(r => setTimeout(r, 100));
-                  const posX = monitor.size.width - Math.round(targetW * scaleFactor) - Math.round(20 * scaleFactor);
-                  const posY = Math.round(20 * scaleFactor);
-                  await appWindow.setPosition(new PhysicalPosition(posX, posY));
-                }
-              } catch (err) {
-                console.error(' Lieb Player: Failed to snap window:', err);
-              }
-            }
           }}
           className={`transition-all cursor-pointer group ${isPinned ? 'text-accent scale-110' : 'text-muted hover:text-accent'}`}
         >

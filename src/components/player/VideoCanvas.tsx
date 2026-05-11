@@ -229,7 +229,10 @@ export const VideoCanvas: React.FC<{
                 if (Array.isArray(tracks)) {
                   window.console.log('>>> [VideoCanvas] MPV track-list updated:', tracks.length, 'tracks total');
                   const hasSubs = tracks.some(t => t.type === 'sub');
-                  usePlayerStore.getState().setHasSubtitles(hasSubs);
+                  const hasVideo = tracks.some(t => t.type === 'video');
+                  const s = usePlayerStore.getState();
+                  s.setHasSubtitles(hasSubs);
+                  s.setMetadata({ ...s.metadata, hasArtwork: hasVideo });
                 }
                 break;
               }
