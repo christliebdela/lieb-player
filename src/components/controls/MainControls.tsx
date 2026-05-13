@@ -583,7 +583,7 @@ export const MainControls: React.FC = () => {
           </AnimatePresence>
         </div>
 
-        <div className="px-4 py-5">
+        <div className="px-4 py-4">
           {controlBarLayout === 'default' && (
             <div className="flex items-center justify-between">
               {/* Left Group: Playback & Volume */}
