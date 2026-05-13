@@ -13,6 +13,7 @@ import { command, setProperty } from 'tauri-plugin-mpv-api';
 import { emit } from '@tauri-apps/api/event';
 import { showActionOSD } from '../../utils/osd';
 import { useTranslation } from '../../i18n';
+import { openWindow } from '../../utils/window';
 
 const Tooltip: React.FC<{ children: React.ReactNode; content: string; align?: 'center' | 'right' }> = ({ children, content, align = 'center' }) => {
   const [show, setShow] = useState(false);
@@ -130,6 +131,7 @@ export const MainControls: React.FC = () => {
       const delta = e.deltaY < 0 ? 5 : -5;
       const newVol = Math.max(0, Math.min(150, volume + delta));
       await setProperty('volume', newVol);
+      await setProperty('mute', false);
     } else {
       const delta = e.deltaY < 0 ? 5 : -5;
       await command('seek', [delta, 'relative']);
@@ -155,70 +157,18 @@ export const MainControls: React.FC = () => {
     }
   };
 
-  const openWindow = async (label: string, title: string, width: number, height: number) => {
-    const { setBlocking } = usePlayerStore.getState();
-
-    try {
-      const { WebviewWindow } = await import('@tauri-apps/api/webviewWindow');
-      const existing = await WebviewWindow.getByLabel(label);
-      if (existing) {
-        await existing.setFocus();
-        return;
-      }
-
-      const mainWin = getCurrentWindow();
-      const outerSize = await mainWin.outerSize();
-      const outerPos = await mainWin.outerPosition();
-      const scaleFactor = await mainWin.scaleFactor();
-
-      // Calculate center position in logical pixels
-      const centerX = (outerPos.x + (outerSize.width / 2)) / scaleFactor - (width / 2);
-      const centerY = (outerPos.y + (outerSize.height / 2)) / scaleFactor - (height / 2);
-
-      const win = new WebviewWindow(label, {
-        url: '/',
-        title,
-        width,
-        height,
-        x: centerX,
-        y: centerY,
-        decorations: false,
-        transparent: true,
-        alwaysOnTop: false,
-        resizable: false,
-        parent: mainWin, 
-      });
-
-      // Show blocking overlay on main window
-      setBlocking(true);
-
-      // Re-enable when closed
-      win.once('tauri://destroyed', () => {
-        setBlocking(false);
-        mainWin.setFocus();
-      });
-
-      win.once('tauri://error', () => {
-        setBlocking(false);
-      });
-
-    } catch (err) {
-      console.error(`Failed to open ${label} window:`, err);
-    }
-  };
 
 
   const [winWidth, setWinWidth] = useState(1000);
 
   useEffect(() => {
-    const updateWidth = async () => {
-      const size = await appWindow.innerSize();
-      const scaleFactor = await appWindow.scaleFactor();
-      setWinWidth(size.width / scaleFactor);
-    };
-    updateWidth();
-    const unlisten = appWindow.onResized(updateWidth);
-    return () => { unlisten.then(f => f?.()); };
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setWinWidth(entry.contentRect.width);
+      }
+    });
+    observer.observe(document.body);
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -246,8 +196,9 @@ export const MainControls: React.FC = () => {
   const isSmall = winWidth < 650;
   const isTiny = winWidth < 450;
 
-  // Proportional scale factor based on 800px baseline
-  const uiScale = Math.max(0.75, Math.min(1, winWidth / 800));
+  // Proportional scale factor based on 900px baseline
+  // We want it to scale down proportionally, but keep 1.0 as the max
+  const uiScale = Math.max(0.4, Math.min(1, winWidth / 900));
 
   const renderPlaybackGroup = (isCenteredLayout = false) => (
     <div 
@@ -300,7 +251,7 @@ export const MainControls: React.FC = () => {
             await command('cycle', ['pause']);
             showActionOSD(!isPlaying ? t('play') : t('pause'), !isPlaying ? 'play' : 'pause');
           }}
-          className={`transition-all duration-300 transform active:scale-95 cursor-pointer group ${hasMedia ? 'text-muted hover:text-accent drop-shadow-md' : 'text-muted/40 cursor-default'}`}
+          className={`transition-all duration-150 transform active:scale-95 cursor-pointer group ${hasMedia ? 'text-muted hover:text-accent drop-shadow-md' : 'text-muted/40 cursor-default'}`}
         >
           <div className="group-hover:scale-110 transition-transform flex items-center justify-center">
             {isPlaying ? (
@@ -377,7 +328,12 @@ export const MainControls: React.FC = () => {
             min="0"
             max="150"
             value={volume}
-            onChange={(e) => setProperty('volume', Number(e.target.value))}
+            onChange={async (e) => {
+              const val = Number(e.target.value);
+              window.console.log('>>> [MainControls] Volume slider changed to:', val);
+              await setProperty('volume', val);
+              await setProperty('mute', false);
+            }}
             className="absolute inset-0 opacity-0 cursor-pointer appearance-none"
           />
         </div>
@@ -439,7 +395,7 @@ export const MainControls: React.FC = () => {
               console.error('Screenshot failed:', err);
             }
           }}
-          className={`transition-all duration-300 cursor-pointer group ${hasMedia ? 'text-muted hover:text-accent' : 'text-muted/40 cursor-default'}`}
+          className={`transition-all duration-150 cursor-pointer group ${hasMedia ? 'text-muted hover:text-accent' : 'text-muted/40 cursor-default'}`}
         >
           <Camera size={18} className="group-hover:scale-110 transition-transform" />
         </button>
@@ -570,10 +526,10 @@ export const MainControls: React.FC = () => {
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: showControls ? 1 : 0, y: showControls ? 0 : 10 }}
-      className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none"
+      className="w-full z-50 pointer-events-none flex-shrink-0"
       onWheel={handleWheel}
     >
-      <div className={`w-full relative bg-surface/70 backdrop-blur-3xl border-t border-border-subtle transition-all duration-500 cursor-default ${
+      <div className={`w-full relative bg-surface/70 backdrop-blur-xl border-t border-border-subtle transition-all duration-500 cursor-default ${
         showControls ? 'pointer-events-auto' : 'pointer-events-none'
       }`}>
         <div 

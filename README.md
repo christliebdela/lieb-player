@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="public/lieb-player-icon.png" alt="Lieb Player Logo" width="120" height="120" />
+  <img src="public/logo.png" alt="Lieb Player Logo" width="120" height="120" />
   <h1>Lieb Player</h1>
   <p><strong>A modern, high-fidelity desktop media player powered by Tauri, React, and the Libre Media Engine (mpv).</strong></p>
 

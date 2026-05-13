@@ -1,11 +1,11 @@
 {
-  "version": "0.1.7",
-  "notes": "v0.1.7: Production Finalization & UI Polish\n- Single-Instance Policy: Enforced a single application process to prevent 'ghosting' and resource contention\n- Split Updater UI: New layout separating action buttons from status/progress information\n- Subtitle Stability: Fixed truncation and locked modal sizing for a consistent search experience\n- Auto-Injection: Chosen subtitles are now automatically attached and enabled in the player\n- Smart Audio Mode: Automatically hides playback overlay when cover art is detected\n- Intelligent Resizing: Proportional resizing from all 4 corners with clean hitboxes",
-  "pub_date": "2026-05-11T02:05:00Z",
+  "version": "v0.1.8",
+  "notes": "v0.1.8: Library Overhaul & Visual Rebrand\n- Visual Rebrand: Complete regeneration of application icons using the new official logo\n- Library Overhaul: Complete redesign of the library interface with sidebar navigation\n- Collections System: Organize media into system-managed (Movies, YouTube, Music) or custom collections\n- YouTube Downloader: Integrated support for downloading YouTube media directly to local library\n- Window Architecture: Unified standalone window management for Library and Settings\n- Library UX: Dynamic empty state messages tailored to collections (e.g., 'YouTube is empty')\n- Visual Polish: Premium unique icons for system collections (Movies, YouTube, Music)\n- Canvas Interactivity: Optimized 'Open Library' link with improved background draggability\n- Minimalist UI: Streamlined titles and messages by removing redundant labels\n- Localization: Enhanced translation engine with dynamic variable support for all languages",
+  "pub_date": "2026-05-13T03:39:00Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRNERDZjMrZFFiTWlHVnBBalZwckM5R1h1dXh0NHVhSUphUVRidUIwUHRWVlRzTnNMNXMzKzJNRzc1ejYxUGwvVkFzc0pyK0FNVXNhT0lUL20wSWNKTTdibk0vdTEvdHdnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4NDY3MjM5CWZpbGU6TGllYiBQbGF5ZXJfMC4xLjdfeDY0X2VuLVVTLm1zaQpOVElDbWNuSEs4Y2FvaWdEQVhjMXdIbWFZYWw1dXhRWEFKUGdDWUoxQW9CeFJCNWNTL3JZUG5NbkdBdi9NRGJockNqNTQydjZBMmRvQUxsaFRkN2JDdz09Cg==",
-      "url": "https://github.com/christliebdela/lieb-player/releases/download/v0.1.7/Lieb.Player_0.1.7_x64_en-US.msi"
+      "signature": "",
+      "url": "https://github.com/christliebdela/lieb-player/releases/download/v0.1.8/Lieb-Player_0.1.8_x64_en-US.msi"
     }
   }
 }

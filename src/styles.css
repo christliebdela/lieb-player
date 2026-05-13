@@ -55,14 +55,29 @@
   * {
     font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
     outline: none !important;
+    user-select: none !important;
+    -webkit-user-drag: none !important;
+    -webkit-tap-highlight-color: transparent;
   }
   *:focus, *:focus-visible {
     outline: none !important;
   }
-  body {
-    background-color: var(--body-bg, var(--background));
-    @apply text-foreground antialiased overflow-hidden transition-colors duration-300;
-  }
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+body {
+  background-color: var(--body-bg, var(--background));
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: color 0.3s, background-color 0.3s, border-color 0.3s;
+  overscroll-behavior: none;
+}
 }
 
 /* Custom Scrollbar */

@@ -104,13 +104,16 @@ export const VideoCanvas: React.FC<{
     let isInternallyResizing = false;
     let resizeTimeout: any = null;
 
-    const unlistenResize = appWindow.onResized(async () => {
-      if (isInternallyResizing) return;
-      if (resizeTimeout) return;
+    const unlistenResize = appWindow.onResized((event) => {
+      const state = usePlayerStore.getState();
+      if (isInternallyResizing || state.isResizing) return;
+      if (resizeTimeout) clearTimeout(resizeTimeout);
       
+      if (!state.autoResize) return;
+
       resizeTimeout = setTimeout(async () => {
         try {
-          const size = await appWindow.innerSize();
+          const size = event.payload; // PhysicalSize from event
           const currentAspect = usePlayerStore.getState().aspectRatio;
           const isMaxed = await appWindow.isMaximized();
           const isFull = await appWindow.isFullscreen();
@@ -123,14 +126,14 @@ export const VideoCanvas: React.FC<{
           const ratio = currentAspect || (pendingW > 0 && pendingH > 0 ? pendingW / pendingH : 16/9);
           const expectedH = Math.round(size.width / ratio);
           
-          if (Math.abs(size.height - expectedH) > 5) {
+          if (Math.abs(size.height - expectedH) > 2) {
             isInternallyResizing = true;
             await appWindow.setSize(new PhysicalSize(size.width, expectedH));
-            setTimeout(() => { isInternallyResizing = false; }, 100);
+            setTimeout(() => { isInternallyResizing = false; }, 200);
           }
         } catch (err) {}
         resizeTimeout = null;
-      }, 16);
+      }, 150);
     });
 
     const setupEngine = async () => {
@@ -181,6 +184,9 @@ export const VideoCanvas: React.FC<{
 
         // 2. Apply Initial Properties Safely
         const quality = state.streamingQuality || '1080';
+        window.console.log('>>> [VideoCanvas] Initializing Volume:', state.volume, 'Muted:', state.isMuted);
+        await setProperty('volume', state.volume).catch(() => {});
+        await setProperty('mute', state.isMuted).catch(() => {});
         await setProperty('ytdl-format', `bestvideo[height<=${quality}]+bestaudio/best`);
 
         // 3. Load File if needed
@@ -198,8 +204,14 @@ export const VideoCanvas: React.FC<{
               case 'time-pos': setCurrentTime((data as number) || 0); break;
               case 'duration': setDuration((data as number) || 0); break;
               case 'pause': setPlaying(!(data as boolean)); break;
-              case 'volume': setVolume(data as number); break;
-              case 'mute': setMuted(data as boolean); break;
+              case 'volume': 
+                window.console.log('>>> [VideoCanvas] MPV Volume observed:', data);
+                setVolume(data as number); 
+                break;
+              case 'mute': 
+                window.console.log('>>> [VideoCanvas] MPV Mute observed:', data);
+                setMuted(data as boolean); 
+                break;
               case 'media-title': 
                 if (data) {
                   const title = String(data);

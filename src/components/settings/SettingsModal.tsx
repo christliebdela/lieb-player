@@ -187,7 +187,12 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
     settingsActiveTab,
     autoResize, setAutoResize,
     osApiKey, setOsApiKey,
-    hasUpdate
+    autoUpdateInstall, setAutoUpdateInstall,
+    autoUpdateDownload, setAutoUpdateDownload,
+    autoUpdateCheck, setAutoUpdateCheck,
+    downloadProgress, setDownloadProgress,
+    hasUpdate, setHasUpdate,
+    resetToDefaults
   } = usePlayerStore();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>(settingsActiveTab as Tab);
@@ -316,13 +321,6 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
     }
   };
 
-  const {
-    autoUpdateCheck, setAutoUpdateCheck,
-    autoUpdateDownload, setAutoUpdateDownload,
-    autoUpdateInstall, setAutoUpdateInstall,
-    downloadProgress, setDownloadProgress,
-    setHasUpdate
-  } = usePlayerStore();
 
   if (!isSettingsOpen && !standalone) return null;
 
@@ -357,6 +355,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
     { key: '←', desc: t('sc.seek_bwd' as any) },
     { key: '↑ / ↓', desc: t('sc.volume' as any) },
     { key: 'C', desc: t('sc.subtitles' as any) },
+    { key: 'I', desc: t('sc.media_info' as any) },
     { key: 'Esc', desc: t('sc.exit' as any) },
   ];
 
@@ -400,7 +399,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
     }`}>
             <div className="w-48 bg-white/[0.015] border-r border-border-subtle p-3 flex flex-col">
               <div className="px-3 py-4 mb-2 flex items-center gap-2.5">
-                <img src="/lieb-player-icon.png" alt="Lieb Player" className="w-6 h-6 rounded-lg" />
+                <img src="/logo.png" alt="Lieb Player" className="w-6 h-6 rounded-lg" />
                 <div>
                   <h1 className="text-[13px] font-semibold text-foreground leading-tight tracking-tight">Lieb Player</h1>
                   <p className="text-[9px] text-muted font-medium uppercase tracking-[0.15em]">preferences</p>
@@ -866,7 +865,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                     {activeTab === 'about' && (
                       <div className="space-y-8 pt-6">
                         <div className="flex items-start gap-8 mb-8">
-                          <div className="w-16 h-16 flex-shrink-0"><img src="/lieb-player-icon.png" alt="Lieb Player" className="w-full h-full object-contain" /></div>
+                          <div className="w-16 h-16 flex-shrink-0"><img src="/logo.png" alt="Lieb Player" className="w-full h-full object-contain" /></div>
                           <div className="flex-1 pt-1">
                             <div className="flex items-center gap-3 mb-1"><h2 className="text-xl font-bold text-foreground tracking-tighter uppercase">Lieb Player</h2></div>
                             <p className="text-[10px] text-muted font-bold uppercase tracking-[0.3em]">{t('about.subtitle' as any)}</p>
@@ -1165,7 +1164,7 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
                     <p className="text-[11px] text-muted leading-relaxed mb-6">{t('reset.app.desc' as any)}</p>
                     <div className="flex gap-2">
                       <button onClick={() => setShowConfirm(false)} className="flex-1 py-2.5 rounded-xl bg-foreground/[0.04] hover:bg-foreground/[0.08] text-muted text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer border border-border-subtle">{t('cancel' as any)}</button>
-                      <button onClick={() => { localStorage.clear(); window.location.reload(); }} className="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer shadow-lg shadow-red-500/20 hover:brightness-110">{t('reset.app' as any)}</button>
+                      <button onClick={() => { resetToDefaults(); window.location.reload(); }} className="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer shadow-lg shadow-red-500/20 hover:brightness-110">{t('reset.app' as any)}</button>
                     </div>
                   </motion.div>
                 </div>

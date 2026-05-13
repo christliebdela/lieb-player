@@ -4,6 +4,7 @@ const translations = {
   English: {
     // General
     'drop.media': 'Drop media to play',
+    'library.open': 'or Open Library',
     'general': 'General',
     'interface': 'Interface',
     'video': 'Video',
@@ -83,11 +84,13 @@ const translations = {
     'sc.seek_bwd': 'Seek Backward 10s',
     'sc.volume': 'Volume Up / Down',
     'sc.subtitles': 'Toggle Subtitles',
+    'sc.media_info': 'Toggle Media Info',
     'sc.exit': 'Exit Fullscreen / Close',
 
     // Library
-    'library.title': 'Your Library',
-    'library.empty': 'Your library is empty',
+    'library.title': 'Library',
+    'library.empty': 'Library is empty',
+    'library.empty.col': '{{name}} is empty',
     'library.empty.desc': 'Drag and drop media files, folders or paste URLs to start your collection.',
     'library.file': 'Media File',
     'library.files': 'Media Files',
@@ -95,6 +98,22 @@ const translations = {
     'library.add.file': 'Add File',
     'library.add.folder': 'Add Folder',
     'library.search': 'Search library...',
+    'library.search.no_matches': 'No matches found',
+    'library.collections': 'Collections',
+    'library.all': 'All Media',
+    'library.url': 'Stream URL',
+    'library.clear.library': 'Clear Library',
+    'library.clear.collection': 'Clear Collection',
+    'col.movies': 'Movies',
+    'col.youtube': 'YouTube',
+    'col.music': 'Music',
+    'library.move_to': 'Move to...',
+    'library.no_collection': 'No Collection',
+    'library.create': 'Create',
+    'library.resolution': 'Resolution',
+    'library.collection.placeholder': 'Collection name...',
+    'library.url.placeholder': 'Paste URL...',
+    'library.load': 'Load',
 
     // Actions
     'captions.on': 'Captions On',
@@ -162,6 +181,7 @@ const translations = {
   },
   French: {
     'drop.media': 'Déposez un média pour jouer',
+    'library.open': 'ou Ouvrir la Bibliothèque',
     'general': 'Général',
     'interface': 'Interface',
     'video': 'Vidéo',
@@ -236,10 +256,12 @@ const translations = {
     'sc.seek_bwd': 'Retour 10s',
     'sc.volume': 'Volume +/-',
     'sc.subtitles': 'Sous-titres',
+    'sc.media_info': 'Infos média',
     'sc.exit': 'Quitter / Fermer',
 
-    'library.title': 'Votre Bibliothèque',
-    'library.empty': 'Votre bibliothèque est vide',
+    'library.title': 'Bibliothèque',
+    'library.empty': 'La bibliothèque est vide',
+    'library.empty.col': '{{name}} est vide',
     'library.empty.desc': 'Glissez-déposez vos fichiers, dossiers ou collez des URLs pour commencer votre collection.',
     'library.file': 'Fichier média',
     'library.files': 'Fichiers média',
@@ -247,6 +269,22 @@ const translations = {
     'library.add.file': 'Ajouter Fichier',
     'library.add.folder': 'Ajouter Dossier',
     'library.search': 'Rechercher...',
+    'library.search.no_matches': 'Aucun résultat trouvé',
+    'library.collections': 'Collections',
+    'library.all': 'Tous les médias',
+    'library.url': 'Lien Stream',
+    'library.clear.library': 'Vider la bibliothèque',
+    'library.clear.collection': 'Vider la collection',
+    'col.movies': 'Films',
+    'col.youtube': 'YouTube',
+    'col.music': 'Musique',
+    'library.move_to': 'Déplacer vers...',
+    'library.no_collection': 'Sans Collection',
+    'library.create': 'Créer',
+    'library.resolution': 'Résolution',
+    'library.collection.placeholder': 'Nom de la collection...',
+    'library.url.placeholder': 'Coller l\'URL...',
+    'library.load': 'Charger',
 
     'captions.on': 'Sous-titres activés',
     'captions.off': 'Sous-titres désactivés',
@@ -313,6 +351,7 @@ const translations = {
   },
   Spanish: {
     'drop.media': 'Suelta un archivo para jugar',
+    'library.open': 'o Abrir la Biblioteca',
     'general': 'General',
     'interface': 'Interfaz',
     'video': 'Vídeo',
@@ -387,17 +426,35 @@ const translations = {
     'sc.seek_bwd': 'Retroceder 10s',
     'sc.volume': 'Volumen +/-',
     'sc.subtitles': 'Subtítulos',
+    'sc.media_info': 'Información del medio',
     'sc.exit': 'Salir / Cerrar',
 
-    'library.title': 'Tu Biblioteca',
-    'library.empty': 'Tu biblioteca está vacía',
+    'library.title': 'Biblioteca',
+    'library.empty': 'La biblioteca está vacía',
+    'library.empty.col': '{{name}} está vacía',
     'library.empty.desc': 'Arrastra y suelta archivos, carpetas o pega URLs para comenzar tu colección.',
     'library.file': 'Archivo multimedia',
     'library.files': 'Archivos multimedia',
     'library.clear': 'Limpiar',
     'library.add.file': 'Añadir Archivo',
     'library.add.folder': 'Añadir Carpeta',
-    'library.search': 'Buscar...',
+    'library.search': 'Buscar biblioteca...',
+    'library.search.no_matches': 'No se encontraron coincidencias',
+    'library.collections': 'Colecciones',
+    'library.all': 'Todos los medios',
+    'library.url': 'URL Stream',
+    'library.clear.library': 'Limpiar Biblioteca',
+    'library.clear.collection': 'Limpiar Colección',
+    'col.movies': 'Películas',
+    'col.youtube': 'YouTube',
+    'col.music': 'Música',
+    'library.move_to': 'Mover a...',
+    'library.no_collection': 'Sin Colección',
+    'library.create': 'Crear',
+    'library.resolution': 'Resolución',
+    'library.collection.placeholder': 'Nombre de la colección...',
+    'library.url.placeholder': 'Pegar URL...',
+    'library.load': 'Cargar',
 
     'captions.on': 'Subtítulos activados',
     'captions.off': 'Subtítulos desactivados',
@@ -467,9 +524,15 @@ const translations = {
 export const useTranslation = () => {
   const { appLanguage } = usePlayerStore();
   
-  const t = (key: keyof typeof translations.English): string => {
+  const t = (key: keyof typeof translations.English, vars?: Record<string, string>): string => {
     // @ts-ignore
-    return translations[appLanguage]?.[key] || translations['English'][key] || key;
+    let text = translations[appLanguage]?.[key] || translations['English'][key] || key;
+    if (vars) {
+      Object.entries(vars).forEach(([k, v]) => {
+        text = text.replace(`{{${k}}}`, v);
+      });
+    }
+    return text;
   };
   
   return { t };

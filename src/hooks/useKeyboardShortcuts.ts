@@ -1,65 +1,11 @@
 import { useEffect } from 'react';
 import { usePlayerStore } from '../store/usePlayerStore';
 import { getCurrentWindow } from '@tauri-apps/api/window';
-import { WebviewWindow } from '@tauri-apps/api/webviewWindow';
-import { command, setProperty } from 'tauri-plugin-mpv-api';
-import { emit } from '@tauri-apps/api/event';
 import { showActionOSD } from '../utils/osd';
 import { useTranslation } from '../i18n';
-
-const openWindow = async (label: string, title: string, width: number, height: number) => {
-  try {
-    const existing = await WebviewWindow.getByLabel(label);
-    if (existing) {
-      await existing.setFocus();
-      return;
-    }
-
-    const mainWin = getCurrentWindow();
-    const outerSize = await mainWin.outerSize();
-    const outerPos = await mainWin.outerPosition();
-    const scaleFactor = await mainWin.scaleFactor();
-
-    // Calculate center position in logical pixels
-    const centerX = (outerPos.x + (outerSize.width / 2)) / scaleFactor - (width / 2);
-    const centerY = (outerPos.y + (outerSize.height / 2)) / scaleFactor - (height / 2);
-
-    const win = new WebviewWindow(label, {
-      url: '/',
-      title,
-      width,
-      height,
-      x: centerX,
-      y: centerY,
-      decorations: false,
-      transparent: true,
-      alwaysOnTop: false,
-      parent: mainWin, // Set parent for grouped focus
-    });
-
-    // Show blocking overlay on main window
-    usePlayerStore.getState().setBlocking(true);
-
-    // Re-enable when closed
-    win.once('tauri://destroyed', () => {
-      usePlayerStore.getState().setBlocking(false);
-      mainWin.setFocus();
-    });
-
-    win.once('tauri://error', () => {
-      usePlayerStore.getState().setBlocking(false);
-    });
-  } catch (err) {
-    console.error(`Failed to open ${label} window:`, err);
-  }
-};
-
-const closeWindow = async (label: string) => {
-  try {
-    const existing = await WebviewWindow.getByLabel(label);
-    if (existing) await existing.close();
-  } catch {}
-};
+import { openWindow, closeWindow } from '../utils/window';
+import { command, setProperty } from 'tauri-plugin-mpv-api';
+import { emit } from '@tauri-apps/api/event';
 
 let volumeOSDTimer: number | null = null;
 
@@ -151,6 +97,7 @@ export const useKeyboardShortcuts = () => {
           const currentVol = usePlayerStore.getState().volume;
           const newVol = Math.min(150, currentVol + 5);
           await setProperty('volume', newVol);
+          await setProperty('mute', false);
           showVolumeOSD();
           break;
         }
@@ -159,6 +106,7 @@ export const useKeyboardShortcuts = () => {
           const currentVol = usePlayerStore.getState().volume;
           const newVol = Math.max(0, currentVol - 5);
           await setProperty('volume', newVol);
+          await setProperty('mute', false);
           showVolumeOSD();
           break;
         }
@@ -179,6 +127,11 @@ export const useKeyboardShortcuts = () => {
             showActionOSD(next ? t('captions.on') : t('captions.off'), 'subtitles');
           }
           break;
+        case 'KeyI':
+          if (hasMedia) {
+            await command('script-binding', ['stats/display-stats-toggle']);
+          }
+          break;
       }
     };
 
@@ -191,6 +144,7 @@ export const useKeyboardShortcuts = () => {
       if (state.scrollMode === 'volume') {
         const newVol = Math.max(0, Math.min(150, state.volume + delta));
         await setProperty('volume', newVol);
+        await setProperty('mute', false);
         showVolumeOSD();
       } else {
         await command('seek', [delta, 'relative']);

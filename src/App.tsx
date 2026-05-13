@@ -1,4 +1,8 @@
 import { useEffect, useRef } from 'react';
+import { initLogger } from './utils/logger';
+
+// Initialize production logger
+initLogger();
 import { Music } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { VideoCanvas } from './components/player/VideoCanvas';
@@ -18,6 +22,7 @@ import { showActionOSD } from './utils/osd';
 import { Volume2, VolumeX, Volume1, Download } from 'lucide-react';
 import { check } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
+import { openWindow } from './utils/window';
 
 // ── Lightweight shell for secondary windows (no MPV, no player hooks) ──
 function SettingsWindow() {
@@ -70,13 +75,20 @@ const ResizeGrip: React.FC<{ position: 'tl' | 'tr' | 'bl' | 'br', show: boolean 
         e.stopPropagation();
         (e.target as HTMLElement).setPointerCapture(e.pointerId);
 
+        const { PhysicalSize, PhysicalPosition } = await import('@tauri-apps/api/window');
         const appWindow = getCurrentWindow();
         const startX = e.screenX;
         const startY = e.screenY;
         const startSize = await appWindow.innerSize();
         const startPos = await appWindow.outerPosition();
         const scaleFactor = await appWindow.scaleFactor();
-        const ratio = usePlayerStore.getState().aspectRatio || 16 / 9;
+        const state = usePlayerStore.getState();
+        const ratio = state.aspectRatio || 16 / 9;
+        const autoResize = state.autoResize;
+        
+        // Hide controls and signal resizing start
+        state.setShowControls(false);
+        state.setIsResizing(true);
 
         let rafId: number | null = null;
         const onMove = (ev: PointerEvent) => {
@@ -85,17 +97,25 @@ const ResizeGrip: React.FC<{ position: 'tl' | 'tr' | 'bl' | 'br', show: boolean 
             const dx = ev.screenX - startX;
             const dy = ev.screenY - startY;
 
-            let delta = 0;
-            if (position === 'br') delta = dx > dy * ratio ? dx : dy * ratio;
-            else if (position === 'bl') delta = -dx > dy * ratio ? -dx : dy * ratio;
-            else if (position === 'tr') delta = dx > -dy * ratio ? dx : -dy * ratio;
-            else if (position === 'tl') delta = -dx > -dy * ratio ? -dx : -dy * ratio;
-
-            const newW = Math.max(640, startSize.width / scaleFactor + delta);
-            const newH = Math.round(newW / ratio);
-
-            const { PhysicalSize, PhysicalPosition } = await import('@tauri-apps/api/window');
+            let newW, newH;
             
+            if (autoResize) {
+              let delta = 0;
+              if (position === 'br') delta = dx > dy * ratio ? dx : dy * ratio;
+              else if (position === 'bl') delta = -dx > dy * ratio ? -dx : dy * ratio;
+              else if (position === 'tr') delta = dx > -dy * ratio ? dx : -dy * ratio;
+              else if (position === 'tl') delta = -dx > -dy * ratio ? -dx : -dy * ratio;
+
+              newW = Math.max(480, startSize.width / scaleFactor + delta);
+              newH = Math.round(newW / ratio);
+            } else {
+              // Free scaling logic
+              const dw = (position === 'br' || position === 'tr') ? dx : -dx;
+              const dh = (position === 'br' || position === 'bl') ? dy : -dy;
+              newW = Math.max(480, startSize.width / scaleFactor + dw);
+              newH = Math.max(270, startSize.height / scaleFactor + dh);
+            }
+
             let newX = startPos.x;
             let newY = startPos.y;
 
@@ -124,6 +144,14 @@ const ResizeGrip: React.FC<{ position: 'tl' | 'tr' | 'bl' | 'br', show: boolean 
         const onUp = () => {
           window.removeEventListener('pointermove', onMove);
           window.removeEventListener('pointerup', onUp);
+          
+          const s = usePlayerStore.getState();
+          s.setIsResizing(false);
+          
+          // Show controls back after a small delay to ensure layout settled
+          setTimeout(() => {
+            usePlayerStore.getState().setShowControls(true);
+          }, 800);
         };
 
         window.addEventListener('pointermove', onMove);
@@ -288,7 +316,11 @@ function MainPlayer() {
         const { path, subs } = event.payload;
         window.console.log('>>> [App] EVENT: lieb-play received for', path);
         if (path) {
-          await command('loadfile', [path, 'replace']);
+          const s = usePlayerStore.getState();
+          const item = s.playlist.find(p => p.path === path);
+          const finalPath = item?.localPath || path;
+          
+          await command('loadfile', [finalPath, 'replace']);
           // Give MPV a moment to initialize the file before adding subs
           if (subs && subs.length > 0) {
             window.console.log('>>> [App] SUB-LOAD: Adding', subs.length, 'subtitles');
@@ -411,8 +443,8 @@ function MainPlayer() {
 
   return (
     <div 
-      className={`relative w-full h-screen overflow-hidden font-inter select-none ${hasMedia ? 'bg-transparent' : 'bg-background'} ${
-        !showControls ? 'cursor-none' : (isFullscreen ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing')
+      className={`relative w-full h-full overflow-hidden font-inter select-none ${hasMedia ? 'bg-transparent' : 'bg-background'} ${
+        !showControls ? 'cursor-none' : 'cursor-default'
       }`}
       onMouseMove={handleMouseMove}
     >
@@ -434,7 +466,7 @@ function MainPlayer() {
           >
             <div className="flex flex-col items-center">
               <motion.img 
-                src="/lieb-player-icon.png" 
+                src="/logo.png" 
                 alt="Loading" 
                 className="w-16 h-16 object-contain"
                 animate={{ 
@@ -486,18 +518,23 @@ function MainPlayer() {
 
       {!hasMedia && !isPlaying && (
         <div className="absolute inset-0 flex flex-col items-center justify-center z-0 pointer-events-none">
-          <img 
-            src="/lieb-player-icon.png" 
-            alt="Lieb Player" 
-            className="w-[clamp(48px,6vw,80px)] h-auto object-contain opacity-15 grayscale"
-          />
-          <div className="mt-8 text-center">
-            <h1 className="text-[11px] font-black text-foreground tracking-[0.5em] uppercase opacity-[0.08]">
-              Lieb Player
-            </h1>
-            <p className="mt-3 text-[9px] text-muted font-bold uppercase tracking-[0.3em]">
-              {t('drop.media')}
-            </p>
+          <div className="flex flex-col items-center">
+            <img 
+              src="/logo.png" 
+              alt="Lieb Player" 
+              className="w-[clamp(48px,6vw,80px)] h-auto object-contain"
+            />
+            <div className="mt-6 flex flex-col items-center gap-1">
+              <p className="text-[9px] text-muted font-bold uppercase tracking-[0.3em] opacity-40">
+                {t('drop.media')}
+              </p>
+              <p 
+                onClick={(e) => { e.stopPropagation(); openWindow('library', 'Library', 900, 600); }}
+                className="text-[9px] text-accent font-bold uppercase tracking-[0.3em] cursor-pointer hover:underline transition-all pointer-events-auto"
+              >
+                {t('library.open')} (L)
+              </p>
+            </div>
           </div>
         </div>
       )}
@@ -550,7 +587,7 @@ function MainPlayer() {
         >
           <div className="flex items-center gap-1.5">
             <div className="flex items-center gap-2.5 px-3 py-1.5 hover:bg-white/5 rounded-lg transition-all pointer-events-none">
-              <img src="/lieb-player-icon.png" alt="Logo" className="w-3.5 h-3.5 object-contain hue-rotate-[var(--accent-hue)]" />
+              <img src="/logo.png" alt="Logo" className="w-3.5 h-3.5 object-contain hue-rotate-[var(--accent-hue)]" />
               <span className="text-accent text-[10px] tracking-[0.15em] font-bold uppercase">
                 Lieb Player
               </span>
@@ -584,9 +621,9 @@ function MainPlayer() {
 
         <div className="flex-1 w-full" />
 
-        <div className="px-4 pb-12 flex items-end justify-between pointer-events-none relative flex-1">
+        <div className="px-4 py-4 flex items-end justify-between pointer-events-none relative">
           <div className="max-w-md pb-4">
-            {!isPlaying && duration > 0 && (
+            {(showControls || !isPlaying) && duration > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -623,6 +660,7 @@ function MainPlayer() {
           className="absolute inset-0 bg-transparent pointer-events-auto"
         />
       )}
+      
     </div>
   );
 }

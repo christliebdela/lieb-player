@@ -15,6 +15,15 @@ interface PlaylistItem {
   subs: string[]; 
   title?: string; 
   addedAt: number;
+  localPath?: string;
+  collectionId?: string;
+}
+
+interface Collection {
+  id: string;
+  name: string;
+  icon?: string;
+  isImmutable?: boolean;
 }
 
 interface PlayerState {
@@ -65,6 +74,17 @@ interface PlayerState {
   downloadProgress: number | null;
   hasUpdate: boolean;
   settingsActiveTab: string;
+  isResizing: boolean;
+  setIsResizing: (resizing: boolean) => void;
+  collections: Collection[];
+  activeCollectionId: string | null;
+  setCollections: (collections: Collection[]) => void;
+  addCollection: (name: string) => void;
+  removeCollection: (id: string) => void;
+  renameCollection: (id: string, name: string) => void;
+  setActiveCollection: (id: string | null) => void;
+  ensureDefaultCollections: () => void;
+  assignToCollection: (trackPath: string, collectionId: string | null) => void;
   
   // Actions
   setBlocking: (blocking: boolean) => void;
@@ -76,9 +96,10 @@ interface PlayerState {
   setMuted: (muted: boolean) => void;
   setCurrentTrack: (track: string | null) => void;
   setPlaylist: (playlist: PlaylistItem[]) => void;
-  addToPlaylist: (path: string, subs?: string[], title?: string) => void;
+  addToPlaylist: (path: string, subs?: string[], title?: string, collectionId?: string | null) => void;
   removeFromPlaylist: (track: string) => void;
   clearPlaylist: () => void;
+  clearCollection: (collectionId: string) => void;
   setSettingsOpen: (open: boolean) => void;
   setLibraryOpen: (open: boolean) => void;
   setSubSearchOpen: (open: boolean) => void;
@@ -124,6 +145,8 @@ interface PlayerState {
   removeCustomEqPreset: (name: string) => void;
   playNext: (isAuto?: boolean) => void;
   playPrevious: () => void;
+  updateTrackLocalPath: (path: string, localPath: string) => void;
+  resetToDefaults: () => void;
 }
 
 export const usePlayerStore = create<PlayerState>()(
@@ -173,7 +196,47 @@ export const usePlayerStore = create<PlayerState>()(
       downloadProgress: null,
       hasUpdate: false,
       settingsActiveTab: 'general',
+      isResizing: false,
+      setIsResizing: (resizing) => set({ isResizing: resizing }),
       customEqPresets: [],
+      collections: [
+        { id: 'movies', name: 'Movies', isImmutable: true },
+        { id: 'youtube', name: 'YouTube', isImmutable: true },
+        { id: 'music', name: 'Music', isImmutable: true }
+      ],
+      activeCollectionId: null,
+      setCollections: (collections) => set({ collections }),
+      addCollection: (name) => set((state) => ({ 
+        collections: [...state.collections, { id: Math.random().toString(36).substr(2, 9), name }] 
+      })),
+      removeCollection: (id) => set((state) => {
+        const col = state.collections.find(c => c.id === id);
+        if (col?.isImmutable) return state; // Block deletion of core collections
+        return { 
+          collections: state.collections.filter(c => c.id !== id),
+          activeCollectionId: state.activeCollectionId === id ? null : state.activeCollectionId
+        };
+      }),
+      renameCollection: (id, name) => set((state) => ({
+        collections: state.collections.map(c => c.id === id ? { ...c, name } : c)
+      })),
+      setActiveCollection: (id) => set({ activeCollectionId: id }),
+      assignToCollection: (path, collectionId) => set((state) => ({
+        playlist: state.playlist.map(item => item.path === path ? { ...item, collectionId: collectionId || undefined } : item)
+      })),      ensureDefaultCollections: () => set((state) => {
+        const defaults = [
+          { id: 'movies', name: 'Movies', isImmutable: true },
+          { id: 'youtube', name: 'YouTube', isImmutable: true },
+          { id: 'music', name: 'Music', isImmutable: true }
+        ];
+        
+        // Find defaults that are actually missing
+        const missing = defaults.filter(d => !state.collections.find(c => c.id === d.id));
+        if (missing.length === 0) return state;
+        
+        // Merge them back in
+        return { collections: [...missing, ...state.collections] };
+      }),
 
       setSettingsActiveTab: (tab) => set({ settingsActiveTab: tab }),
       customPresets: [],
@@ -190,16 +253,30 @@ export const usePlayerStore = create<PlayerState>()(
       },
 
       setPlaying: (playing) => set({ isPlaying: playing }),
-      setVolume: (volume) => set({ volume }),
+      setVolume: (volume) => set({ volume, isMuted: false }),
       setDuration: (duration) => set({ duration }),
       setCurrentTime: (time) => set({ currentTime: time }),
       setMuted: (muted) => set({ isMuted: muted }),
       setCurrentTrack: (track) => set({ currentTrack: track }),
       setPlaylist: (playlist) => set({ playlist }),
-      addToPlaylist: (path, subs = [], title) => set((state) => {
+      addToPlaylist: (path, subs = [], title, collectionId) => set((state) => {
         // Prevent duplicates
         if (state.playlist.find(p => p.path === path)) return state;
-        return { playlist: [...state.playlist, { path, subs, title, addedAt: Date.now() }] };
+
+        let finalCollectionId = collectionId || undefined;
+
+        // Auto-assign YouTube links if not explicitly assigned
+        if (!finalCollectionId && (path.includes('youtube.com') || path.includes('youtu.be'))) {
+          const hasYoutubeCol = state.collections.find(c => c.id === 'youtube');
+          if (hasYoutubeCol) finalCollectionId = 'youtube';
+        }
+
+        return { 
+          playlist: [
+            ...state.playlist, 
+            { path, subs, title, addedAt: Date.now(), collectionId: finalCollectionId }
+          ] 
+        };
       }),
       removeFromPlaylist: (path) => {
         const state = get();
@@ -212,6 +289,29 @@ export const usePlayerStore = create<PlayerState>()(
         
         set({ playlist: newPlaylist });
       },
+      clearCollection: (collectionId) => set((state) => {
+        const itemsToRemove = state.playlist.filter(item => item.collectionId === collectionId);
+        const pathsToRemove = itemsToRemove.map(i => i.path);
+        
+        const newPlaylist = state.playlist.filter(item => item.collectionId !== collectionId);
+        
+        let newState: Partial<PlayerState> = { playlist: newPlaylist };
+        
+        if (state.currentTrack && pathsToRemove.includes(state.currentTrack)) {
+          emit('lieb-stop');
+          newState = { 
+            ...newState,
+            currentTrack: null, 
+            duration: 0, 
+            currentTime: 0, 
+            isPlaying: false,
+            hasSubtitles: false,
+            metadata: { title: '', description: '', episode: '', season: '' }
+          };
+        }
+        
+        return newState;
+      }),
       clearPlaylist: () => {
         const state = get();
         if (state.currentTrack) {
@@ -341,6 +441,54 @@ export const usePlayerStore = create<PlayerState>()(
         const prevTrack = playlist[prevIndex];
         emit('lieb-play', { path: prevTrack.path, subs: prevTrack.subs });
       },
+      updateTrackLocalPath: (path, localPath) => set((state) => ({
+        playlist: state.playlist.map((item) => 
+          item.path === path ? { ...item, localPath } : item
+        )
+      })),
+      resetToDefaults: () => {
+        const defaults: Partial<PlayerState> = {
+          isPlaying: false,
+          volume: 100,
+          isMuted: false,
+          currentTrack: null,
+          playlist: [],
+          streamingQuality: '1080',
+          loopMode: 'off',
+          equalizer: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          accentColor: '#6366f1',
+          scrollMode: 'volume',
+          hwAcceleration: true,
+          rememberPosition: true,
+          autoPlay: true,
+          autoResize: false,
+          osApiKey: '',
+          renderingBackend: 'gpu-next',
+          interpolation: true,
+          deband: true,
+          appLanguage: 'English',
+          theme: 'midnight',
+          persistLibrary: true,
+          customPresets: [],
+          seekInterval: 10,
+          customEqPresets: [],
+          collections: [
+            { id: 'movies', name: 'Movies', isImmutable: true },
+            { id: 'youtube', name: 'YouTube', isImmutable: true },
+            { id: 'music', name: 'Music', isImmutable: true }
+          ],
+          activeCollectionId: null,
+          metadata: {
+            title: '',
+            description: '',
+            episode: '',
+            season: '',
+            hasArtwork: false,
+          }
+        };
+        set(defaults);
+        localStorage.clear();
+      },
     }),
     {
       name: import.meta.env.DEV ? 'lieb-player-storage-dev' : 'lieb-player-storage',
@@ -371,6 +519,8 @@ export const usePlayerStore = create<PlayerState>()(
         metadata: state.metadata,
         streamingQuality: state.streamingQuality,
         customEqPresets: state.customEqPresets,
+        collections: state.collections,
+        activeCollectionId: state.activeCollectionId,
       }),
     }
   )

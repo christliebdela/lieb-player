@@ -10,6 +10,48 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: "0.1.8",
+    date: "2026-05-13",
+    changes: {
+      English: [
+        "Visual Rebrand: Complete regeneration of application icons using the new official logo",
+        "Library Overhaul: Complete redesign of the library interface with sidebar navigation",
+        "Collections System: Organize media into system-managed (Movies, YouTube, Music) or custom collections",
+        "YouTube Downloader: Integrated support for downloading YouTube media directly to local library",
+        "Window Architecture: Unified standalone window management for Library and Settings",
+        "Library UX: Dynamic empty state messages tailored to collections (e.g., 'YouTube is empty')",
+        "Visual Polish: Premium unique icons for system collections (Movies, YouTube, Music)",
+        "Canvas Interactivity: Optimized 'Open Library' link with improved background draggability",
+        "Minimalist UI: Streamlined titles and messages by removing redundant labels",
+        "Localization: Enhanced translation engine with dynamic variable support"
+      ],
+      French: [
+        "Refonte visuelle : Régénération complète des icônes d'application avec le nouveau logo officiel",
+        "Refonte de la bibliothèque : Refonte complète de l'interface avec navigation par barre latérale",
+        "Système de collections : Organisez vos médias dans des collections système (Films, YouTube, Musique) ou personnalisées",
+        "Téléchargeur YouTube : Support intégré pour le téléchargement direct de médias YouTube dans votre bibliothèque locale",
+        "Architecture : Gestion unifiée des fenêtres pour la Bibliothèque et les Paramètres",
+        "Expérience Bibliothèque : Messages d'état vide dynamiques selon les collections",
+        "Finition Visuelle : Icônes premium uniques pour les collections système",
+        "Interactivité : Optimisation du lien Bibliothèque et amélioration du glisser-déposer",
+        "Interface Minimaliste : Titres et messages simplifiés (retrait des mentions inutiles)",
+        "Internationalisation : Nouveau moteur de traduction avec support des variables"
+      ],
+      Spanish: [
+        "Rebranding Visual: Regeneración completa de los iconos de la aplicación con el nuevo logo oficial",
+        "Rediseño de Biblioteca: Rediseño completo de la interfaz con navegación por barra lateral",
+        "Sistema de Colecciones: Organiza tus medios en colecciones del sistema (Películas, YouTube, Música) o personalizadas",
+        "Descargador de YouTube: Soporte integrado para descargar medios de YouTube directamente a tu biblioteca local",
+        "Arquitectura: Gestión unificada de ventanas para la Biblioteca y los Ajustes",
+        "Experiencia de Biblioteca: Mensajes de estado vacío dinámicos según la colección",
+        "Pulido Visual: Iconos premium únicos para las colecciones del sistema",
+        "Interactividad: Optimización del enlace de Biblioteca y mejor arrastre de ventana",
+        "Interfaz Minimalista: Títulos y mensajes simplificados (eliminación de etiquetas)",
+        "Localización: Motor de traducción mejorado con soporte para variables dinámicas"
+      ]
+    }
+  },
+  {
     version: "0.1.7",
     date: "2026-05-11",
     changes: {

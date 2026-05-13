@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.8] - 2026-05-13
+### Added
+- Visual Rebrand: Complete regeneration of application icons using the new official logo
+- Library Overhaul: Complete redesign of the library interface with sidebar navigation
+- Collections System: Organize media into system-managed (Movies, YouTube, Music) or custom collections
+- YouTube Downloader: Integrated support for downloading YouTube media directly to local library
+- Window Architecture: Unified standalone window management for Library and Settings
+- Library UX: Dynamic empty state messages tailored to collections (e.g., "YouTube is empty")
+- Visual Polish: Premium unique icons for system collections (Movies, YouTube, Music)
+- Canvas Interactivity: Optimized "Open Library" link with improved background draggability
+- Minimalist UI: Streamlined titles and messages by removing redundant "Your" labels
+- Localization: Enhanced translation engine with dynamic variable support for all languages
+
 ## [0.1.7] - 2026-05-11
 ### Added
 - Single-Instance Policy: Enforced a single application process to prevent 'ghosting' and resource contention

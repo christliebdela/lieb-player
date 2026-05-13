@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 export const WindowControls: React.FC = () => {
   const appWindow = getCurrentWindow();
   const [isMaximized, setIsMaximized] = React.useState(false);
-  const { showControls } = usePlayerStore();
+  const { showControls, isFullscreen } = usePlayerStore();
 
     const unlistenRef = React.useRef<(() => void) | null>(null);
     
@@ -22,11 +22,14 @@ export const WindowControls: React.FC = () => {
       
       checkMaximized();
       
-      appWindow.onResized(() => {
-        checkMaximized();
-      }).then(u => {
-        unlistenRef.current = u;
-      });
+      const setupListener = async () => {
+        const unlisten = await appWindow.onResized(() => {
+          checkMaximized();
+        });
+        unlistenRef.current = unlisten;
+      };
+
+      setupListener();
 
       return () => {
         if (unlistenRef.current) unlistenRef.current();
@@ -36,6 +39,9 @@ export const WindowControls: React.FC = () => {
   const handleMinimize = () => appWindow.minimize();
   const handleToggleMaximize = () => appWindow.toggleMaximize();
   const handleClose = () => appWindow.close();
+
+  // Any of these states should show the "restore" icon
+  const isExpanded = isMaximized || isFullscreen;
 
   return (
     <motion.div 
@@ -47,31 +53,44 @@ export const WindowControls: React.FC = () => {
       }}
       transition={{ 
         type: "spring",
-        stiffness: 260,
-        damping: 20,
+        stiffness: 500,
+        damping: 35,
         mass: 0.5
       }}
       className="z-50 pointer-events-auto p-1.5"
     >
-      <div className="flex items-center gap-0.5">
-        <button 
+      <div className="flex items-center gap-1">
+        <motion.button 
+          whileHover={{ scale: 1.2 }}
+          whileTap={{ scale: 0.9 }}
+          transition={{ type: "spring", stiffness: 400, damping: 17 }}
           onClick={handleMinimize}
-          className="p-1.5 rounded-lg transition-all text-accent hover:bg-white/5 cursor-pointer"
+          className="p-1.5 rounded-lg transition-colors text-accent hover:text-foreground cursor-pointer group"
         >
           <Minus size={14} strokeWidth={2.5} />
-        </button>
-        <button 
+        </motion.button>
+        <motion.button 
+          whileHover={{ scale: 1.2 }}
+          whileTap={{ scale: 0.9 }}
+          transition={{ type: "spring", stiffness: 400, damping: 17 }}
           onClick={handleToggleMaximize}
-          className="p-1.5 rounded-lg transition-all text-accent hover:bg-white/5 cursor-pointer"
+          className="p-1.5 rounded-lg transition-colors text-accent hover:text-foreground cursor-pointer group"
         >
-          {isMaximized ? <Copy size={13} strokeWidth={2.5} /> : <Square size={13} strokeWidth={2.5} />}
-        </button>
-        <button 
+          {isExpanded ? (
+            <Copy size={13} strokeWidth={2.5} />
+          ) : (
+            <Square size={13} strokeWidth={2.5} />
+          )}
+        </motion.button>
+        <motion.button 
+          whileHover={{ scale: 1.2 }}
+          whileTap={{ scale: 0.9 }}
+          transition={{ type: "spring", stiffness: 400, damping: 17 }}
           onClick={handleClose}
-          className="p-1.5 rounded-lg transition-all text-accent hover:text-white hover:bg-red-500 cursor-pointer"
+          className="p-1.5 rounded-lg transition-colors text-accent hover:text-foreground cursor-pointer group"
         >
           <X size={14} strokeWidth={2.5} />
-        </button>
+        </motion.button>
       </div>
     </motion.div>
   );
