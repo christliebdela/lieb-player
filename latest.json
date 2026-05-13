@@ -4,7 +4,7 @@
   "pub_date": "2026-05-13T03:39:00Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "",
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRNERDZjMrZFFiTXVnTkFUU2FHOENITzJIa0pDMUptbS85alNNZlhJazlzOVlTZGhPeWFWT3praGFzYUZEZW5ScEFNSFplNUdXVGx5NjliZEZUSm1kVXdFUWY0ZkU5QVF3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4NjQ1ODEzCWZpbGU6TGllYi1QbGF5ZXJfMC4xLjhfeDY0X2VuLVVTLm1zaQovcG1YcVY5a3pBVW9obTZGN2pSRVJkYUlObDk3WG1uVmdJbmFnMDRSYmMzc2hHOEdjUnBsaExmRTQ5WUluSzUwMmxRRkpYQ054T0QxcHMxV0ZNQU1Edz09Cg==",
       "url": "https://github.com/christliebdela/lieb-player/releases/download/v0.1.8/Lieb-Player_0.1.8_x64_en-US.msi"
     }
   }
