@@ -129,7 +129,8 @@ export const useKeyboardShortcuts = () => {
           break;
         case 'KeyI':
           if (hasMedia) {
-            await command('script-binding', ['stats/display-stats-toggle']);
+            const s = usePlayerStore.getState();
+            s.setMediaInfoOpen(!s.isMediaInfoOpen);
           }
           break;
       }

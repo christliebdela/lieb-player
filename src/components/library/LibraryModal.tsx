@@ -470,9 +470,9 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
           >
             <button
               onClick={() => setActiveCollection(null)}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-left cursor-pointer shrink-0 border ${activeCollectionId === null ? 'bg-accent text-black font-bold shadow-[0_0_15px_rgba(var(--accent-rgb),0.3)] border-accent/20' : 'text-muted hover:text-foreground hover:bg-foreground/[0.04] border-transparent'}`}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-left cursor-pointer shrink-0 border ${activeCollectionId === null ? 'bg-accent/15 text-accent font-bold border-accent/20 shadow-[0_0_20px_rgba(var(--accent-rgb),0.1)]' : 'text-muted hover:text-foreground hover:bg-foreground/[0.04] border-transparent'}`}
             >
-              <LayoutGrid size={16} />
+              <LayoutGrid size={16} className={activeCollectionId === null ? 'text-accent' : 'text-muted/50'} />
               <span className="text-[11px] truncate">{t('library.all')}</span>
             </button>
             <div className="h-[1px] bg-border-subtle my-2 mx-2 shrink-0" />

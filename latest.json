@@ -1,11 +1,11 @@
 {
-  "version": "v0.1.8",
-  "notes": "v0.1.8: Library Overhaul & Visual Rebrand\n- Visual Rebrand: Complete regeneration of application icons using the new official logo\n- Library Overhaul: Complete redesign of the library interface with sidebar navigation\n- Collections System: Organize media into system-managed (Movies, YouTube, Music) or custom collections\n- YouTube Downloader: Integrated support for downloading YouTube media directly to local library\n- Window Architecture: Unified standalone window management for Library and Settings\n- Library UX: Dynamic empty state messages tailored to collections (e.g., 'YouTube is empty')\n- Visual Polish: Premium unique icons for system collections (Movies, YouTube, Music)\n- Canvas Interactivity: Optimized 'Open Library' link with improved background draggability\n- Minimalist UI: Streamlined titles and messages by removing redundant labels\n- Localization: Enhanced translation engine with dynamic variable support for all languages",
-  "pub_date": "2026-05-13T03:39:00Z",
+  "version": "v0.1.9",
+  "notes": "v0.1.9: Elite Branding & Diagnostic Refinement\n- Lieb Media Engine: Rebranded core media technology to the high-performance 'Lieb Media Engine'\n- Diagnostic Interface: Replaced default MPV stats with a premium, high-fidelity Media Info Modal\n- Visual Consistency: Standardized 'All Media' collection styling to match refined sidebar aesthetic\n- Technical Polish: Rebranded internal engine configuration to 'lieb.conf' for a bespoke experience\n- UX Refinement: Optimized window resize handles to prevent interference with corner controls\n- Stability: Robust state management with explicit cross-window synchronization\n- Premium Assets: Standardized screenshot templates and directory naming (Lieb Player Screenshots)",
+  "pub_date": "2026-05-13T19:23:00Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRNERDZjMrZFFiTXVnTkFUU2FHOENITzJIa0pDMUptbS85alNNZlhJazlzOVlTZGhPeWFWT3praGFzYUZEZW5ScEFNSFplNUdXVGx5NjliZEZUSm1kVXdFUWY0ZkU5QVF3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4NjQ1ODEzCWZpbGU6TGllYi1QbGF5ZXJfMC4xLjhfeDY0X2VuLVVTLm1zaQovcG1YcVY5a3pBVW9obTZGN2pSRVJkYUlObDk3WG1uVmdJbmFnMDRSYmMzc2hHOEdjUnBsaExmRTQ5WUluSzUwMmxRRkpYQ054T0QxcHMxV0ZNQU1Edz09Cg==",
-      "url": "https://github.com/christliebdela/lieb-player/releases/download/v0.1.8/Lieb-Player_0.1.8_x64_en-US.msi"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRNERDZjMrZFFiTWhGYlJ0K0E4ZVM2bDBkZmcxVitUZm1qUWUwZ25nZzNoUzkvdkpPY1Nwang3aUJGeFp1SlJET0Z3eTQxeFNFNkRWUmdqUGRwY3FCRStZMUIwbGxTV3dJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4NzAxNDE3CWZpbGU6TGllYi1QbGF5ZXJfMC4xLjlfeDY0X2VuLVVTLm1zaQplUDRDN3pZTms0VU93cGxBcTljMFUyV2tGOC9YaCtnWm92Q0E1STV6K1hhNWdjd0ZGY25pTG1TMTJ2Z0dDNGRMWFo0ZVEzYUtxaTF3cmZRYlhYZGhBZz09Cg==",
+      "url": "https://github.com/christliebdela/lieb-player/releases/download/v0.1.9/Lieb-Player_0.1.9_x64_en-US.msi"
     }
   }
 }

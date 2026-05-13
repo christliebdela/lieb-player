@@ -177,7 +177,8 @@ async fn download_media(app: tauri::AppHandle, url: String, save_path: String, f
 }
 
 #[tauri::command]
-async fn write_log(app: tauri::AppHandle, message: String) -> Result<(), String> {
+async fn write_log(_app: tauri::AppHandle, _message: String) -> Result<(), String> {
+    /*
     use std::fs::OpenOptions;
     use std::io::Write;
     use tauri::Manager;
@@ -194,6 +195,7 @@ async fn write_log(app: tauri::AppHandle, message: String) -> Result<(), String>
 
     let timestamp = chrono::Local::now().format("%Y-%m-%d %H:%M:%S%.3f");
     writeln!(file, "[{}] {}", timestamp, message).map_err(|e| e.to_string())?;
+    */
 
     Ok(())
 }

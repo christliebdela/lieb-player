@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.9] - 2026-05-13
+### Added
+- Diagnostic Interface: Replaced default MPV stats with a premium, high-fidelity Media Info Modal
+- Technical Polish: Rebranded internal engine configuration to 'lieb.conf' for a bespoke experience
+- Premium Assets: Standardized screenshot templates and directory naming (Lieb Player Screenshots)
+
+### Changed
+- Lieb Media Engine: Officially rebranded core media technology to the 'Lieb Media Engine'
+- Visual Consistency: Standardized 'All Media' collection styling to match refined sidebar aesthetic
+- UX Refinement: Optimized window resize handles to prevent interference with corner controls
+- Stability: Robust state management with explicit cross-window synchronization
+
 ## [0.1.8] - 2026-05-13
 ### Added
 - Visual Rebrand: Complete regeneration of application icons using the new official logo

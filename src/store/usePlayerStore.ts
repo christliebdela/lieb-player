@@ -78,6 +78,8 @@ interface PlayerState {
   setIsResizing: (resizing: boolean) => void;
   collections: Collection[];
   activeCollectionId: string | null;
+  isMediaInfoOpen: boolean;
+  setMediaInfoOpen: (open: boolean) => void;
   setCollections: (collections: Collection[]) => void;
   addCollection: (name: string) => void;
   removeCollection: (id: string) => void;
@@ -198,6 +200,8 @@ export const usePlayerStore = create<PlayerState>()(
       settingsActiveTab: 'general',
       isResizing: false,
       setIsResizing: (resizing) => set({ isResizing: resizing }),
+      isMediaInfoOpen: false,
+      setMediaInfoOpen: (open) => set({ isMediaInfoOpen: open }),
       customEqPresets: [],
       collections: [
         { id: 'movies', name: 'Movies', isImmutable: true },

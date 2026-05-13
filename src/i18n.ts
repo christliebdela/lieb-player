@@ -70,7 +70,7 @@ const translations = {
     'report.issue': 'Report Issue',
     'about.subtitle': 'Redefining the Media Experience',
     'about.story': 'Lieb Player was created out of a personal need for a more controllable and customizable media experience. It focuses on providing a clean, high-performance environment for those who want their player to stay out of the way while respecting the details of the media.',
-    'about.tech': 'Built on top of MPV and Rust, it offers studio-grade rendering and deep subtitle management. Lieb Player remains an open-source project dedicated to privacy, speed, and a distraction-free viewing experience.',
+    'about.tech': 'The Lieb Media Engine leverages the industry-leading performance of MPV and the safety of Rust to provide studio-grade rendering and advanced subtitle management. Lieb Player is dedicated to privacy, speed, and a distraction-free viewing experience.',
     
     // Shortcuts
     'sc.play_pause': 'Play / Pause',
@@ -121,7 +121,7 @@ const translations = {
     'fullscreen.on': 'Fullscreen Mode',
     'fullscreen.off': 'Windowed Mode',
     'pip.on': 'PiP Mode On',
-    'pip.off': 'PiP Mode Off',
+    'pip.off': 'PiP Off',
     'loop.all': 'Loop All',
     'loop.one': 'Loop One',
     'loop.off': 'Loop Off',

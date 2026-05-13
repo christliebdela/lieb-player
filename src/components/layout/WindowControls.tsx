@@ -57,7 +57,7 @@ export const WindowControls: React.FC = () => {
         damping: 35,
         mass: 0.5
       }}
-      className="z-50 pointer-events-auto p-1.5"
+      className="z-[70] pointer-events-auto p-1.5"
     >
       <div className="flex items-center gap-1">
         <motion.button 

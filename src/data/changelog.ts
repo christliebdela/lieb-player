@@ -10,6 +10,39 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: "0.1.9",
+    date: "2026-05-13",
+    changes: {
+      English: [
+        "Diagnostic Interface: Replaced default MPV stats with a premium, high-fidelity Media Info Modal",
+        "Technical Polish: Rebranded internal engine configuration to 'lieb.conf' for a bespoke experience",
+        "Premium Assets: Standardized screenshot templates and directory naming (Lieb Player Screenshots)",
+        "Lieb Media Engine: Officially rebranded core media technology to the 'Lieb Media Engine'",
+        "Visual Consistency: Standardized 'All Media' collection styling to match refined sidebar aesthetic",
+        "UX Refinement: Optimized window resize handles to prevent interference with corner controls",
+        "Stability: Robust state management with explicit cross-window synchronization"
+      ],
+      French: [
+        "Interface de diagnostic : Remplacement des stats MPV par un modal d'infos média haute fidélité",
+        "Finition technique : Rebranding de la configuration moteur en 'lieb.conf' pour une expérience sur mesure",
+        "Atouts Premium : Standardisation des modèles de captures d'écran et du nom du dossier",
+        "Lieb Media Engine : Rebranding officiel de la technologie média en 'Lieb Media Engine'",
+        "Cohérence visuelle : Harmonisation du style de la collection 'Tous les Médias'",
+        "Affinage UX : Optimisation des poignées de redimensionnement pour éviter les conflits",
+        "Stabilité : Gestion robuste de l'état avec synchronisation explicite entre fenêtres"
+      ],
+      Spanish: [
+        "Interfaz de Diagnóstico: Reemplazo de estadísticas de MPV por un modal de info de medios de alta fidelidad",
+        "Pulido Técnico: Rebranding de la configuración del motor a 'lieb.conf' para una experiencia personalizada",
+        "Activos Premium: Estandarización de plantillas de capturas y nombre de carpeta",
+        "Lieb Media Engine: Rebranding oficial de la tecnología multimedia a 'Lieb Media Engine'",
+        "Consistencia Visual: Estandarización del estilo de la colección 'Todos los Medios'",
+        "Refinamiento de UX: Optimización de los tiradores de redimensionamiento para evitar interferencias",
+        "Estabilidad: Gestión robusta de estado con sincronización explícita entre ventanas"
+      ]
+    }
+  },
+  {
     version: "0.1.8",
     date: "2026-05-13",
     changes: {

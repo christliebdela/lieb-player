@@ -14,6 +14,7 @@ import { ActionOSD } from './components/player/ActionOSD';
 import { SubtitleSearchModal } from './components/settings/SubtitleSearchModal';
 import { usePlayerStore } from './store/usePlayerStore';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
+import { MediaInfoModal } from './components/player/MediaInfoModal';
 import { useTranslation } from './i18n';
 import { listen } from '@tauri-apps/api/event';
 import { command, setProperty } from 'tauri-plugin-mpv-api';
@@ -67,7 +68,7 @@ const ResizeGrip: React.FC<{ position: 'tl' | 'tr' | 'bl' | 'br', show: boolean 
 
   return (
     <div 
-      className={`fixed z-[60] p-3 ${getPositionClass()} ${getCursor()} ${
+      className={`fixed z-[60] p-1 ${getPositionClass()} ${getCursor()} ${
         show ? 'pointer-events-auto' : 'pointer-events-none'
       }`}
       onPointerDown={async (e) => {
@@ -660,7 +661,7 @@ function MainPlayer() {
           className="absolute inset-0 bg-transparent pointer-events-auto"
         />
       )}
-      
+      <MediaInfoModal />
     </div>
   );
 }

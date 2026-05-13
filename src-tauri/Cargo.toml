@@ -1,6 +1,6 @@
 [package]
 name = "lieb-player"
-version = "0.1.0"
+version = "0.1.9"
 description = "Lieb Player - Modern Media Experience"
 authors = ["Lieb Player"]
 edition = "2021"
