@@ -237,7 +237,7 @@ export const MediaInfoModal: React.FC = () => {
 
             {/* Footer */}
             <div className="px-8 py-4 bg-white/[0.02] border-t border-white/[0.03] flex justify-between items-center">
-              <p className="text-[9px] text-muted/40 font-bold uppercase tracking-[0.2em]">Lieb Player Diagnostic Interface v0.1.9</p>
+              <p className="text-[9px] text-muted/40 font-bold uppercase tracking-[0.2em]">Lieb Player Diagnostic Interface v0.2.0</p>
               <div className="flex gap-4">
                 <div className="flex items-center gap-1.5">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />

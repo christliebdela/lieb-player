@@ -165,7 +165,6 @@ export const VideoCanvas: React.FC<{
           '--ao=wasapi',
           '--audio-stream-silence=yes',
           '--audio-wait-open=0.5',
-          '--config-file=~~/lieb.conf',
         ];
 
         if (state.renderingBackend !== 'gpu-next') {

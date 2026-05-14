@@ -173,7 +173,7 @@ export const usePlayerStore = create<PlayerState>()(
       showControls: true,
       showVolumeOSD: false,
       actionOSD: null,
-      controlBarLayout: 'default',
+      controlBarLayout: 'centered',
       equalizer: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       accentColor: '#6366f1',
       scrollMode: 'volume',

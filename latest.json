@@ -1,11 +1,11 @@
 {
-  "version": "v0.1.9",
-  "notes": "v0.1.9: Elite Branding & Diagnostic Refinement\n- Lieb Media Engine: Rebranded core media technology to the high-performance 'Lieb Media Engine'\n- Diagnostic Interface: Replaced default MPV stats with a premium, high-fidelity Media Info Modal\n- Visual Consistency: Standardized 'All Media' collection styling to match refined sidebar aesthetic\n- Technical Polish: Rebranded internal engine configuration to 'lieb.conf' for a bespoke experience\n- UX Refinement: Optimized window resize handles to prevent interference with corner controls\n- Stability: Robust state management with explicit cross-window synchronization\n- Premium Assets: Standardized screenshot templates and directory naming (Lieb Player Screenshots)",
-  "pub_date": "2026-05-13T19:23:00Z",
+  "version": "v0.2.0",
+  "notes": "v0.2.0: Professional Architecture & Engine Stability\n- System-Wide Installation: Standardized deployment to 'C:\\Program Files' for a professional desktop presence\n- Engine Stability: Restored 100% startup reliability by reverting to the standard 'mpv.conf' configuration\n- UI Refinement: Optimized Control Bar vertical padding for a more compact and focused media experience\n- Privacy: Disabled desktop-level logging to ensure a clean user environment in production\n- Robust IPC: Resolved startup timeouts by streamlining engine arguments and configuration loading\n- Elite Identity: Synchronized all system installers and metadata to reflect the Lieb Media Engine branding",
+  "pub_date": "2026-05-14T02:00:00Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRNERDZjMrZFFiTW1KbzN5bEpYcFZZUm5IWlppNTRCMmFPaXBER0h3bXdQUXdNYlZjeHBPaWdrUnUyME1mMEZYbzR2eXdxYUFyU1IrdnlaeC9IblZRY3hDamMyUUlrakF3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4NzAyMjIwCWZpbGU6TGllYi1QbGF5ZXJfMC4xLjlfeDY0X2VuLVVTLm1zaQpma0NGaVJtTzNENGVvbzZPbWJ1VjZxRklYODhYQkRra24zc3J2STFlaE13YnJiT0w2aGtSQVJnS3JoZnVkenlHOFFSMVlaT20wMUNJUWdDZmhtcExDZz09Cg==",
-      "url": "https://github.com/christliebdela/lieb-player/releases/download/v0.1.9/Lieb-Player_0.1.9_x64_en-US.msi"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRNERDZjMrZFFiTWpnaVVsRzZueGQ1ZzRRWkZVSERYWGFHanVEeUYreFBOMGxtbUVYcHV2WlBjUzc3aTdnMGNtZWRFN3V5YUJmMkl0TnpBTStvKytKYWVVTEZxdG96THdRPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzc4NzI0OTMzCWZpbGU6TGllYi1QbGF5ZXJfMC4yLjBfeDY0X2VuLVVTLm1zaQp5cVRkYllPTFNGZzM0dnZrVllhZG9DeE0vRjR4ZDUvcFc2M3A0Wnp5VFhzcHZ3aTNibW9tcGx4NCt1Q3dDKzdsMnpZZENhQkRnTWhETHY4Z1pZbERDQT09Cg==",
+      "url": "https://github.com/christliebdela/lieb-player/releases/download/v0.2.0/Lieb-Player_0.2.0_x64_en-US.msi"
     }
   }
 }

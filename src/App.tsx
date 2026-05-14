@@ -240,7 +240,11 @@ function MainPlayer() {
   const formatDuration = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
-    return h > 0 ? `${h}h ${m}m` : `${m}m`;
+    const s = Math.floor(seconds % 60);
+    if (h > 0) {
+      return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+    return `${m}:${s.toString().padStart(2, '0')}`;
   };
   
   useKeyboardShortcuts();
@@ -623,7 +627,7 @@ function MainPlayer() {
         <div className="flex-1 w-full" />
 
         <div className="px-4 py-4 flex items-end justify-between pointer-events-none relative">
-          <div className="max-w-md pb-4">
+          <div className="max-w-md pb-1">
             {(showControls || !isPlaying) && duration > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -637,8 +641,6 @@ function MainPlayer() {
                   {metadata.season && <span>{t('metadata.season')} {metadata.season}</span>}
                   {metadata.season && metadata.episode && <span className="w-1 h-1 rounded-full bg-white/10" />}
                   {metadata.episode && <span>{t('metadata.episode')} {metadata.episode}</span>}
-                  {(metadata.season || metadata.episode) && <span className="w-1 h-1 rounded-full bg-white/10" />}
-                  <span>{formatDuration(duration)}</span>
                 </div>
                 {metadata.description && (
                   <p className="text-white/50 text-xs leading-relaxed max-w-sm font-medium">

@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0] - 2026-05-14
+### Added
+- System-Wide Installation: Standardized deployment to 'C:\Program Files' for a professional desktop presence
+- Engine Stability: Restored 100% startup reliability by reverting to the standard 'mpv.conf' configuration
+- Robust IPC: Resolved startup timeouts by streamlining engine arguments and configuration loading
+
+### Changed
+- UI Refinement: Optimized Control Bar vertical padding for a more compact and focused media experience
+- Privacy: Disabled desktop-level logging to ensure a clean user environment in production
+- Elite Identity: Synchronized all system installers and metadata to reflect the Lieb Media Engine branding
+
 ## [0.1.9] - 2026-05-13
 ### Added
 - Diagnostic Interface: Replaced default MPV stats with a premium, high-fidelity Media Info Modal

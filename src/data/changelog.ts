@@ -10,6 +10,36 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: "0.2.0",
+    date: "2026-05-14",
+    changes: {
+      English: [
+        "System-Wide Installation: Standardized deployment to 'C:\\Program Files' for a professional desktop presence",
+        "Engine Stability: Restored 100% startup reliability by reverting to the standard 'mpv.conf' configuration",
+        "Robust IPC: Resolved startup timeouts by streamlining engine arguments and configuration loading",
+        "UI Refinement: Optimized Control Bar vertical padding for a more compact and focused media experience",
+        "Privacy: Disabled desktop-level logging to ensure a clean user environment in production",
+        "Elite Identity: Synchronized all system installers and metadata to reflect the Lieb Media Engine branding"
+      ],
+      French: [
+        "Installation système : Déploiement standard dans 'C:\\Program Files' pour une présence professionnelle",
+        "Stabilité du moteur : Fiabilité de démarrage restaurée à 100% avec le fichier 'mpv.conf' standard",
+        "IPC robuste : Résolution des timeouts de démarrage en optimisant les arguments et le chargement",
+        "Affinage UI : Optimisation du padding vertical de la barre de contrôle pour plus de compacité",
+        "Confidentialité : Désactivation des journaux sur le bureau pour un environnement utilisateur propre",
+        "Identité Elite : Synchronisation des installateurs pour refléter la marque Lieb Media Engine"
+      ],
+      Spanish: [
+        "Instalación del Sistema: Despliegue estandarizado en 'C:\\Program Files' para una presencia profesional",
+        "Estabilidad del Motor: Fiabilidad de inicio restaurada al 100% con la configuración 'mpv.conf' estándar",
+        "IPC Robusto: Resolución de timeouts de inicio optimizando los argumentos y la carga de configuración",
+        "Refinamiento de UI: Optimización del espaciado vertical de la barra de control para mayor compacidad",
+        "Privacidad: Desactivación de registros en el escritorio para un entorno de usuario limpio",
+        "Identidad Elite: Sincronización de instaladores para reflejar la marca Lieb Media Engine"
+      ]
+    }
+  },
+  {
     version: "0.1.9",
     date: "2026-05-13",
     changes: {
