@@ -617,8 +617,8 @@ function MainPlayer() {
 
         <div className="flex-1 w-full" />
 
-        <div className="px-4 py-4 flex items-end justify-between pointer-events-none relative">
-          <div className="max-w-md pb-1">
+        <div className="px-4 pt-4 pb-1 flex items-end justify-between pointer-events-none relative">
+          <div className="max-w-md pb-0">
             {(showControls || !isPlaying) && duration > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
