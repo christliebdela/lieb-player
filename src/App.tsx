@@ -31,6 +31,7 @@ function SettingsWindow() {
   useEffect(() => {
     document.documentElement.style.setProperty('--accent', accentColor);
   }, [accentColor]);
+  useKeyboardShortcuts();
   return <SettingsModal standalone />;
 }
 
@@ -39,6 +40,7 @@ function LibraryWindow() {
   useEffect(() => {
     document.documentElement.style.setProperty('--accent', accentColor);
   }, [accentColor]);
+  useKeyboardShortcuts();
   return <LibraryModal standalone />;
 }
 
@@ -47,7 +49,17 @@ function SubtitleSearchWindow() {
   useEffect(() => {
     document.documentElement.style.setProperty('--accent', accentColor);
   }, [accentColor]);
+  useKeyboardShortcuts();
   return <SubtitleSearchModal standalone />;
+}
+
+function MediaInfoWindow() {
+  const { accentColor } = usePlayerStore();
+  useEffect(() => {
+    document.documentElement.style.setProperty('--accent', accentColor);
+  }, [accentColor]);
+  useKeyboardShortcuts();
+  return <MediaInfoModal standalone />;
 }
 
 // ── Proportional Resize Grip (All Corners) ──
@@ -654,7 +666,6 @@ function MainPlayer() {
           className="absolute inset-0 bg-transparent pointer-events-auto"
         />
       )}
-      <MediaInfoModal />
     </div>
   );
 }
@@ -674,6 +685,7 @@ function App() {
   if (label === 'settings') return <SettingsWindow />;
   if (label === 'library') return <LibraryWindow />;
   if (label === 'subtitle-search') return <SubtitleSearchWindow />;
+  if (label === 'media-info') return <MediaInfoWindow />;
   return <MainPlayer />;
 }
 

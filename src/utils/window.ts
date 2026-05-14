@@ -49,6 +49,24 @@ export const openWindow = async (label: string, title: string, width: number, he
   }
 };
 
+export const toggleWindow = async (label: string, title: string, width: number, height: number) => {
+  console.log(`>>> [window.ts] Toggling window: ${label}`);
+  try {
+    const existing = await WebviewWindow.getByLabel(label);
+    console.log(`>>> [window.ts] Existing window check for ${label}:`, existing ? 'FOUND' : 'NOT FOUND');
+    
+    if (existing) {
+      console.log(`>>> [window.ts] Closing existing window: ${label}`);
+      await existing.close();
+    } else {
+      console.log(`>>> [window.ts] Opening new window: ${label}`);
+      await openWindow(label, title, width, height);
+    }
+  } catch (err) {
+    console.error(`>>> [window.ts] Toggle error for ${label}:`, err);
+  }
+};
+
 export const closeWindow = async (label: string) => {
   try {
     const existing = await WebviewWindow.getByLabel(label);

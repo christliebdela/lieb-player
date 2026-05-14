@@ -15,6 +15,7 @@ import { useTranslation } from '../../i18n';
 import { open, save } from '@tauri-apps/plugin-dialog';
 import { readDir } from '@tauri-apps/plugin-fs';
 import { invoke } from '@tauri-apps/api/core';
+import { WindowControls } from '../layout/WindowControls';
 
 export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone }) => {
   const { 
@@ -446,9 +447,13 @@ export const LibraryModal: React.FC<{ standalone?: boolean }> = ({ standalone })
             </button>
           </div>
 
-          <button onClick={handleClose} className="h-8 w-8 flex items-center justify-center bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all cursor-pointer">
-            <X size={16} />
-          </button>
+          {standalone ? (
+            <WindowControls showMinimize={false} showMaximize={false} closeVariant="danger" />
+          ) : (
+            <button onClick={handleClose} className="h-8 w-8 flex items-center justify-center bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all cursor-pointer">
+              <X size={16} />
+            </button>
+          )}
         </div>
       </header>
 

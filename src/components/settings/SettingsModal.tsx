@@ -11,6 +11,7 @@ import { relaunch } from '@tauri-apps/plugin-process';
 import { getVersion } from '@tauri-apps/api/app';
 import { showActionOSD } from '../../utils/osd';
 import { changelog } from '../../data/changelog';
+import { WindowControls } from '../layout/WindowControls';
 
 const isMainWindow = () => getCurrentWindow().label === 'main';
 
@@ -438,9 +439,13 @@ export const SettingsModal: React.FC<{ standalone?: boolean }> = ({ standalone }
             <div className="flex-1 flex flex-col min-w-0">
               <header className="h-12 flex items-center justify-between px-6 border-b border-border-subtle shrink-0" data-tauri-drag-region>
                 <h2 className="text-[13px] font-semibold text-foreground/80 capitalize">{t(activeTab as any)}</h2>
-                <button onClick={handleClose} className="w-7 h-7 flex items-center justify-center hover:bg-white/10 rounded-lg transition-colors text-muted hover:text-foreground cursor-pointer">
-                  <X size={16} />
-                </button>
+                {standalone ? (
+                  <WindowControls showMinimize={false} showMaximize={false} closeVariant="danger" />
+                ) : (
+                  <button onClick={handleClose} className="h-8 w-8 flex items-center justify-center bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all cursor-pointer">
+                    <X size={16} />
+                  </button>
+                )}
               </header>
 
               <div className="flex-1 overflow-y-auto px-6 pb-6 custom-scrollbar relative">

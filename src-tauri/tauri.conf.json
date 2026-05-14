@@ -33,7 +33,7 @@
   "bundle": {
     "active": true,
     "targets": ["nsis", "msi"],
-    "publisher": "Lieb Player",
+    "publisher": "Christlieb Dela",
     "shortDescription": "Elite media experience powered by the Lieb Media Engine",
     "resources": [
       "mpv.exe",

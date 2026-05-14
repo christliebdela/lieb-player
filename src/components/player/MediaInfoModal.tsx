@@ -3,251 +3,237 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { getProperty } from 'tauri-plugin-mpv-api';
 import { 
-  HardDrive, Film, Music, Zap, X, Activity 
+  X, Activity, Info, Monitor, Volume2, Settings
 } from 'lucide-react';
 import { useTranslation } from '../../i18n';
+import { WindowControls } from '../layout/WindowControls';
 
-interface MediaStats {
-  path: string;
-  filename: string;
-  filesize: string;
-  duration: number;
-  
-  // Video
-  videoCodec: string;
-  videoRes: string;
-  videoFps: string;
-  videoBitrate: string;
-  videoFormat: string;
-  videoColorSpace: string;
-  videoPrimaries: string;
-  videoTransfer: string;
-  hwDec: string;
-  
-  // Audio
-  audioCodec: string;
-  audioChannels: string;
-  audioSamplerate: string;
-  audioBitrate: string;
-  
-  // Engine
-  vo: string;
-  ao: string;
-  droppedFrames: number;
-  mistimedFrames: number;
-  cacheSize: string;
-  buffering: number;
+interface TabProps {
+  id: string;
+  label: string;
+  icon: any;
+  active: boolean;
+  onClick: () => void;
 }
 
-export const MediaInfoModal: React.FC = () => {
+const Tab: React.FC<TabProps> = ({ label, icon: Icon, active, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-left cursor-pointer shrink-0 border ${
+      active 
+        ? 'bg-accent/15 text-accent font-bold border-accent/20 shadow-[0_0_20px_rgba(var(--accent-rgb),0.1)]' 
+        : 'text-muted hover:text-foreground hover:bg-foreground/[0.04] border-transparent'
+    }`}
+  >
+    <Icon size={16} className={active ? 'text-accent' : 'text-muted/50'} />
+    <span className="text-[11px] uppercase tracking-widest">{label}</span>
+  </button>
+);
+
+const StatRow = ({ label, value, highlight = false }: { label: string, value: string | number | null | undefined, highlight?: boolean }) => (
+  <div className="flex items-center justify-between py-2 border-b border-white/[0.03] last:border-0">
+    <span className="text-[9px] font-black text-muted uppercase tracking-[0.2em]">{label}</span>
+    <span className={`text-[11px] font-medium tabular-nums ${highlight ? 'text-accent' : 'text-foreground/80'}`}>
+      {value === null || value === undefined || value === '' ? '—' : String(value)}
+    </span>
+  </div>
+);
+
+export const MediaInfoModal: React.FC<{ standalone?: boolean }> = ({ standalone }) => {
   const { isMediaInfoOpen, setMediaInfoOpen } = usePlayerStore();
   const { t } = useTranslation();
-  const [stats, setStats] = useState<MediaStats | null>(null);
+  const [activeTab, setActiveTab] = useState('general');
+  const [stats, setStats] = useState<Record<string, any>>({});
+  const [isEngineHealthy, setIsEngineHealthy] = useState(true);
+
+  const formatSize = (bytes: any) => {
+    if (!bytes) return null;
+    const b = parseInt(bytes);
+    if (isNaN(b)) return bytes;
+    if (b > 1024 * 1024 * 1024) return (b / (1024 * 1024 * 1024)).toFixed(2) + ' GiB';
+    return (b / (1024 * 1024)).toFixed(2) + ' MiB';
+  };
+
+  const formatBitrate = (bits: any) => {
+    if (!bits) return null;
+    const b = parseInt(bits);
+    if (isNaN(b)) return bits;
+    return (b / 1000).toFixed(0) + ' kbps';
+  };
 
   useEffect(() => {
-    if (!isMediaInfoOpen) return;
+    // If standalone, we always poll. If modal, we poll only when open.
+    if (!standalone && !isMediaInfoOpen) return;
 
     const fetchStats = async () => {
       try {
-        const [
-          path, filename, filesize, duration,
-          vCodec, vRes, vFps, vBitrate, vFormat, vCS, vPri, vTrans, hw,
-          aCodec, aChan, aSR, aBitrate,
-          vo, ao, dropped, mistimed, cache, buffer
-        ] = await Promise.all([
-          getProperty('path'),
-          getProperty('filename'),
-          getProperty('file-size'),
-          getProperty('duration'),
-          
-          getProperty('video-codec'),
-          getProperty('video-params/aspect-res'),
-          getProperty('container-fps'),
-          getProperty('video-bitrate'),
-          getProperty('video-format'),
-          getProperty('video-params/colormatrix'),
-          getProperty('video-params/primaries'),
-          getProperty('video-params/transfer'),
-          getProperty('hwdec-current'),
-          
-          getProperty('audio-codec'),
-          getProperty('audio-params/channel-count'),
-          getProperty('audio-params/samplerate'),
-          getProperty('audio-bitrate'),
-          
-          getProperty('vo'),
-          getProperty('ao'),
-          getProperty('frame-drop-count'),
-          getProperty('mistimed-frame-count'),
-          getProperty('cache-used'),
-          getProperty('buffering-percentage')
-        ]);
+        const props = [
+          'path', 'filename', 'file-size', 'duration',
+          'video-codec', 'video-params/aspect-res', 'container-fps', 'video-bitrate', 'video-format', 
+          'video-params/colormatrix', 'video-params/primaries', 'video-params/transfer', 'hwdec-current',
+          'audio-codec', 'audio-params/channel-count', 'audio-params/samplerate', 'audio-bitrate',
+          'vo', 'ao', 'frame-drop-count', 'mistimed-frame-count', 'cache-used', 'buffering-percentage'
+        ];
 
-        const formatSize = (bytes: any) => {
-          if (!bytes) return 'N/A';
-          const b = parseInt(bytes);
-          if (isNaN(b)) return bytes;
-          if (b > 1024 * 1024 * 1024) return (b / (1024 * 1024 * 1024)).toFixed(2) + ' GiB';
-          return (b / (1024 * 1024)).toFixed(2) + ' MiB';
-        };
-
-        const formatBitrate = (bits: any) => {
-          if (!bits) return 'N/A';
-          const b = parseInt(bits);
-          if (isNaN(b)) return bits;
-          return (b / 1000).toFixed(0) + ' kbps';
-        };
-
-        setStats({
-          path: String(path || ''),
-          filename: String(filename || ''),
-          filesize: formatSize(filesize),
-          duration: Number(duration || 0),
-          videoCodec: String(vCodec || 'N/A'),
-          videoRes: String(vRes || 'N/A'),
-          videoFps: Number(vFps).toFixed(2),
-          videoBitrate: formatBitrate(vBitrate),
-          videoFormat: String(vFormat || 'N/A'),
-          videoColorSpace: String(vCS || 'N/A'),
-          videoPrimaries: String(vPri || 'N/A'),
-          videoTransfer: String(vTrans || 'N/A'),
-          hwDec: String(hw || 'no'),
-          audioCodec: String(aCodec || 'N/A'),
-          audioChannels: String(aChan || 'N/A'),
-          audioSamplerate: (Number(aSR) / 1000).toFixed(1) + ' kHz',
-          audioBitrate: formatBitrate(aBitrate),
-          vo: String(vo || 'N/A'),
-          ao: String(ao || 'N/A'),
-          droppedFrames: Number(dropped || 0),
-          mistimedFrames: Number(mistimed || 0),
-          cacheSize: formatSize(cache),
-          buffering: Number(buffer || 0)
+        const results = await Promise.allSettled(props.map(p => getProperty(p)));
+        const newStats: Record<string, any> = {};
+        
+        props.forEach((p, i) => {
+          const res = results[i];
+          if (res.status === 'fulfilled') {
+            newStats[p] = res.value;
+          }
         });
+
+        setStats(newStats);
+        setIsEngineHealthy(true);
       } catch (err) {
         console.error('Failed to fetch media stats:', err);
+        setIsEngineHealthy(false);
       }
     };
 
     fetchStats();
-    const interval = setInterval(fetchStats, 2000);
+    const interval = setInterval(fetchStats, 1000);
     return () => clearInterval(interval);
-  }, [isMediaInfoOpen]);
+  }, [isMediaInfoOpen, standalone]);
 
-  if (!isMediaInfoOpen) return null;
+  if (!standalone && !isMediaInfoOpen) return null;
 
-  const InfoGroup = ({ icon: Icon, title, children }: { icon: any, title: string, children: React.ReactNode }) => (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2 pb-2 border-b border-white/[0.05]">
-        <Icon size={14} className="text-accent" />
-        <h3 className="text-[10px] font-black text-accent uppercase tracking-[0.2em]">{title}</h3>
-      </div>
-      <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-        {children}
-      </div>
-    </div>
-  );
+  const content = (
+    <div className={`flex-1 flex flex-col min-h-0 ${standalone ? 'h-full w-full' : 'w-[700px] h-[500px] bg-[#0A0A0B]/95 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] ring-1 ring-white/5 overflow-hidden'}`}>
+      {/* Header */}
+      <header className="h-14 flex items-center justify-between border-b border-white/[0.05] shrink-0 relative overflow-hidden">
+        {/* Actual Drag Region (Background) */}
+        <div className="absolute inset-0 z-0" data-tauri-drag-region />
 
-  const InfoItem = ({ label, value, highlight = false }: { label: string, value: string | number, highlight?: boolean }) => (
-    <div className="space-y-1">
-      <p className="text-[9px] text-muted font-bold uppercase tracking-wider">{label}</p>
-      <p className={`text-[12px] ${highlight ? 'text-accent font-bold' : 'text-foreground/90 font-medium'} truncate`}>{value}</p>
-    </div>
-  );
+        <div className="relative z-10 px-6 flex items-center gap-3 pointer-events-none">
+          <div className="w-8 h-8 rounded-xl bg-accent/10 flex items-center justify-center text-accent ring-1 ring-accent/20">
+            <Activity size={16} />
+          </div>
+          <div className="flex flex-col">
+            <h2 className="text-[14px] font-bold text-foreground leading-tight tracking-tight">Lieb Media Engine</h2>
+            <p className="text-[9px] text-muted font-bold uppercase tracking-[0.2em] mt-[2px]">
+              Technical Diagnostics System
+            </p>
+          </div>
+        </div>
 
-  return (
-    <AnimatePresence>
-      {isMediaInfoOpen && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6 pointer-events-none">
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto"
-            onClick={() => setMediaInfoOpen(false)}
-          />
-          
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative w-full max-w-2xl bg-[#0a0a0a]/80 backdrop-blur-2xl rounded-[32px] border border-white/[0.05] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] overflow-hidden pointer-events-auto"
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between px-8 py-6 border-b border-white/[0.03] bg-white/[0.02]">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-2xl bg-accent/10 flex items-center justify-center text-accent">
-                  <Activity size={20} />
-                </div>
-                <div>
-                  <h2 className="text-sm font-black text-foreground uppercase tracking-widest">{t('sc.media_info' as any)}</h2>
-                  <p className="text-[10px] text-muted font-bold uppercase tracking-wider mt-0.5">{stats?.filename || 'Analyzing...'}</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setMediaInfoOpen(false)}
-                className="w-10 h-10 rounded-2xl hover:bg-white/[0.05] flex items-center justify-center text-muted hover:text-foreground transition-all cursor-pointer"
-              >
-                <X size={20} />
-              </button>
+        <div className="relative z-20 px-6 h-full flex items-center pointer-events-auto" data-tauri-drag-region="false">
+          {standalone ? (
+            <WindowControls showMinimize={false} showMaximize={false} closeVariant="danger" />
+          ) : (
+            <button 
+              onClick={() => setMediaInfoOpen(false)}
+              className="h-8 w-8 flex items-center justify-center bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all cursor-pointer"
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
+      </header>
+
+      {/* Sidebar + Content */}
+      <div className="flex-1 flex min-h-0">
+        {/* Sidebar */}
+        <div className="w-48 border-r border-white/[0.05] flex flex-col bg-white/[0.01]">
+          <div className="p-4 flex-1 flex flex-col gap-1">
+            <Tab id="general" label={t('general')} icon={Info} active={activeTab === 'general'} onClick={() => setActiveTab('general')} />
+            <Tab id="video" label={t('video')} icon={Monitor} active={activeTab === 'video'} onClick={() => setActiveTab('video')} />
+            <Tab id="audio" label={t('audio')} icon={Volume2} active={activeTab === 'audio'} onClick={() => setActiveTab('audio')} />
+            <Tab id="engine" label={t('engine')} icon={Settings} active={activeTab === 'engine'} onClick={() => setActiveTab('engine')} />
+          </div>
+
+          <div className="p-4 border-t border-white/[0.05] space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[8px] font-black text-muted uppercase tracking-widest">Engine Status</span>
+              <div className={`w-2 h-2 rounded-full ${isEngineHealthy ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`} />
             </div>
+            <div className="flex items-center justify-between">
+              <span className="text-[8px] font-black text-muted uppercase tracking-widest">Version</span>
+              <span className="text-[8px] font-black text-accent uppercase tracking-widest">v0.2.0</span>
+            </div>
+          </div>
+        </div>
 
-            {/* Content */}
-            <div className="p-8 max-h-[70vh] overflow-y-auto custom-scrollbar space-y-12">
-              {stats ? (
-                <>
-                  <InfoGroup icon={HardDrive} title="File & Container">
-                    <InfoItem label="File Size" value={stats.filesize} />
-                    <InfoItem label="Format" value={stats.videoFormat} />
-                    <InfoItem label="Duration" value={`${Math.floor(stats.duration / 60)}m ${Math.floor(stats.duration % 60)}s`} />
-                    <InfoItem label="Path" value={stats.path} />
-                  </InfoGroup>
-
-                  <InfoGroup icon={Film} title="Video Stream">
-                    <InfoItem label="Codec" value={stats.videoCodec} highlight />
-                    <InfoItem label="Resolution" value={stats.videoRes} />
-                    <InfoItem label="Framerate" value={`${stats.videoFps} fps`} />
-                    <InfoItem label="Bitrate" value={stats.videoBitrate} />
-                    <InfoItem label="Hardware Dec" value={stats.hwDec.toUpperCase()} highlight />
-                    <InfoItem label="Format" value={stats.videoFormat} />
-                  </InfoGroup>
-
-                  <InfoGroup icon={Music} title="Audio Stream">
-                    <InfoItem label="Codec" value={stats.audioCodec} />
-                    <InfoItem label="Channels" value={stats.audioChannels} />
-                    <InfoItem label="Sample Rate" value={stats.audioSamplerate} />
-                    <InfoItem label="Bitrate" value={stats.audioBitrate} />
-                  </InfoGroup>
-
-                  <InfoGroup icon={Zap} title="Engine Performance">
-                    <InfoItem label="Video Output" value={stats.vo} />
-                    <InfoItem label="Audio Output" value={stats.ao} />
-                    <InfoItem label="Dropped Frames" value={stats.droppedFrames} highlight={stats.droppedFrames > 0} />
-                    <InfoItem label="Mistimed Frames" value={stats.mistimedFrames} />
-                    <InfoItem label="Cache Size" value={stats.cacheSize} />
-                    <InfoItem label="Buffering" value={`${stats.buffering}%`} />
-                  </InfoGroup>
-                </>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-20 space-y-4">
-                  <div className="w-12 h-12 rounded-full border-2 border-accent/20 border-t-accent animate-spin" />
-                  <p className="text-[10px] font-black text-muted uppercase tracking-[0.2em]">Interrogating Lieb Engine...</p>
+        {/* Content Area */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 bg-gradient-to-br from-transparent to-white/[0.01]">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-6"
+            >
+              {activeTab === 'general' && (
+                <div className="space-y-1">
+                  <StatRow label="Filename" value={stats['filename']} highlight />
+                  <StatRow label="Full Path" value={stats['path']} />
+                  <StatRow label="File Size" value={formatSize(stats['file-size'])} />
+                  <StatRow label="Duration" value={stats['duration'] ? (Number(stats['duration']) / 60).toFixed(2) + ' min' : '—'} />
                 </div>
               )}
-            </div>
 
-            {/* Footer */}
-            <div className="px-8 py-4 bg-white/[0.02] border-t border-white/[0.03] flex justify-between items-center">
-              <p className="text-[9px] text-muted/40 font-bold uppercase tracking-[0.2em]">Lieb Player Diagnostic Interface v0.2.0</p>
-              <div className="flex gap-4">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                  <span className="text-[9px] text-muted font-black uppercase tracking-wider">Engine Healthy</span>
+              {activeTab === 'video' && (
+                <div className="space-y-1">
+                  <StatRow label="Codec" value={stats['video-codec']} highlight />
+                  <StatRow label="Resolution" value={stats['video-params/aspect-res']} />
+                  <StatRow label="Frame Rate" value={stats['container-fps'] ? Number(stats['container-fps']).toFixed(2) + ' fps' : '—'} />
+                  <StatRow label="Bitrate" value={formatBitrate(stats['video-bitrate'])} />
+                  <StatRow label="Format" value={stats['video-format']} />
+                  <StatRow label="Matrix" value={stats['video-params/colormatrix']} />
+                  <StatRow label="Primaries" value={stats['video-params/primaries']} />
+                  <StatRow label="Transfer" value={stats['video-params/transfer']} />
+                  <StatRow label="HW Decoder" value={stats['hwdec-current']} />
                 </div>
-              </div>
-            </div>
-          </motion.div>
+              )}
+
+              {activeTab === 'audio' && (
+                <div className="space-y-1">
+                  <StatRow label="Codec" value={stats['audio-codec']} highlight />
+                  <StatRow label="Channels" value={stats['audio-params/channel-count']} />
+                  <StatRow label="Sample Rate" value={stats['audio-params/samplerate'] ? (Number(stats['audio-params/samplerate']) / 1000).toFixed(1) + ' kHz' : '—'} />
+                  <StatRow label="Bitrate" value={formatBitrate(stats['audio-bitrate'])} />
+                </div>
+              )}
+
+              {activeTab === 'engine' && (
+                <div className="space-y-1">
+                  <StatRow label="Video Output" value={stats['vo']} highlight />
+                  <StatRow label="Audio Output" value={stats['ao']} highlight />
+                  <StatRow label="Dropped Frames" value={stats['frame-drop-count']} />
+                  <StatRow label="Mistimed Frames" value={stats['mistimed-frame-count']} />
+                  <StatRow label="Cache Usage" value={formatSize(stats['cache-used'])} />
+                  <StatRow label="Buffer Status" value={stats['buffering-percentage'] ? stats['buffering-percentage'] + '%' : '—'} />
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
         </div>
-      )}
-    </AnimatePresence>
+      </div>
+    </div>
+  );
+
+  if (standalone) {
+    return (
+      <div className="h-screen w-screen bg-background overflow-hidden font-inter select-none flex flex-col">
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-8 pointer-events-none">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        className="pointer-events-auto"
+      >
+        {content}
+      </motion.div>
+    </div>
   );
 };

@@ -3,7 +3,7 @@ import { usePlayerStore } from '../store/usePlayerStore';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { showActionOSD } from '../utils/osd';
 import { useTranslation } from '../i18n';
-import { openWindow, closeWindow } from '../utils/window';
+import { closeWindow, toggleWindow } from '../utils/window';
 import { command, setProperty } from 'tauri-plugin-mpv-api';
 import { emit } from '@tauri-apps/api/event';
 
@@ -65,10 +65,12 @@ export const useKeyboardShortcuts = () => {
           if (hasMedia) await setProperty('mute', !isMuted);
           break;
         case 'KeyL':
-          openWindow('library', 'Library', 800, 560);
+          console.log('>>> [Shortcuts] KeyL pressed - Toggling Library');
+          toggleWindow('library', 'Library', 800, 560);
           break;
         case 'KeyS':
-          openWindow('settings', 'Settings', 800, 560);
+          console.log('>>> [Shortcuts] KeyS pressed - Toggling Settings');
+          toggleWindow('settings', 'Settings', 800, 560);
           break;
         case 'KeyN': {
           usePlayerStore.getState().playNext();
@@ -118,6 +120,7 @@ export const useKeyboardShortcuts = () => {
           }
           closeWindow('settings');
           closeWindow('library');
+          closeWindow('media-info');
           break;
         case 'KeyC':
           if (hasMedia) {
@@ -129,8 +132,8 @@ export const useKeyboardShortcuts = () => {
           break;
         case 'KeyI':
           if (hasMedia) {
-            const s = usePlayerStore.getState();
-            s.setMediaInfoOpen(!s.isMediaInfoOpen);
+            console.log('>>> [Shortcuts] KeyI pressed - Toggling Media Info');
+            toggleWindow('media-info', 'Technical Diagnostics', 700, 500);
           }
           break;
       }
